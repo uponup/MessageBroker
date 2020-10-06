@@ -28,7 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		037991920226612D6F5D2079 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		037991920226612D6F5D2079 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		3470576AFF6FC8A65BF4458F /* Pods-MessageBroker_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessageBroker_Example.debug.xcconfig"; path = "Target Support Files/Pods-MessageBroker_Example/Pods-MessageBroker_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* MessageBroker_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MessageBroker_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -40,11 +40,11 @@
 		607FACE51AFB9204008FA782 /* MessageBroker_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MessageBroker_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACEB1AFB9204008FA782 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
-		63FE867BE547C79D515F1EC1 /* MessageBroker.podspec */ = {isa = PBXFileReference; includeInIndex = 1; name = MessageBroker.podspec; path = ../MessageBroker.podspec; sourceTree = "<group>"; };
+		63FE867BE547C79D515F1EC1 /* MessageBroker.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = MessageBroker.podspec; path = ../MessageBroker.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		6D0A4C193810CED6F6596E25 /* Pods-MessageBroker_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessageBroker_Tests.debug.xcconfig"; path = "Target Support Files/Pods-MessageBroker_Tests/Pods-MessageBroker_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		6E7B7F1D159CF3B2C7352E2C /* Pods-MessageBroker_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessageBroker_Tests.release.xcconfig"; path = "Target Support Files/Pods-MessageBroker_Tests/Pods-MessageBroker_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		847A509F11C96807C8552169 /* Pods_MessageBroker_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MessageBroker_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		847AB1FCEC546B5721781E77 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		847AB1FCEC546B5721781E77 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		D7F5027664D871E971CE9B4F /* Pods_MessageBroker_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MessageBroker_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D937257FC8CB33286C1679C6 /* Pods-MessageBroker_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessageBroker_Example.release.xcconfig"; path = "Target Support Files/Pods-MessageBroker_Example/Pods-MessageBroker_Example.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -77,7 +77,6 @@
 				6D0A4C193810CED6F6596E25 /* Pods-MessageBroker_Tests.debug.xcconfig */,
 				6E7B7F1D159CF3B2C7352E2C /* Pods-MessageBroker_Tests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -227,6 +226,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -269,10 +269,14 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MessageBroker_Example/Pods-MessageBroker_Example-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CocoaAsyncSocket/CocoaAsyncSocket.framework",
+				"${BUILT_PRODUCTS_DIR}/CocoaMQTT/CocoaMQTT.framework",
 				"${BUILT_PRODUCTS_DIR}/MessageBroker/MessageBroker.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaAsyncSocket.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaMQTT.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MessageBroker.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;

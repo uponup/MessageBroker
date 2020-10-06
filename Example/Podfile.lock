@@ -1,0 +1,27 @@
+PODS:
+  - CocoaAsyncSocket (7.6.4)
+  - CocoaMQTT (1.2.5):
+    - CocoaAsyncSocket (~> 7.6.3)
+  - MessageBroker (0.1.0):
+    - CocoaMQTT (~> 1.2.5)
+
+DEPENDENCIES:
+  - MessageBroker (from `../`)
+
+SPEC REPOS:
+  trunk:
+    - CocoaAsyncSocket
+    - CocoaMQTT
+
+EXTERNAL SOURCES:
+  MessageBroker:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
+  CocoaMQTT: a61490ed3b328011c5d75169a77781983e2bb221
+  MessageBroker: d490a637e11bd377a0724a79c0b4b665c9ef9639
+
+PODFILE CHECKSUM: ed888041804d0f85b37c704c1af61be4ca606396
+
+COCOAPODS: 1.8.4
