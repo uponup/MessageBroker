@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MessageBroker
 
 class ViewController: UIViewController {
 
