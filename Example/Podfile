@@ -1,8 +1,7 @@
 use_frameworks!
-use_modular_headers!
 
 target 'MessageBroker_Example' do
-  pod 'MessageBroker', :path => '../'
+  pod 'MessageBroker', :path => '../',  :modular_headers => false
 
   target 'MessageBroker_Tests' do
     inherit! :search_paths
