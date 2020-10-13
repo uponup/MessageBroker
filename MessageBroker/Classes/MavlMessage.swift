@@ -102,7 +102,7 @@ extension MavlMessageStatusDelegate {
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {}
 }
 
-class MavlMessage {
+public class MavlMessage {
     static let shared = MavlMessage()
     var passport: Passport? {
         return _passport
