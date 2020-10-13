@@ -23,5 +23,8 @@
     "CocoaMQTT": [
       "~> 1.2.5"
     ]
+  },
+  "pod_target_xcconfig": {
+    "DEFINES_MODULE": "YES"
   }
 }

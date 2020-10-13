@@ -718,37 +718,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		217BDD3CC2CD690E24C6D5DDAE59008B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 957EBCE913703C85D420AE881A0C83EB /* MessageBroker.xcconfig */;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/MessageBroker/MessageBroker-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/MessageBroker/MessageBroker-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = "Target Support Files/MessageBroker/MessageBroker.modulemap";
-				PRODUCT_MODULE_NAME = MessageBroker;
-				PRODUCT_NAME = MessageBroker;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
 		24953E1D74A10CFB8A499AEBD66C2399 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C202F5174A80EACEA4E7B70F3B7C756C /* CocoaMQTT.xcconfig */;
@@ -846,38 +815,6 @@
 				VERSION_INFO_PREFIX = "";
 			};
 			name = Debug;
-		};
-		41F1169C574400D3E12A03DE819E2349 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 957EBCE913703C85D420AE881A0C83EB /* MessageBroker.xcconfig */;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/MessageBroker/MessageBroker-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/MessageBroker/MessageBroker-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = "Target Support Files/MessageBroker/MessageBroker.modulemap";
-				PRODUCT_MODULE_NAME = MessageBroker;
-				PRODUCT_NAME = MessageBroker;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
 		};
 		682DE4C2DE8F51D3FFDFE2219378B935 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -1100,6 +1037,36 @@
 			};
 			name = Debug;
 		};
+		E2465E4ADFF450A89F8727975B19EC94 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 957EBCE913703C85D420AE881A0C83EB /* MessageBroker.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/MessageBroker/MessageBroker-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/MessageBroker/MessageBroker-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/MessageBroker/MessageBroker.modulemap";
+				PRODUCT_MODULE_NAME = MessageBroker;
+				PRODUCT_NAME = MessageBroker;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
 		EABD1BAD8D6AD0C68F6B3249972A84B6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7DCBD8C5AE243EC58624DFDF1623C428 /* Pods-MessageBroker_Tests.debug.xcconfig */;
@@ -1132,6 +1099,37 @@
 				VERSION_INFO_PREFIX = "";
 			};
 			name = Debug;
+		};
+		F4F581443A06884A7CC64421A5C30DB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 957EBCE913703C85D420AE881A0C83EB /* MessageBroker.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/MessageBroker/MessageBroker-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/MessageBroker/MessageBroker-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/MessageBroker/MessageBroker.modulemap";
+				PRODUCT_MODULE_NAME = MessageBroker;
+				PRODUCT_NAME = MessageBroker;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
 		};
 		F736C554F6546FDF1677C6CBCB586BFA /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -1207,8 +1205,8 @@
 		A278A1379A71E87B9E1CB69CF20C518C /* Build configuration list for PBXNativeTarget "MessageBroker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				217BDD3CC2CD690E24C6D5DDAE59008B /* Debug */,
-				41F1169C574400D3E12A03DE819E2349 /* Release */,
+				E2465E4ADFF450A89F8727975B19EC94 /* Debug */,
+				F4F581443A06884A7CC64421A5C30DB8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
