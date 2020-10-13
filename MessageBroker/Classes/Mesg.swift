@@ -11,7 +11,7 @@ import Foundation
 /**
     接收到的信息数据模型
  */
-struct Mesg {
+public struct Mesg {
     var fromUid: String
     var toUid: String
     var groupId: String

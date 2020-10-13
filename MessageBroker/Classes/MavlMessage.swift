@@ -17,7 +17,7 @@ enum MBDomainConfig {
     static let port: UInt16 = 9883
 }
 
-struct MavlMessageConfiguration {
+public struct MavlMessageConfiguration {
     
     var appid: String
     var appkey: String
@@ -66,7 +66,7 @@ public protocol MavlMessageClientConfig {
 /**
     SDK登录状态的回调
  */
-protocol MavlMessageDelegate: class {
+public protocol MavlMessageDelegate: class {
     func beginLogin()
     func loginSuccess()
     func logout(withError: Error?)
@@ -76,7 +76,7 @@ protocol MavlMessageDelegate: class {
     SDK用户关系的回调
     1、群组管理，2、好友管理
  */
-protocol MavlMessageGroupDelegate: class {
+public protocol MavlMessageGroupDelegate: class {
     func createGroupSuccess(groupId gid: String, isLauncher: Bool)
     func joinedGroup(groupId gid: String, someone: String)
     func quitGroup(gid: String, error: Error?)
@@ -90,7 +90,7 @@ protocol MavlMessageGroupDelegate: class {
     SDK消息状态的回调
     将要发送、发送成功、收到信息
  */
-protocol MavlMessageStatusDelegate: class {
+public protocol MavlMessageStatusDelegate: class {
     func mavl(willSend: Mesg)
     func mavl(didSend: Mesg, error: Error?)
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool)
@@ -100,11 +100,6 @@ extension MavlMessageStatusDelegate {
     func mavl(willSend: Mesg) {}
     func mavl(didSend: Mesg, error: Error?) {}
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {}
-}
-
-struct MavlPassport {
-    var uid: String
-    var password: String
 }
 
 class MavlMessage {
@@ -407,10 +402,10 @@ fileprivate extension MavlMessage {
     }
 }
 
-enum MavlMessageError: Error, CustomStringConvertible {
+public enum MavlMessageError: Error, CustomStringConvertible {
     case sendFailed
     
-    var description: String {
+    public var description: String {
         switch self {
         case .sendFailed:
             return "send failed"

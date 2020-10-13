@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Passport {
+public struct Passport {
     var uid: String
     var pwd: String
     
