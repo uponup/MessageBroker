@@ -173,7 +173,7 @@ public class MavlMessage {
 
 extension MavlMessage: MavlMessageClient {
     
-    func login(userName name: String, password pwd: String) {
+    public func login(userName name: String, password pwd: String) {
         let passport = Passport(name, pwd)
         _passport = passport
         
@@ -185,34 +185,34 @@ extension MavlMessage: MavlMessageClient {
         _ = mqtt.connect()
     }
     
-    func logout() {
+    public func logout() {
         guard let mqtt = mqtt else { return }
             
         mqtt.disconnect()
     }
     
-    func createAGroup(withUsers users: [String]) {
+    public func createAGroup(withUsers users: [String]) {
         let payload = users.map{ "\(appid)_\($0.lowercased())" }.joined(separator: ",")
         let operation = Operation.createGroup
         _send(msg: payload, operation: operation)
     }
     
-    func joinGroup(withGroupId gid: String) {
+    public func joinGroup(withGroupId gid: String) {
         let operation = Operation.joinGroup(gid)
         _send(msg: "", operation: operation)
     }
  
-    func quitGroup(withGroupId gid: String) {
+    public func quitGroup(withGroupId gid: String) {
         let operation = Operation.quitGroup(gid)
         _send(msg: "", operation: operation)
     }
     
-    func addFriend(withUserName: String) {
+    public func addFriend(withUserName: String) {
         // TODO: 目前没有好友管理，只要输入userID就可以加为好友
         delegateGroup?.addFriendSuccess(friendName: withUserName)
     }
     
-    func sendToChatRoom(message: String, isToGroup: Bool, toId: String) {
+    public func sendToChatRoom(message: String, isToGroup: Bool, toId: String) {
         let localId = nextMessageLocalID()
         var operation: Operation
         
@@ -226,7 +226,7 @@ extension MavlMessage: MavlMessageClient {
         _send(msg: message, operation: operation)
     }
     
-    func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
+    public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
         let operation = Operation.fetchMsgs(from, type, msgId, offset)
         _send(msg: "", operation: operation)
     }
@@ -249,7 +249,7 @@ extension MavlMessage: MavlMessageClient {
 }
 
 extension MavlMessage: MavlMessageClientStatus {
-    func checkStatus(withUserName username: String) {
+    public func checkStatus(withUserName username: String) {
         let topic = "\(appid)/userstatus/\(appid)_\(username)/online"
         
         mqtt?.subscribe(topic)
@@ -257,7 +257,7 @@ extension MavlMessage: MavlMessageClientStatus {
 }
 
 extension MavlMessage: MavlMessageClientConfig {
-    func uploadToken() {
+    public func uploadToken() {
         guard let deviceToken = getDeviceToken() else {
             TRACE("上传token失败，无法获取token")
             return
@@ -271,42 +271,34 @@ extension MavlMessage: MavlMessageClientConfig {
 }
 
 extension MavlMessage: CocoaMQTTDelegate {
-
-    // Optional ssl CocoaMQTTDelegate
-    func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
-       TRACE("trust: \(trust)")
-       /// Validate the server certificate
-       ///
-       /// Some custom validation...
-       ///
-       /// if validatePassed {
-       ///     completionHandler(true)
-       /// } else {
-       ///     completionHandler(false)
-       /// }
-       completionHandler(true)
+    public func mqttDidPing(_ mqtt: CocoaMQTT) {
+        TRACE()
     }
-
-    func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
-       TRACE("ack: \(ack)")
-       
-        if ack == .accept {
-            delegateLogin?.loginSuccess()
-            
-            _isLogin = true
-            // 成功建立连接，上传token
-            uploadToken()
-        }
+    
+    public func mqttDidReceivePong(_ mqtt: CocoaMQTT) {
+        TRACE()
     }
-
-    func mqtt(_ mqtt: CocoaMQTT, didStateChangeTo state: CocoaMQTTConnState) {
-        TRACE("new state: \(state)")
-        if state == .initial {
-            TRACE("正常断开连接")
-        }
+    
+    public func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
+        TRACE("\(err?.localizedDescription ?? "")")
+        
+        delegateLogin?.logout(withError: err)
+        _isLogin = false
     }
+    
+    public func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
+        TRACE("ack: \(ack)")
+        
+    if ack == .accept {
+        delegateLogin?.loginSuccess()
 
-    func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
+        _isLogin = true
+//        成功建立连接，上传token
+        uploadToken()
+    }
+    }
+    
+    public func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
         TRACE("message pub: \(message.string.value), id: \(id)")
         guard let topicModel = SendingTopicModel(message.topic) else { return }
         guard let passport = passport else { return }
@@ -317,12 +309,12 @@ extension MavlMessage: CocoaMQTTDelegate {
             delegateMsg?.mavl(willSend: msg)
         }
     }
-
-    func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
+    
+    public func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
         TRACE("id: \(id)")
     }
-
-    func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16 ) {
+    
+    public func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
         TRACE("message receive: \(message.string.value), id: \(id)")
         
         let topic = message.topic
@@ -358,28 +350,13 @@ extension MavlMessage: CocoaMQTTDelegate {
             TRACE("收到的信息Topic不符合规范：\(topic)")
         }
     }
-
-    func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopic topics: [String]) {
+    
+    public func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopic topics: [String]) {
         TRACE("subscribed: \(topics)")
     }
     
-    func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopic topic: String) {
+    public func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopic topic: String) {
         TRACE("topic: \(topic)")
-    }
-
-    func mqttDidPing(_ mqtt: CocoaMQTT) {
-       TRACE()
-    }
-
-    func mqttDidReceivePong(_ mqtt: CocoaMQTT) {
-       TRACE()
-    }
-
-    func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
-        TRACE("\(err?.localizedDescription ?? "")")
-        
-        delegateLogin?.logout(withError: err)
-        _isLogin = false
     }
 }
 
