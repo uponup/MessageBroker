@@ -2,7 +2,7 @@ PODS:
   - CocoaAsyncSocket (7.6.4)
   - CocoaMQTT (1.2.5):
     - CocoaAsyncSocket (~> 7.6.3)
-  - MessageBroker (0.1.0):
+  - MessageBroker (0.1.1):
     - CocoaMQTT (~> 1.2.5)
 
 DEPENDENCIES:
@@ -20,7 +20,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
   CocoaMQTT: a61490ed3b328011c5d75169a77781983e2bb221
-  MessageBroker: e8f48f785ab642d40cc7fe02a5d6f2ad0fa444eb
+  MessageBroker: 2f8793bbf39e50187755736c4ba7491a728ab1a2
 
 PODFILE CHECKSUM: cb49ba265112b974af14d508f7b0422902a0cd93
 
