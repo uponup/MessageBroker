@@ -8,20 +8,20 @@
 import Foundation
 
 public struct Passport {
-    var uid: String
-    var pwd: String
+    public var uid: String
+    public var pwd: String
     
-    init(_ uid: String, _ pwd: String) {
+    public init(_ uid: String, _ pwd: String) {
         self.uid = uid.lowercased()
         self.pwd = pwd
     }
     
-    init(dict: [String: String]) {
+    public init(dict: [String: String]) {
         self.uid = (dict["uid"] ?? "").lowercased()
         self.pwd = dict["pwd"] ?? ""
     }
     
-    func toDic() -> [String: String] {
+    public func toDic() -> [String: String] {
         return ["uid": uid, "pwd": pwd]
     }
 }

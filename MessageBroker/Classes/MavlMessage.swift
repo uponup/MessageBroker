@@ -24,7 +24,7 @@ public struct MavlMessageConfiguration {
     var host: String = MBDomainConfig.awsHost1
     var port: UInt16 = MBDomainConfig.port
        
-    init(appid id: String, appkey key: String) {
+    public init(appid id: String, appkey key: String) {
         appid = id
         appkey = key
     }
@@ -103,8 +103,8 @@ extension MavlMessageStatusDelegate {
 }
 
 public class MavlMessage {
-    static let shared = MavlMessage()
-    var passport: Passport? {
+    public static let shared = MavlMessage()
+    public var passport: Passport? {
         return _passport
     }
     var appid: String {
@@ -112,7 +112,7 @@ public class MavlMessage {
         return config.appid
     }
     
-    var isLogin: Bool {
+    public var isLogin: Bool {
         guard let value = _isLogin else {
             return false
         }
@@ -132,7 +132,7 @@ public class MavlMessage {
     private var _localMsgId: UInt16 = 0
     private var _sendingMessages: [String: MavlTimer] = [:]
     
-    func initializeSDK(config: MavlMessageConfiguration) {
+    public func initializeSDK(config: MavlMessageConfiguration) {
         self.config = config
     }
     

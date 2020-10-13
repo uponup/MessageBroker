@@ -12,22 +12,22 @@ import Foundation
     接收到的信息数据模型
  */
 public struct Mesg {
-    var fromUid: String
-    var toUid: String
-    var groupId: String
-    var serverId: String
-    var text: String
-    var status: Int
-    var timestamp: TimeInterval
-    var localId: String?
+    public var fromUid: String
+    public var toUid: String
+    public var groupId: String
+    public var serverId: String
+    public var text: String
+    public var status: Int
+    public var timestamp: TimeInterval
+    public var localId: String?
     
-    var isGroup: Bool {
+    public var isGroup: Bool {
         fromUid == groupId
     }
     
 //    56_peter,56_peter,05aff857d249c2DS,1600935023224, 2,   1600935023,9090##
 //    Fromuid，Touid，   Gid，            Servermsgid，Status，Timestamp， Msg
-    init?(payload: String) {
+    public init?(payload: String) {
         let segments = payload.components(separatedBy: ",")
         guard segments.count > 6 else { return nil }
         
@@ -42,7 +42,7 @@ public struct Mesg {
         text = segments[6..<index].joined(separator: ",")
     }
     
-    init(fromUid: String, toUid: String, groupId: String, serverId: String, text: String, timestamp: TimeInterval, status: Int) {
+    public init(fromUid: String, toUid: String, groupId: String, serverId: String, text: String, timestamp: TimeInterval, status: Int) {
         self.fromUid = fromUid
         self.toUid = toUid
         self.groupId = groupId
@@ -56,7 +56,7 @@ public struct Mesg {
 // MARK: - Mesg数模转化
 extension Mesg {
     
-    func toDict() -> [String: Any] {
+    public func toDict() -> [String: Any] {
         return [
             "fromUid": fromUid,
             "toUid": toUid,
@@ -69,7 +69,7 @@ extension Mesg {
         ]
     }
     
-    init(dict: [String: Any]) {
+    public init(dict: [String: Any]) {
         self.fromUid = dict["fromUid"] as! String
         self.toUid = dict["toUid"] as! String
         self.groupId = dict["groupId"] as! String
