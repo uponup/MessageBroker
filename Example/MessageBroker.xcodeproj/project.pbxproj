@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		390B5F072535DFFF002B3CC4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F042535DFFF002B3CC4 /* README.md */; };
+		390B5F082535DFFF002B3CC4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F052535DFFF002B3CC4 /* LICENSE */; };
+		390B5F092535DFFF002B3CC4 /* MessageBroker.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */; };
 		39420D52251EC96C0009813A /* ContactsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D51251EC96C0009813A /* ContactsController.swift */; };
 		39420D54251ECA5B0009813A /* ContactModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D53251ECA5B0009813A /* ContactModel.swift */; };
 		39420D5625206AF80009813A /* MesgDao.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D5525206AF80009813A /* MesgDao.swift */; };
@@ -34,6 +37,9 @@
 /* Begin PBXFileReference section */
 		0F70690A3BDFAC6B1728D662 /* Pods-MessageBroker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessageBroker.release.xcconfig"; path = "Target Support Files/Pods-MessageBroker/Pods-MessageBroker.release.xcconfig"; sourceTree = "<group>"; };
 		1331F62E44CCB933C3F40B14 /* Pods_MessageBroker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MessageBroker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		390B5F042535DFFF002B3CC4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		390B5F052535DFFF002B3CC4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MessageBroker.podspec; path = ../MessageBroker.podspec; sourceTree = "<group>"; };
 		39420D51251EC96C0009813A /* ContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsController.swift; sourceTree = "<group>"; };
 		39420D53251ECA5B0009813A /* ContactModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactModel.swift; sourceTree = "<group>"; };
 		39420D5525206AF80009813A /* MesgDao.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MesgDao.swift; sourceTree = "<group>"; };
@@ -72,9 +78,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		390B5F032535DFCC002B3CC4 /* MetaData */ = {
+			isa = PBXGroup;
+			children = (
+				390B5F052535DFFF002B3CC4 /* LICENSE */,
+				390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */,
+				390B5F042535DFFF002B3CC4 /* README.md */,
+			);
+			name = MetaData;
+			sourceTree = "<group>";
+		};
 		397D43F925187ED1005CB2D3 = {
 			isa = PBXGroup;
 			children = (
+				390B5F032535DFCC002B3CC4 /* MetaData */,
 				397D440425187ED1005CB2D3 /* MessageBroker */,
 				397D440325187ED1005CB2D3 /* Products */,
 				7A65E77A19E20D9B585EC82E /* Pods */,
@@ -255,8 +272,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				397D441225187ED3005CB2D3 /* LaunchScreen.storyboard in Resources */,
+				390B5F092535DFFF002B3CC4 /* MessageBroker.podspec in Resources */,
 				397D440F25187ED3005CB2D3 /* Assets.xcassets in Resources */,
+				390B5F072535DFFF002B3CC4 /* README.md in Resources */,
 				397D440D25187ED1005CB2D3 /* Main.storyboard in Resources */,
+				390B5F082535DFFF002B3CC4 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
