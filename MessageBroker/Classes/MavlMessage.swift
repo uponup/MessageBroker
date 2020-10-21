@@ -11,7 +11,10 @@ import CocoaMQTT
 
 enum MBDomainConfig {
     static let awsLB = "msgapi.adpub.co"
-    static let awsHost1 = "54.205.75.48"  //im1.adpub.co
+    static let awsHost1 = "im1.adpub.co"  //54.205.75.48
+    static let awsHost2 = "im2.adpub.co"  //54.83.120.184
+    static let awsHost3 = "im3.adpub.co"  //54.144.161.196
+    
     static let localHost = "192.168.1.186"
     
     static let port: UInt16 = 9883
@@ -21,7 +24,7 @@ public struct MavlMessageConfiguration {
     
     var appid: String
     var appkey: String
-    var host: String = MBDomainConfig.awsHost1
+    var host: String = MBDomainConfig.awsLB
     var port: UInt16 = MBDomainConfig.port
        
     public init(appid id: String, appkey key: String) {
@@ -155,12 +158,12 @@ public class MavlMessage {
         guard let mqtt = mqtt else { return }
         mqtt.username = mqttUserName
         mqtt.password = mqttPassword
-        mqtt.keepAlive = 60
+        mqtt.keepAlive = 6000
         mqtt.delegate = self
         mqtt.enableSSL = true
-        mqtt.autoReconnect = true
         mqtt.allowUntrustCACertificate = true
     }
+    
     
     fileprivate func nextMessageLocalID() -> UInt16 {
         if _localMsgId == UInt16.max {

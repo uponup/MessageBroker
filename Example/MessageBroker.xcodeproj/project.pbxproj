@@ -39,7 +39,7 @@
 		1331F62E44CCB933C3F40B14 /* Pods_MessageBroker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MessageBroker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		390B5F042535DFFF002B3CC4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		390B5F052535DFFF002B3CC4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
-		390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MessageBroker.podspec; path = ../MessageBroker.podspec; sourceTree = "<group>"; };
+		390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MessageBroker.podspec; path = ../MessageBroker.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		39420D51251EC96C0009813A /* ContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsController.swift; sourceTree = "<group>"; };
 		39420D53251ECA5B0009813A /* ContactModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactModel.swift; sourceTree = "<group>"; };
 		39420D5525206AF80009813A /* MesgDao.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MesgDao.swift; sourceTree = "<group>"; };
