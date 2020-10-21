@@ -292,13 +292,13 @@ extension MavlMessage: CocoaMQTTDelegate {
     public func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
         TRACE("ack: \(ack)")
         
-    if ack == .accept {
-        delegateLogin?.loginSuccess()
+        if ack == .accept {
+            delegateLogin?.loginSuccess()
 
-        _isLogin = true
-//        成功建立连接，上传token
-        uploadToken()
-    }
+            _isLogin = true
+    //        成功建立连接，上传token
+            uploadToken()
+        }
     }
     
     public func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
