@@ -274,6 +274,20 @@ extension MavlMessage: MavlMessageClientConfig {
 }
 
 extension MavlMessage: CocoaMQTTDelegate {
+    public func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
+       TRACE("trust: \(trust)")
+       /// Validate the server certificate
+       ///
+       /// Some custom validation...
+       ///
+       /// if validatePassed {
+       ///     completionHandler(true)
+       /// } else {
+       ///     completionHandler(false)
+       /// }
+       completionHandler(true)
+    }
+    
     public func mqttDidPing(_ mqtt: CocoaMQTT) {
         TRACE()
     }
