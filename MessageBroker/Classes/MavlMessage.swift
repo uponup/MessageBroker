@@ -195,7 +195,7 @@ extension MavlMessage: MavlMessageClient {
     }
     
     public func createAGroup(withUsers users: [String]) {
-        let payload = users.map{ "\(appid)_\($0.lowercased())" }.joined(separator: ",")
+        let payload = users.map{ "\($0.lowercased())" }.joined(separator: ",")
         let operation = Operation.createGroup
         _send(msg: payload, operation: operation)
     }
@@ -222,7 +222,7 @@ extension MavlMessage: MavlMessageClient {
         if isToGroup {
             operation = .oneToMany(localId ,toId)
         }else {
-            let uid = "\(appid)_\(toId.lowercased())"
+            let uid = toId.lowercased()
             operation = .oneToOne(localId, uid)
         }
         
@@ -235,15 +235,23 @@ extension MavlMessage: MavlMessageClient {
     }
     
     private func _send(msg: String, operation: Operation) {
-        
-        let message = CocoaMQTTMessage(topic: operation.topic, string: msg, qos: .qos0)
-        mqtt?.publish(message)
-        
         guard operation.localId != "0",
             let topicModel = SendingTopicModel(operation.topic),
             let passport = passport else { return }
+        
+        // 对发送的消息加密处理
+        guard let cipherMsg = EncryptUtils.encrypt(msg) else {
+            var msgModel = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: msg, timestamp: Date().timeIntervalSince1970, status: 2)
+            msgModel.localId = operation.localId
+            delegateMsg?.mavl(didSend: msgModel, error: MavlMessageError.encryptFailed)
+            return
+        }
+        
+        let message = CocoaMQTTMessage(topic: operation.topic, string: cipherMsg, qos: .qos0)
+        mqtt?.publish(message)
+        
         let sendingTimer = MavlTimer.after(3) { [unowned self] in
-            var msg = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: message.string.value, timestamp: Date().timeIntervalSince1970, status: 2)
+            var msg = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: cipherMsg, timestamp: Date().timeIntervalSince1970, status: 2)
             msg.localId = operation.localId
             self.delegateMsg?.mavl(didSend: msg, error: MavlMessageError.sendFailed)
         }
@@ -253,7 +261,7 @@ extension MavlMessage: MavlMessageClient {
 
 extension MavlMessage: MavlMessageClientStatus {
     public func checkStatus(withUserName username: String) {
-        let topic = "\(appid)/userstatus/\(appid)_\(username)/online"
+        let topic = "\(appid)/userstatus/\(username)/online"
         
         mqtt?.subscribe(topic)
     }
@@ -321,7 +329,9 @@ extension MavlMessage: CocoaMQTTDelegate {
         guard let passport = passport else { return }
         
         if topicModel.operation == 1 || topicModel.operation == 2 {
-            var msg = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: message.string.value, timestamp: Date().timeIntervalSince1970, status: 2)
+            //解密
+            guard let originText = EncryptUtils.decrypt(message.string.value) else { return }
+            var msg = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: originText, timestamp: Date().timeIntervalSince1970, status: 2)
             msg.localId = topicModel.localId
             delegateMsg?.mavl(willSend: msg)
         }
@@ -332,17 +342,16 @@ extension MavlMessage: CocoaMQTTDelegate {
     }
     
     public func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
-        TRACE("message receive: \(message.string.value), id: \(id)")
+        TRACE("message receive: \(message.string.value), id: \(id), topic: \(message.topic)")
         
         let topic = message.topic
         
         if let topicModel = StatusTopicModel(topic) {
-            delegateGroup?.friendStatus(message.string ?? "offline", friendId: topicModel.friendId)
+            delegateGroup?.friendStatus(message.string.value, friendId: topicModel.friendId)
         }else if let topicModel = TopicModel(message.topic) {
             if topicModel.operation == 0 {
                 // create a group
                 guard let passport = passport else { return }
-                
                 let isLauncher = passport.uid == topicModel.from
                 delegateGroup?.createGroupSuccess(groupId: topicModel.to, isLauncher: isLauncher)
             }else if topicModel.operation == 201 {
@@ -350,12 +359,15 @@ extension MavlMessage: CocoaMQTTDelegate {
             }else if topicModel.operation == 202 {
                 delegateGroup?.quitGroup(gid: topicModel.to, error: nil)
             }else if topicModel.operation == 401 {
-                let msgs = message.string.value.components(separatedBy: "##").compactMap{
-                    Mesg(payload: $0)
+                let msgs = message.string.value.components(separatedBy: "##").compactMap { element -> Mesg? in
+                    guard let originText = EncryptUtils.decrypt(element) else { return Mesg(payload: element) }
+                    return Mesg(payload: originText)
                 }
                 delegateMsg?.mavl(didRevceived: msgs, isLoadMore: true)
             }else {
-                var msg = Mesg(fromUid: topicModel.from, toUid: topicModel.to, groupId: topicModel.gid, serverId: topicModel.serverId, text: message.string.value, timestamp: Date().timeIntervalSince1970, status: 2)
+                // 接收的 virtul 群组信息不需要单独处理
+                guard let originText = EncryptUtils.decrypt(message.string.value) else { return }
+                var msg = Mesg(fromUid: topicModel.from, toUid: topicModel.to, groupId: topicModel.gid, serverId: topicModel.serverId, text: originText, timestamp: Date().timeIntervalSince1970, status: 2)
                 msg.localId = topicModel.localId
                 delegateMsg?.mavl(didRevceived: [msg], isLoadMore: false)
                 
@@ -398,11 +410,14 @@ fileprivate extension MavlMessage {
 
 public enum MavlMessageError: Error, CustomStringConvertible {
     case sendFailed
+    case encryptFailed
     
     public var description: String {
         switch self {
         case .sendFailed:
             return "send failed"
+        case .encryptFailed:
+            return "encrypt faield"
         }
     }
 }

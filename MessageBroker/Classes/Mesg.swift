@@ -31,9 +31,8 @@ public struct Mesg {
         let segments = payload.components(separatedBy: ",")
         guard segments.count > 6 else { return nil }
         
-        let appid = MavlMessage.shared.appid
-        fromUid = segments[0].replacingOccurrences(of: "\(appid)_", with: "")
-        toUid = segments[1].replacingOccurrences(of: "\(appid)_", with: "")
+        fromUid = segments[0]
+        toUid = segments[1]
         groupId = segments[2]
         serverId = segments[3]
         status = Int(segments[4]) ?? 0

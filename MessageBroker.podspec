@@ -40,6 +40,7 @@ TODO: Add long description of the pod here.
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
   s.dependency 'CocoaMQTT', '~> 1.2.5'
+  s.dependency 'CryptoSwift', '~> 1.3.2'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   
 end

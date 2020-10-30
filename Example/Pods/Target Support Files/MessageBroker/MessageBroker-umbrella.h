@@ -10,6 +10,7 @@
 #endif
 #endif
 
+#import "NSString+MD5.h"
 
 FOUNDATION_EXPORT double MessageBrokerVersionNumber;
 FOUNDATION_EXPORT const unsigned char MessageBrokerVersionString[];

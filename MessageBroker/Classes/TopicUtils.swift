@@ -11,9 +11,9 @@ import Foundation
 //收到 appid/0/localid/togid/serverid/fromid
 //    appid/1/localid/touid/serverid/fromuid
 //    appid/2/localid/togid/serverid/fromuid
-
 /**
     接收的Topic模型
+    56/2/1/05b048e53e813dMJ/1603684050822/peter
  */
 struct TopicModel {
     var appid: String
@@ -37,9 +37,9 @@ struct TopicModel {
         appid = segments[0]
         operation = op
         localId = segments[2]
-        to = segments[3].replacingOccurrences(of: "\(appid)_", with: "")
+        to = segments[3]
         serverId = segments[4]
-        from = segments[5].replacingOccurrences(of: "\(appid)_", with: "")
+        from = segments[5]
     }
 }
 
@@ -50,6 +50,7 @@ struct TopicModel {
 
 /**
     发送的Topic模型
+    56/2/2/05b048e53e813dMJ
  */
 
 struct SendingTopicModel {
@@ -72,7 +73,7 @@ struct SendingTopicModel {
         appid = segments[0]
         operation = op
         localId = segments[2]
-        to = segments[3].replacingOccurrences(of: "\(appid)_", with: "")
+        to = segments[3]
     }
 }
 
@@ -96,54 +97,9 @@ struct StatusTopicModel {
         
         guard status == "userstatus" && type == "online" else { return nil }
         self.appid = segments[0]
-        self.friendId = segments[2].replacingOccurrences(of: "\(appid)_", with: "")
+        self.friendId = segments[2]
     }
 }
-
-
-extension String {
-    subscript (range: CountableRange<Int>) -> String {
-        get {
-            if self.count < range.upperBound { return "" }
-            let startIndex = self.index(self.startIndex, offsetBy: range.lowerBound)
-            let endIndex = self.index(self.startIndex, offsetBy: range.upperBound)
-            return self[startIndex..<endIndex].toString()
-        }
-        set {
-            if self.count < range.upperBound { return }
-            let startIndex = self.index(self.startIndex, offsetBy: range.lowerBound)
-            let endIndex = self.index(self.startIndex, offsetBy: range.upperBound)
-            self.replaceSubrange(startIndex..<endIndex, with: newValue)
-        }
-    }
-    
-    subscript (range: CountableClosedRange<Int>) -> String {
-        get {
-            return self[range.lowerBound..<(range.upperBound + 1)]
-        }
-        set {
-            self[range.lowerBound..<(range.upperBound + 1)] = newValue
-        }
-    }
-    
-    subscript (index: Int) -> String {
-        get {
-            guard index < count else { return "" }
-            let str = self[self.index(startIndex, offsetBy: index)]
-            return String(str)
-        }
-        set {
-            self[index...index] = newValue
-        }
-    }
-}
-
-extension Substring {
-    public func toString() -> String {
-        return String(self)
-    }
-}
-
 
 // MARK: - Operation
 public enum FetchMessagesType: Int {
