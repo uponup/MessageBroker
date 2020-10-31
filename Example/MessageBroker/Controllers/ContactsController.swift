@@ -180,20 +180,6 @@ extension ContactsController: MavlMessageGroupDelegate {
         UserCenter.center.save(contactsList: contacts.map{ $0.uid })
     }
     
-    func friendStatus(_ status: String, friendId: String) {
-        contacts = contacts.map { m in
-            var model = m
-            if model.uid.lowercased() == friendId {
-                model.status = status
-            }
-            return model
-        }
-        tableView.reloadData()
-        
-        NotificationCenter.default.post(name: .friendStatusDidUpdated, object: ["status": status, "uid": friendId])
-    }
-    
-    
     private func _addGroup(_ gid: String) {
         let model = ContactModel(uid: gid, isGroup: true)
         groups.append(model)

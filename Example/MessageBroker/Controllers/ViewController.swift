@@ -67,6 +67,7 @@ class ViewController: UIViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(didSelectedContacts(noti:)), name: .selectedContacts, object: nil)
         
+        StatusQueue.shared.delegate = self
         launchAnimation()
     }
     
@@ -163,6 +164,15 @@ extension ViewController: MavlMessageStatusDelegate {
     }
 }
 
+extension ViewController: StatusQueueDelegate {
+    func statusQueue(didOnline user: String) {
+        print("\(user) 上线了！！！")
+    }
+    
+    func statusQueue(didOfflineUsers: [String]) {
+        print("这些人下线了:\(didOfflineUsers)")
+    }
+}
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

@@ -36,7 +36,7 @@ struct TopicModel {
         
         appid = segments[0]
         operation = op
-        localId = segments[2]
+        localId = appid == MavlMessage.shared.appid ? segments[2] : ""
         to = segments[3]
         serverId = segments[4]
         from = segments[5]

@@ -135,7 +135,6 @@ class ChatViewController: UIViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(receivedMessage(notification:)), name: .didReceiveMesg, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardChanged(notification:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(receivedStatusChanged(notification:)), name: .friendStatusDidUpdated, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receivedWillSendMessage(notification:)), name: .willSendMesg, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receiveDidSendMessageFailed(notification:)), name: .didSendMesgFailed, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receiveDidSendMessage(notification:)), name: .didSendMesg, object: nil)
@@ -177,18 +176,6 @@ class ChatViewController: UIViewController {
             inputViewBottomConstraint.constant = 0
         }
         view.layoutIfNeeded()
-    }
-    
-    @objc func receivedStatusChanged(notification: NSNotification) {
-        guard let session = session else { return }
-        guard let obj = notification.object as? [String: String],
-            let status = obj["status"],
-            let uid = obj["uid"]
-            else { return }
-        
-        if session.gid.lowercased() == uid {
-            self.status = status
-        }
     }
     
     @objc func receivedWillSendMessage(notification: NSNotification) {

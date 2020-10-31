@@ -12,6 +12,7 @@ import Foundation
 enum GlobalConfig {
     static let xnAppId = "56"
     static let xnAppKey = "c90265a583aaea81"
+    static let xnMsgKey = "Emoji_JingNCK567"
 }
 
 extension Notification.Name {
@@ -22,7 +23,6 @@ extension Notification.Name {
     static let willSendMesg = Notification.Name("willSendMesg")
     static let didSendMesg = Notification.Name("didSendMesg")
     static let didSendMesgFailed = Notification.Name("didSendMesgFailed")
-    static let friendStatusDidUpdated = Notification.Name("friendStatusDidUpdated")
     static let quitGroupSuccess = Notification.Name("quitGroupSuccess")
 }
 

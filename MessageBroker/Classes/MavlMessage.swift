@@ -9,30 +9,6 @@
 import Foundation
 import CocoaMQTT
 
-enum MBDomainConfig {
-    static let awsLB = "msgapi.adpub.co"
-    static let awsHost1 = "im1.adpub.co"  //54.205.75.48
-    static let awsHost2 = "im2.adpub.co"  //54.83.120.184
-    static let awsHost3 = "im3.adpub.co"  //54.144.161.196
-    
-    static let localHost = "192.168.1.186"
-    
-    static let port: UInt16 = 9883
-}
-
-public struct MavlMessageConfiguration {
-    
-    var appid: String
-    var appkey: String
-    var host: String = MBDomainConfig.awsLB
-    var port: UInt16 = MBDomainConfig.port
-       
-    public init(appid id: String, appkey key: String) {
-        appid = id
-        appkey = key
-    }
-}
-
 /**
     Message相关功能的协议
     TODO: 将方法归类成required和optional
@@ -84,9 +60,7 @@ public protocol MavlMessageGroupDelegate: class {
     func joinedGroup(groupId gid: String, someone: String)
     func quitGroup(gid: String, error: Error?)
     
-    
     func addFriendSuccess(friendName name: String)
-    func friendStatus(_ status: String, friendId: String)
 }
 
 /**
@@ -110,16 +84,22 @@ public class MavlMessage {
     public var passport: Passport? {
         return _passport
     }
-    var appid: String {
-        guard let config = config else { return "" }
-        return config.appid
-    }
     
     public var isLogin: Bool {
         guard let value = _isLogin else {
             return false
         }
         return value
+    }
+    
+    var appid: String {
+        guard let config = config else { return "" }
+        return config.appid
+    }
+    
+    var msgKey: String {
+        guard let config = config else { return "" }
+        return config.msgKey
     }
     
     
@@ -347,7 +327,8 @@ extension MavlMessage: CocoaMQTTDelegate {
         let topic = message.topic
         
         if let topicModel = StatusTopicModel(topic) {
-            delegateGroup?.friendStatus(message.string.value, friendId: topicModel.friendId)
+            // 用户状态交付StatusQueue队列维护
+            StatusQueue.shared.updateUserStatus(imAccount: topicModel.friendId, status: message.string.value)
         }else if let topicModel = TopicModel(message.topic) {
             if topicModel.operation == 0 {
                 // create a group
