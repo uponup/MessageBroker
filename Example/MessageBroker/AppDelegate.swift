@@ -13,6 +13,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
+        ContactsDao.createTable()
+        MessageDao.createTable()
+        
         let config = MavlMessageConfiguration(appid: GlobalConfig.xnAppId, appkey: GlobalConfig.xnAppKey, msgKey: GlobalConfig.xnMsgKey)
         MavlMessage.shared.initializeSDK(config: config)
         

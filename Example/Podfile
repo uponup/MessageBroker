@@ -8,7 +8,9 @@ target 'MessageBroker' do
   use_frameworks!
 
   pod 'MessageBroker', :path => '../',  :modular_headers => false
+  
   pod "ESPullToRefresh"
   pod 'NotificationBannerSwift', '~> 3.0.0'
+  pod 'FMDB', '~> 2.7.5'
   
 end

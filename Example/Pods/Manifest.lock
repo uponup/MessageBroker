@@ -3,6 +3,9 @@ PODS:
   - CocoaMQTT (1.2.5):
     - CocoaAsyncSocket (~> 7.6.3)
   - ESPullToRefresh (2.9.3)
+  - FMDB (2.7.5):
+    - FMDB/standard (= 2.7.5)
+  - FMDB/standard (2.7.5)
   - MarqueeLabel (4.0.2)
   - MessageBroker (0.1.2):
     - CocoaMQTT (~> 1.2.5)
@@ -13,6 +16,7 @@ PODS:
 
 DEPENDENCIES:
   - ESPullToRefresh
+  - FMDB (~> 2.7.5)
   - MessageBroker (from `../`)
   - NotificationBannerSwift (~> 3.0.0)
 
@@ -21,6 +25,7 @@ SPEC REPOS:
     - CocoaAsyncSocket
     - CocoaMQTT
     - ESPullToRefresh
+    - FMDB
   trunk:
     - MarqueeLabel
     - NotificationBannerSwift
@@ -34,11 +39,12 @@ SPEC CHECKSUMS:
   CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
   CocoaMQTT: a61490ed3b328011c5d75169a77781983e2bb221
   ESPullToRefresh: 0d68daa602b343c81753a1b95e09fd0bfcddfd40
+  FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   MarqueeLabel: f762aa681ae201f66c1d511858b171f75d83013a
   MessageBroker: dac608329887a3e0e3b2c16914d44cba87e4b5c7
   NotificationBannerSwift: 713e20f21b6105f4a36a00e5d9fa414a930d3d8e
   SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
 
-PODFILE CHECKSUM: bf69c1389ae42e8fd1d43fbeb4f457003a43ad8c
+PODFILE CHECKSUM: 5fd8233fe0947333a24bff38d1359713bb03fcba
 
 COCOAPODS: 1.10.0
