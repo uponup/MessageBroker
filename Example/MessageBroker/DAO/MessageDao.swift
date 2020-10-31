@@ -21,7 +21,7 @@ struct MessageDao {
     static let db = SQLiteManager.sharedManager().db
 
     static func createTable() {
-        let sqlMesg = "CREATE TABLE IF NOT EXISTS t_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, fromUid VARCHAR(32), toUid VARCHAR(32), gid VARCHAR(32), text TEXT, status SMALLINT DEFAULT 0, localId VARCHAR(32) DEFAULT 0, timestamp DATETIME);"
+        let sqlMesg = "CREATE TABLE IF NOT EXISTS t_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, fromUid VARCHAR(32), toUid VARCHAR(32), gid VARCHAR(32), text TEXT, status SMALLINT DEFAULT 0, localId VARCHAR(32) DEFAULT 0, serverId VARCHAR(32) DEFAULT 0, timestamp DATETIME);"
         
         guard db.open() else { return }
 
@@ -45,23 +45,56 @@ struct MessageDao {
     }
     
     /**
-     查找所有信息
-     @return [(name, imAccount)]
+     查找最近一条信息
+     @return Mesg
     */
     static func fetchRecentlyMesg(from: String, to: String) -> Mesg? {
+        guard db.open() else { return nil }
+
+        let sql = "SELECT *FROM t_msgs WHERE fromUid = ? AND toUid = ? ORDER BY timestamp DESC LIMIT 1"
+        guard let res = db.executeQuery(sql, withArgumentsIn: [from, to]) else { return nil }
+        
+//        fromUid, toUid, gid, text, status, localId, serverId, timestamp
+        while res.next() {
+            let gid = res.string(forColumn: "gid")
+            let text = res.string(forColumn: "text")
+            let status = res.int(forColumn: "status")
+            let localId = res.string(forColumn: "localId")
+            let serverId = res.string(forColumn: "serverId")
+            let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
+            
+            var msg = Mesg(fromUid: from, toUid: to, groupId: gid.value, serverId: serverId.value, text: text.value, timestamp: timestamp, status: Int(status))
+            msg.localId = localId
+            return msg
+        }
+        
         return nil
     }
     
+    /**
+     查找所有信息
+     @return [Mesg]
+    */
     static func fetchAllMesgs(from: String, to: String) -> [Mesg] {
-        let sql = "SELECT * FROM t_msgs;"
         guard db.open() else { return [] }
-        
+
+        let sql = "SELECT * FROM t_msgs;"
         guard let res = try? db.executeQuery(sql, values: []) else { return [] }
         
         var messages: [Mesg] = []
         while res.next() {
+            let gid = res.string(forColumn: "gid")
+            let text = res.string(forColumn: "text")
+            let status = res.int(forColumn: "status")
+            let localId = res.string(forColumn: "localId")
+            let serverId = res.string(forColumn: "serverId")
+            let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
             
+            var msg = Mesg(fromUid: from, toUid: to, groupId: gid.value, serverId: serverId.value, text: text.value, timestamp: timestamp, status: Int(status))
+            msg.localId = localId
+            messages.append(msg)
         }
+
         return messages
     }
 }
