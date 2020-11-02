@@ -17,7 +17,7 @@ struct GroupsDao {
     static let db = SQLiteManager.sharedManager().db
 
     static func createTable() {
-        let sqlGroups = "CREATE TABLE IF NOT EXISTS t_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, owner VARCHAR(32), title VARCHAR(32), gid VARCHAR(32));"
+        let sqlGroups = "CREATE TABLE IF NOT EXISTS t_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, owner VARCHAR(32), title VARCHAR(32), gid VARCHAR(32) UNIQUE);"
 
         guard db.open() else { return }
         

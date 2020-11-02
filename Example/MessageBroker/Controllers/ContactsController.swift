@@ -277,32 +277,48 @@ extension ContactsController {
         return 1.0
     }
     
-    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let cellModel = self.dataArr[indexPath.section][indexPath.row]
+            
+        var actionTitle: String = ""
+        var execute: ()->Void = {}
         
-        guard let gid = cellModel.groupId  else { return UISwipeActionsConfiguration(actions: []) }
+        if let gid = cellModel.groupId {
+            actionTitle = "Quit"
+            execute = {
+                MavlMessage.shared.quitGroup(withGroupId: gid)
+            }
+        }else if let circleId = cellModel.circleId {
+            actionTitle = "Quit"
+            execute = {  [unowned self] in
+                self.circles = self.circles.filter {
+                    guard let cid = $0.circleId else { return false}
+                    return cid != circleId
+                }
+                tableView.reloadData()
+            }
+        }else {
+            return UISwipeActionsConfiguration(actions: [])
+        }
         
-        let actionDelete = UIContextualAction(style: .destructive, title: "Quit") { (action, view, block) in
-            MavlMessage.shared.quitGroup(withGroupId: gid)
+        let actionDelete = UIContextualAction(style: .destructive, title: actionTitle) { (action, view, block) in
+            execute()
         }
         
         return UISwipeActionsConfiguration(actions: [actionDelete])
     }
     
-    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let ContactCellModel = self.dataArr[indexPath.section][indexPath.row]
-                
-        let actionChat = UIContextualAction(style: .normal, title: "Chat") { [unowned self] (action, view, block) in
-            guard let chatVc = self.storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
-            chatVc.hidesBottomBarWhenPushed = true
-            chatVc.session = ChatSession(gid: "", sessionName: "", isGroup: true)
-            self.navigationController?.pushViewController(chatVc, animated: true )
-        }
-        return UISwipeActionsConfiguration(actions: [actionChat])
-    }
-    
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cellModel = self.dataArr[indexPath.section][indexPath.row]
+                
+        guard let chatVc = self.storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
+        chatVc.hidesBottomBarWhenPushed = true
+        chatVc.session = ChatSession(gid: "", sessionName: "", isGroup: true)
+        self.navigationController?.pushViewController(chatVc, animated: true )
     }
 }
 
