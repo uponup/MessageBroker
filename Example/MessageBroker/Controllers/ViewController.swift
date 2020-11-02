@@ -67,7 +67,7 @@ class ViewController: UIViewController {
         tableView.tableFooterView = UIView()
         view.bringSubviewToFront(loginView)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(didSelectedContacts(noti:)), name: .selectedContacts, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didSelectedContacts(noti:)), name: .selectedContactsForGroups, object: nil)
         
         StatusQueue.shared.delegate = self
         launchAnimation()

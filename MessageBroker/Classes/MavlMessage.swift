@@ -215,27 +215,42 @@ extension MavlMessage: MavlMessageClient {
     }
     
     private func _send(msg: String, operation: Operation) {
-        guard operation.localId != "0",
-            let topicModel = SendingTopicModel(operation.topic),
-            let passport = passport else { return }
-        
-        // 对发送的消息加密处理
-        guard let cipherMsg = EncryptUtils.encrypt(msg) else {
-            var msgModel = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: msg, timestamp: Date().timeIntervalSince1970, status: 2)
-            msgModel.localId = operation.localId
-            delegateMsg?.mavl(didSend: msgModel, error: MavlMessageError.encryptFailed)
+        guard let tuple = getMqttMessage(msg: msg, operation: operation) else {
             return
         }
+        mqtt?.publish(tuple.0)
         
-        let message = CocoaMQTTMessage(topic: operation.topic, string: cipherMsg, qos: .qos0)
-        mqtt?.publish(message)
-        
+        // 超时检测
         let sendingTimer = MavlTimer.after(3) { [unowned self] in
-            var msg = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: cipherMsg, timestamp: Date().timeIntervalSince1970, status: 2)
-            msg.localId = operation.localId
-            self.delegateMsg?.mavl(didSend: msg, error: MavlMessageError.sendFailed)
+            self.delegateMsg?.mavl(didSend: tuple.1, error: MavlMessageError.sendFailed)
         }
         _sendingMessages[operation.localId] = sendingTimer
+    }
+    
+    private func getMqttMessage(msg: String, operation: Operation) -> (CocoaMQTTMessage, Mesg)? {
+        guard let topicModel = SendingTopicModel(operation.topic),
+            let passport = passport
+            else { return nil }
+        
+        var mqttMsg: CocoaMQTTMessage
+        var msgModel: Mesg
+        
+        if operation.localId != "0" {
+            // 对发送的消息加密处理
+            guard let cipherMsg = EncryptUtils.encrypt(msg) else {
+                msgModel = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: msg, timestamp: Date().timeIntervalSince1970, status: 2)
+                msgModel.localId = operation.localId
+                delegateMsg?.mavl(didSend: msgModel, error: MavlMessageError.encryptFailed)
+                return nil
+            }
+            msgModel = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: cipherMsg, timestamp: Date().timeIntervalSince1970, status: 2)
+            mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: cipherMsg, qos: .qos0)
+        }else {
+            msgModel = Mesg(fromUid: passport.uid, toUid: topicModel.to, groupId: topicModel.gid, serverId: "", text: msg, timestamp: Date().timeIntervalSince1970, status: 2)
+            msgModel.localId = operation.localId
+            mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: msg, qos: .qos0)
+        }
+        return (mqttMsg, msgModel)
     }
 }
 

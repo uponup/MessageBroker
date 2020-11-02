@@ -33,14 +33,18 @@ extension GroupsDao {
     /**
      创建群组
      */
-    static func createGroup(gid: String, title: String = "") {
+    static func createGroup(gid: String, owner: String) -> Group? {
         let sql = "INSERT INTO t_groups (owner, gid, title) VALUES (?, ?, ?);"
-        guard db.open() else { return }
+        guard db.open() else { return nil }
         
-        if db.executeUpdate(sql, withArgumentsIn: [gid, title]) {
-            print("数据插入成功 t_group: \(title), \(gid)")
+        let group = Group(name: "新群组-\(gid[0..<6])", groupId: gid)
+        
+        if db.executeUpdate(sql, withArgumentsIn: [group.groupId, group.name, owner]) {
+            print("数据插入成功 t_group: \(group.name), \(gid)")
+            return group
         }else {
-            print("数据插入失败 t_group: \(title), \(gid)")
+            print("数据插入失败 t_group: \(group.name), \(gid)")
+            return nil
         }
     }
     

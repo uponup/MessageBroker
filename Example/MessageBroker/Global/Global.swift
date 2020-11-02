@@ -18,7 +18,8 @@ enum GlobalConfig {
 extension Notification.Name {
     static let loginSuccess = Notification.Name("loginSuccess")
     static let logoutSuccess = Notification.Name("logoutSuccess")
-    static let selectedContacts = Notification.Name("selectedContacts")
+    static let selectedContactsForGroups = Notification.Name("selectedContactsForGroups")
+    static let selectedContactsForCircles = Notification.Name("selectedContactsForCircles")
     static let didReceiveMesg = Notification.Name(rawValue: "didReceiveMesg")
     static let willSendMesg = Notification.Name("willSendMesg")
     static let didSendMesg = Notification.Name("didSendMesg")

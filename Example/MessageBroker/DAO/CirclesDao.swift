@@ -35,14 +35,19 @@ extension CirclesDao {
     /**
      加入圈子
      */
-    static func joinCircles(vmucId: String = UUID().uuidString, users: [String], owner: String) {
-        guard db.open() else { return }
+    static func joinCircles(vmucId: String = UUID().uuidString, users: [String], owner: String) -> Circle? {
+        guard db.open() else { return nil }
         
         let sql = "INSERT INTO t_circles VALUES (?, ?, ?, ?);"
-        if db.executeUpdate(sql, withArgumentsIn: [vmucId, users.joined(separator: "_"), "圈子\(vmucId[0..<6])", owner]) {
+        
+        let circle = Circle(name: "新圈子-\(vmucId[0..<6])", vmucId: vmucId, users: users.joined(separator: "_"))
+        
+        if db.executeUpdate(sql, withArgumentsIn: [circle.vmucId, circle.users, circle.name, owner]) {
             print("加入圈子成功：\(vmucId)")
+            return circle
         }else {
             print("加入圈子失败：\(vmucId)")
+            return nil
         }
     }
     

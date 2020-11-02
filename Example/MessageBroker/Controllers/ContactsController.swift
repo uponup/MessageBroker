@@ -14,7 +14,7 @@ class ContactsController: UITableViewController {
     @IBOutlet weak var itemAdd: UIBarButtonItem!
     
     var dataArr: [[ContactCellModel]] {
-        [groups, contacts].filter{ $0.count > 0 }
+        [circles, groups, contacts].filter{ $0.count > 0 }
     }
     
     private var _circles: [ContactCellModel]?
@@ -77,6 +77,7 @@ class ContactsController: UITableViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(didLoginSuccess), name: .loginSuccess, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(didLogoutSuccess), name: .logoutSuccess, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didSelectedFriends(noti:)), name: .selectedContactsForCircles, object: nil)
     }
     
     // MARK: BarItem Action
@@ -87,16 +88,25 @@ class ContactsController: UITableViewController {
             self.showTextFieldAlert()
         }
         alert.addAction(actionAddFriend)
+        
+        let actionJoinGroup = UIAlertAction(title: "Join a group chat", style: .default) { [unowned self] _ in
+            self.showTextFieldAlert(isAddFriend: false)
+        }
+        alert.addAction(actionJoinGroup)
+        
         let actionCreateGroup = UIAlertAction(title: "Create a group chat", style: .default) { _ in
             guard let friendListVc = self.storyboard?.instantiateViewController(identifier: "FriendListController") as? FriendListController else { return }
             
             self.present(friendListVc, animated: true, completion: nil)
         }
         alert.addAction(actionCreateGroup)
-        let actionJoinGroup = UIAlertAction(title: "Join a group chat", style: .default) { [unowned self] _ in
-            self.showTextFieldAlert(isAddFriend: false)
+        
+        let actionCreateCircle = UIAlertAction(title: "Create a circle chat", style: .default) { _ in
+            guard let friendListVc = self.storyboard?.instantiateViewController(identifier: "FriendListController") as? FriendListController else { return }
+            friendListVc.type = .forCircle
+            self.present(friendListVc, animated: true, completion: nil)
         }
-        alert.addAction(actionJoinGroup)
+        alert.addAction(actionCreateCircle)
         
         let actionCancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addAction(actionCancel)
@@ -114,6 +124,13 @@ class ContactsController: UITableViewController {
         
         let ok = UIAlertAction(title: "OK", style: .cancel) { [unowned self] _ in
             guard self.addGid.count > 0 else { return }
+            
+            let isExist = self.contacts.compactMap{ $0.imAccount }.contains(self.addGid.lowercased())
+            guard !isExist else {
+                self.showHudFailed(title: "Tips", msg: "Already exist this \(type ? "friend" : "group")")
+                return
+            }
+            
             if type {
                 let friendId = self.addGid
                 MavlMessage.shared.addFriend(withUserName: friendId)
@@ -141,6 +158,20 @@ class ContactsController: UITableViewController {
     
     @objc func didLogoutSuccess() {
         isLogin = false
+    }
+    
+    @objc func didSelectedFriends(noti: Notification) {
+        guard let object = noti.object as? [String: [String]], let contacts = object["contacts"] else { return }
+        
+        guard let passport = MavlMessage.shared.passport else { return }
+        guard let c = CirclesDao.joinCircles(users: contacts, owner: passport.uid) else {
+            showHudFailed(title: "Failed:", msg: "Circle create failed!")
+            return
+        }
+        showHudSuccess(title: "Congratulations!", msg: "You have created a circle!")
+
+        circles.append(ContactCellModel.circle(c))
+        tableView.reloadData()
     }
 }
 
@@ -187,14 +218,12 @@ extension ContactsController: MavlMessageGroupDelegate {
     }
     
     private func _addGroup(_ gid: String) {
-        let groupName = "新群组-\(gid[0..<6])"
-        let g = Group(name: groupName, groupId: gid)
+        guard let passport = MavlMessage.shared.passport else { return }
+        guard let group = GroupsDao.createGroup(gid: gid, owner: passport.uid) else { return  }
         
-        let model = ContactCellModel.group(g)
+        let model = ContactCellModel.group(group)
         groups.append(model)
         tableView.reloadData()
-        
-        GroupsDao.createGroup(gid: gid, title: groupName)
     }
 }
 

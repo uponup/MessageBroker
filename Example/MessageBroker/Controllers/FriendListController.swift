@@ -8,19 +8,25 @@
 
 import UIKit
 
+enum MultipleSelectedType {
+    case forGroup
+    case forCircle
+}
+
 class FriendListController: UIViewController {
     
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var btnConfirm: UIButton!
     
-    // 默认的几个好友
-    lazy var contacts: [ContactCellModel] = {
-        UserCenter.center.fetchContactsList().map{ ContactCellModel.contact($0) }
-    }()
+    var type: MultipleSelectedType = .forGroup
     
     var btnConfirmEnable: Bool {
         getSelectedContacts().count > 0
     }
+    
+    lazy var contacts: [ContactCellModel] = {
+        UserCenter.center.fetchContactsList().map{ ContactCellModel.contact($0) }
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,8 +37,11 @@ class FriendListController: UIViewController {
 
     @IBAction func btnConfirmAction(_ sender: Any) {
         let selectedContacts = getSelectedContacts()
-        
-        NotificationCenter.default.post(name: .selectedContacts, object: ["contacts": selectedContacts])
+        if type == .forGroup {
+            NotificationCenter.default.post(name: .selectedContactsForGroups, object: ["contacts": selectedContacts])
+        }else {
+            NotificationCenter.default.post(name: .selectedContactsForCircles, object: ["contacts": selectedContacts])
+        }
         self.dismiss(animated: true, completion: nil)
     }
     
