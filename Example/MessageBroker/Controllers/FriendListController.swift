@@ -15,7 +15,7 @@ class FriendListController: UIViewController {
     
     // 默认的几个好友
     lazy var contacts: [ContactModel] = {
-        UserCenter.center.fetchContactsList().map{ ContactModel(uid: $0) }
+        UserCenter.center.fetchContactsList().map{ ContactModel(uid: $0.0, imAccount: $0.1) }
     }()
     
     var btnConfirmEnable: Bool {

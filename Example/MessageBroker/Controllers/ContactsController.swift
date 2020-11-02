@@ -21,7 +21,8 @@ class ContactsController: UITableViewController {
     private var groups: [ContactModel] {
         get {
             if _groups == nil {
-                _groups =  UserCenter.center.fetchGroupsList().map{ ContactModel(uid: $0, isGroup: true)}
+//                _groups =  UserCenter.center.fetchGroupsList().map{ ContactModel(uid: $0, isGroup: true)}
+                _groups = []
             }
             return _groups!
         }
@@ -34,7 +35,7 @@ class ContactsController: UITableViewController {
     private var contacts: [ContactModel] {
         get {
             if _contacts == nil {
-                _contacts = UserCenter.center.fetchContactsList().map{ ContactModel(uid: $0) }
+                _contacts = UserCenter.center.fetchContactsList().map{ ContactModel(uid: $0.0, imAccount: $0.1) }
             }
             return _contacts!
         }
@@ -95,7 +96,7 @@ class ContactsController: UITableViewController {
     }
     
     private func showTextFieldAlert(isAddFriend type: Bool = true) {
-        let title = type ? "Join a group" : "Friend someone"
+        let title = type ? "Friend someone" : "Join a group"
     
         let alert = UIAlertController(title: title, message: "Please input \(type ? " UserID" : "GroupID") you want", preferredStyle: .alert)
         alert.addTextField { [unowned self] tf in
@@ -105,7 +106,8 @@ class ContactsController: UITableViewController {
         let ok = UIAlertAction(title: "OK", style: .cancel) { [unowned self] _ in
             guard self.addGid.count > 0 else { return }
             if type {
-                MavlMessage.shared.addFriend(withUserName: self.addGid)
+                let friendId = self.addGid
+                MavlMessage.shared.addFriend(withUserName: friendId)
             }else {
                 MavlMessage.shared.joinGroup(withGroupId: self.addGid)
             }
@@ -171,17 +173,19 @@ extension ContactsController: MavlMessageGroupDelegate {
     }
     
     func addFriendSuccess(friendName name: String) {
-        let model = ContactModel(uid: name)
+        guard let passport = UserCenter.center.passport else {  return  }
+
+        let model = ContactModel(uid: name.lowercased(), imAccount: name.lowercased())
         contacts.append(model)
         tableView.reloadData()
-        
+
         // 添加成功后，需要监听好友状态
         MavlMessage.shared.checkStatus(withUserName: name.lowercased())
-        UserCenter.center.save(contactsList: contacts.map{ $0.uid })
+        ContactsDao.addContact(owner: passport.uid, name: name.lowercased(), imAccount: name.lowercased())
     }
     
     private func _addGroup(_ gid: String) {
-        let model = ContactModel(uid: gid, isGroup: true)
+        let model = ContactModel(uid: gid)
         groups.append(model)
         tableView.reloadData()
         

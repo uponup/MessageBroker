@@ -11,6 +11,10 @@ import Foundation
 
 struct ContactModel {
     var uid: String
+    var imAccount: String? = nil
     var status: String = "offline"
-    var isGroup: Bool = false
+    
+    var isGroup: Bool {
+        imAccount == nil
+    }
 }

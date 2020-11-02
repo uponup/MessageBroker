@@ -72,14 +72,10 @@ class UserCenter {
         UserDefaults.set(contacts, forKey: contactsKey)
     }
     
-    func fetchContactsList() -> [String] {
-        let defaultContacts = ["Sheep", "Pig", "Horse"]
-        
-        guard let passport = passport else { return defaultContacts}
-        let contactsKey = "\(passport.uid)_contactsList"
-        
-        guard let contacts =  UserDefaults.object(forKey: contactsKey) as? [String] else { return defaultContacts }
-        return contacts
+    // 返回(name，im_account)
+    func fetchContactsList() -> [(String, String)] {
+        guard let passport = passport else { return [] }
+        return ContactsDao.fetchAllContacts(owner: passport.uid)
     }
     
     func save(groupList gourps: [String]) {
@@ -88,10 +84,8 @@ class UserCenter {
         UserDefaults.set(gourps, forKey: groupsKey)
     }
     
-    func fetchGroupsList() -> [String] {
-        guard let passport = passport else { return [] }
-        let groupsKey = "\(passport.uid)_groupsList"
-        return UserDefaults.object(forKey: groupsKey) as? [String] ?? [] 
+    func fetchGroupsList() -> [(String, String)] {
+        return []
     }
     
     private func storePassport() {

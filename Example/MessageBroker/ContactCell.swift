@@ -43,7 +43,7 @@ class ContactCell: UITableViewCell {
         }else {
             ivAvatar.image = UIImage(named: contact.uid.capitalized) ?? #imageLiteral(resourceName: "avatar_default")
         }
-        labelName.text = contact.uid
+        labelName.text = contact.uid.capitalized
         labelDetail.text = ""   //defail msg, just like signature, slogan, online status; default is “”
         
         self.labelStatus.isHidden = contact.isGroup
