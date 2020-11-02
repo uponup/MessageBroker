@@ -93,6 +93,12 @@ class ViewController: UIViewController {
         MavlMessage.shared.delegateMsg = self
         MavlMessage.shared.delegateLogin = self
         MavlMessage.shared.login(userName: username, password: password)
+        
+        // 添加默认联系人
+        let _ = UserDefaults.executeOnce(withKey: "\(username)_AddDefaultFriends") {
+            ContactsDao.addContact(owner: username, name: "bob", imAccount: "bob")
+            ContactsDao.addContact(owner: username, name: "peter", imAccount: "peter")
+        }
     }
     
     @IBAction func logout(_ sender: Any) {

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		390A8E05254FA3E400D242B2 /* DispatchQueueExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390A8E04254FA3E400D242B2 /* DispatchQueueExtension.swift */; };
+		390A8E07254FA54400D242B2 /* UserDefaultsExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390A8E06254FA54400D242B2 /* UserDefaultsExtension.swift */; };
 		390B5F072535DFFF002B3CC4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F042535DFFF002B3CC4 /* README.md */; };
 		390B5F082535DFFF002B3CC4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F052535DFFF002B3CC4 /* LICENSE */; };
 		390B5F092535DFFF002B3CC4 /* MessageBroker.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */; };
@@ -40,6 +42,8 @@
 /* Begin PBXFileReference section */
 		0F70690A3BDFAC6B1728D662 /* Pods-MessageBroker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessageBroker.release.xcconfig"; path = "Target Support Files/Pods-MessageBroker/Pods-MessageBroker.release.xcconfig"; sourceTree = "<group>"; };
 		1331F62E44CCB933C3F40B14 /* Pods_MessageBroker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MessageBroker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		390A8E04254FA3E400D242B2 /* DispatchQueueExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchQueueExtension.swift; sourceTree = "<group>"; };
+		390A8E06254FA54400D242B2 /* UserDefaultsExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsExtension.swift; sourceTree = "<group>"; };
 		390B5F042535DFFF002B3CC4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		390B5F052535DFFF002B3CC4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MessageBroker.podspec; path = ../MessageBroker.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
@@ -84,6 +88,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		390A8E02254FA2E600D242B2 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				390A8E03254FA2F300D242B2 /* MavFounation */,
+				3998D289251B8AE300818904 /* MavUIKit */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		390A8E03254FA2F300D242B2 /* MavFounation */ = {
+			isa = PBXGroup;
+			children = (
+				390A8E04254FA3E400D242B2 /* DispatchQueueExtension.swift */,
+				390A8E06254FA54400D242B2 /* UserDefaultsExtension.swift */,
+			);
+			path = MavFounation;
+			sourceTree = "<group>";
+		};
 		390B5F032535DFCC002B3CC4 /* MetaData */ = {
 			isa = PBXGroup;
 			children = (
@@ -126,8 +148,8 @@
 		397D440425187ED1005CB2D3 /* MessageBroker */ = {
 			isa = PBXGroup;
 			children = (
+				390A8E02254FA2E600D242B2 /* Library */,
 				39250468254D649300B8C6F2 /* DAO */,
-				3998D289251B8AE300818904 /* MavUIKit */,
 				3998D288251B40C500818904 /* Module */,
 				397D442D25188EE1005CB2D3 /* Global */,
 				397D443025189658005CB2D3 /* Controllers */,
@@ -360,6 +382,8 @@
 				397D442625188687005CB2D3 /* ChatViewController.swift in Sources */,
 				39420D54251ECA5B0009813A /* ContactModel.swift in Sources */,
 				397D443225189BC9005CB2D3 /* FriendListController.swift in Sources */,
+				390A8E05254FA3E400D242B2 /* DispatchQueueExtension.swift in Sources */,
+				390A8E07254FA54400D242B2 /* UserDefaultsExtension.swift in Sources */,
 				397D442725188687005CB2D3 /* ChatLeftMessageCell.swift in Sources */,
 				3925046A254D64B800B8C6F2 /* SQLiteManager.swift in Sources */,
 				397D442F25188EF6005CB2D3 /* Global.swift in Sources */,

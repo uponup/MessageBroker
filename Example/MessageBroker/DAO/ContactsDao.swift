@@ -13,8 +13,8 @@ struct ContactsDao {
     static let db = SQLiteManager.sharedManager().db
 
     static func createTable() {
-        let sqlContacts = "CREATE TABLE IF NOT EXISTS t_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(32), im_account VARCHAR(32));"
-        let sqlGroups = "CREATE TABLE IF NOT EXISTS t_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(32), gid VARCHAR(32));"
+        let sqlContacts = "CREATE TABLE IF NOT EXISTS t_contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, owner VARCHAR(32), name VARCHAR(32), im_account VARCHAR(32));"
+        let sqlGroups = "CREATE TABLE IF NOT EXISTS t_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, owner VARCHAR(32), title VARCHAR(32), gid VARCHAR(32));"
         
         guard db.open() else { return }
 
@@ -34,11 +34,11 @@ struct ContactsDao {
 
 // MARK: - 联系人管理
 extension ContactsDao {
-    static func addContact(name: String, imAccount: String) {
-        let sql = "INSERT INTO t_contacts (name, im_account) VALUES (?, ?);"
+    static func addContact(owner: String, name: String, imAccount: String) {
+        let sql = "INSERT INTO t_contacts (owner, name, im_account) VALUES (?, ?, ?);"
         guard db.open() else { return }
 
-        if db.executeUpdate(sql, withArgumentsIn: [name, imAccount]) {
+        if db.executeUpdate(sql, withArgumentsIn: [owner, name, imAccount]) {
             print("数据插入成功 t_contact: \(name), \(imAccount)")
         }else {
             print("数据插入失败 t_contact: \(name)")
@@ -49,11 +49,11 @@ extension ContactsDao {
      查找所有好友
      @return [(name, imAccount)]
     */
-    static func fetchAllContacts() -> [(String, String)] {
-        let sql = "SELECT * FROM t_contacts;"
+    static func fetchAllContacts(owner: String) -> [(String, String)] {
+        let sql = "SELECT * FROM t_contacts WHERE owner = ?;"
         guard db.open() else { return [] }
         
-        guard let res = try? db.executeQuery(sql, values: []) else { return [] }
+        guard let res = try? db.executeQuery(sql, values: [owner]) else { return [] }
         
         var contacts: [(String, String)] = []
         while res.next() {
@@ -68,7 +68,7 @@ extension ContactsDao {
 // MARK: - 群组管理
 extension ContactsDao {
     static func createGroup(gid: String, title: String = "") {
-        let sql = "INSERT INTO t_groups (gid, title) VALUES (?, ?);"
+        let sql = "INSERT INTO t_groups (owner, gid, title) VALUES (?, ?, ?);"
         guard db.open() else { return }
         
         if db.executeUpdate(sql, withArgumentsIn: [gid, title]) {
@@ -82,11 +82,11 @@ extension ContactsDao {
      查找所有群组
      @return [(title, gid)]
      */
-    static func fetchAllGroups() -> [(String, String)] {
-        let sql = "SELECT * FROM t_groups;"
+    static func fetchAllGroups(owner: String) -> [(String, String)] {
+        let sql = "SELECT * FROM t_groups WHERE owner = ?;"
         guard db.open() else { return [] }
         
-        guard let res = try? db.executeQuery(sql, values: []) else { return [] }
+        guard let res = try? db.executeQuery(sql, values: [owner]) else { return [] }
         
         var contacts: [(String, String)] = []
         while res.next() {
