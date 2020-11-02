@@ -12,7 +12,6 @@ import ESPullToRefresh
 
 class ChatViewController: UIViewController {
     var session: ChatSession?
-    var currentStatus: String?
     
     private var _messages: [ChatMessage]?
     var messages: [ChatMessage] {
@@ -139,11 +138,6 @@ class ChatViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(receiveDidSendMessageFailed(notification:)), name: .didSendMesgFailed, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receiveDidSendMessage(notification:)), name: .didSendMesg, object: nil)
         
-        guard let currentStatus = currentStatus, currentStatus.count > 0 else {
-            status = "offline"
-            return
-        }
-        status = currentStatus
     }
     
     override func viewWillAppear(_ animated: Bool) {

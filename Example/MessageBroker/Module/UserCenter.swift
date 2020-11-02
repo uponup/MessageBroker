@@ -73,19 +73,20 @@ class UserCenter {
     }
     
     // 返回(name，im_account)
-    func fetchContactsList() -> [(String, String)] {
+    func fetchContactsList() -> [Contact] {
         guard let passport = passport else { return [] }
         return ContactsDao.fetchAllContacts(owner: passport.uid)
     }
     
-    func save(groupList gourps: [String]) {
+    func quit(groupId: String) {
         guard let passport = passport else { return }
-        let groupsKey = "\(passport.uid)_groupsList"
-        UserDefaults.set(gourps, forKey: groupsKey)
+//        Contact
     }
     
-    func fetchGroupsList() -> [(String, String)] {
-        return []
+    // 返回（title，gid）
+    func fetchGroupsList() -> [Group] {
+        guard let passport = passport else { return [] }
+        return GroupsDao.fetchAllGroups(owner: passport.uid)
     }
     
     private func storePassport() {

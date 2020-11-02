@@ -13,15 +13,17 @@ class ContactsController: UITableViewController {
 
     @IBOutlet weak var itemAdd: UIBarButtonItem!
     
-    var dataArr: [[ContactModel]] {
+    var dataArr: [[ContactCellModel]] {
         [groups, contacts].filter{ $0.count > 0 }
     }
     
-    private var _groups: [ContactModel]?
-    private var groups: [ContactModel] {
+    private var _groups: [ContactCellModel]?
+    private var groups: [ContactCellModel] {
         get {
             if _groups == nil {
-//                _groups =  UserCenter.center.fetchGroupsList().map{ ContactModel(uid: $0, isGroup: true)}
+                _groups =  UserCenter.center.fetchGroupsList().map {
+                    ContactCellModel.group($0)
+                }
                 _groups = []
             }
             return _groups!
@@ -31,11 +33,13 @@ class ContactsController: UITableViewController {
         }
     }
     
-    private var _contacts: [ContactModel]?
-    private var contacts: [ContactModel] {
+    private var _contacts: [ContactCellModel]?
+    private var contacts: [ContactCellModel] {
         get {
             if _contacts == nil {
-                _contacts = UserCenter.center.fetchContactsList().map{ ContactModel(uid: $0.0, imAccount: $0.1) }
+                _contacts = UserCenter.center.fetchContactsList().map{
+                    ContactCellModel.contact($0)
+                }
             }
             return _contacts!
         }
@@ -137,7 +141,9 @@ class ContactsController: UITableViewController {
     // MARK: Private Method
     private func checkStatus() {
         for contact in contacts {
-            MavlMessage.shared.checkStatus(withUserName: contact.uid.lowercased())
+            if let imAccount = contact.imAccount {
+                MavlMessage.shared.checkStatus(withUserName: imAccount)
+            }
         }
     }
 }
@@ -165,18 +171,18 @@ extension ContactsController: MavlMessageGroupDelegate {
     }
     
     func quitGroup(gid: String, error: Error?) {
-        groups = groups.filter{ $0.uid != gid }
+        groups = groups.filter{ $0.groupId != gid }
         tableView.reloadData()
         
-        UserCenter.center.save(groupList: groups.map{ $0.uid })
-        showHudFailed(title: "Tip", msg: "You have quit the group：\(gid)")
+        GroupsDao.quitGroup(gid: gid)
+        showHudSuccess(title: "Tip", msg: "You have quit the group：\(gid)")
     }
     
     func addFriendSuccess(friendName name: String) {
         guard let passport = UserCenter.center.passport else {  return  }
 
-        let model = ContactModel(uid: name.lowercased(), imAccount: name.lowercased())
-        contacts.append(model)
+        let friend = Contact(name: name, imAccount: name.lowercased())
+        contacts.append(ContactCellModel.contact(friend))
         tableView.reloadData()
 
         // 添加成功后，需要监听好友状态
@@ -185,11 +191,14 @@ extension ContactsController: MavlMessageGroupDelegate {
     }
     
     private func _addGroup(_ gid: String) {
-        let model = ContactModel(uid: gid)
+        let groupName = "新群组-\(gid[0..<6])"
+        let g = Group(name: groupName, groupId: gid)
+        
+        let model = ContactCellModel.group(g)
         groups.append(model)
         tableView.reloadData()
         
-        UserCenter.center.save(groupList: groups.map{ $0.uid })
+        GroupsDao.createGroup(gid: gid, title: groupName)
     }
 }
 
@@ -209,7 +218,17 @@ extension ContactsController {
         let sectionView = UIView()
         sectionView.backgroundColor = UIColor(white: 0.9, alpha: 1)
         let label = UILabel(frame: CGRect(x: 12, y: 0, width: 200, height: 32))
-        label.text = dataArr[section].first!.isGroup ? "Groups" : "Friends"
+        
+        let cellModel = dataArr[section]
+        if let _ = cellModel.first!.groupId {
+            label.text = "Groups"
+        }else if let _ = cellModel.first!.circleId {
+            label.text = "Circles"
+        }else if let _ = cellModel.first!.imAccount {
+            label.text = "Friends"
+        }else {
+            label.text = ""
+        }
         sectionView.addSubview(label)
         return sectionView
     }
@@ -234,25 +253,24 @@ extension ContactsController {
     }
     
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let contactModel = self.dataArr[indexPath.section][indexPath.row]
+        let cellModel = self.dataArr[indexPath.section][indexPath.row]
         
-        guard contactModel.isGroup  else { return UISwipeActionsConfiguration(actions: []) }
+        guard let gid = cellModel.groupId  else { return UISwipeActionsConfiguration(actions: []) }
         
         let actionDelete = UIContextualAction(style: .destructive, title: "Quit") { (action, view, block) in
-            MavlMessage.shared.quitGroup(withGroupId: contactModel.uid)
+            MavlMessage.shared.quitGroup(withGroupId: gid)
         }
         
         return UISwipeActionsConfiguration(actions: [actionDelete])
     }
     
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let contactModel = self.dataArr[indexPath.section][indexPath.row]
+        let ContactCellModel = self.dataArr[indexPath.section][indexPath.row]
                 
         let actionChat = UIContextualAction(style: .normal, title: "Chat") { [unowned self] (action, view, block) in
             guard let chatVc = self.storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
             chatVc.hidesBottomBarWhenPushed = true
-            chatVc.session = ChatSession(gid: contactModel.uid, sessionName: contactModel.uid, isGroup: contactModel.isGroup)
-            chatVc.currentStatus = contactModel.status
+            chatVc.session = ChatSession(gid: "", sessionName: "", isGroup: true)
             self.navigationController?.pushViewController(chatVc, animated: true )
         }
         return UISwipeActionsConfiguration(actions: [actionChat])

@@ -14,8 +14,8 @@ class FriendListController: UIViewController {
     @IBOutlet weak var btnConfirm: UIButton!
     
     // 默认的几个好友
-    lazy var contacts: [ContactModel] = {
-        UserCenter.center.fetchContactsList().map{ ContactModel(uid: $0.0, imAccount: $0.1) }
+    lazy var contacts: [ContactCellModel] = {
+        UserCenter.center.fetchContactsList().map{ ContactCellModel.contact($0) }
     }()
     
     var btnConfirmEnable: Bool {
@@ -41,7 +41,7 @@ class FriendListController: UIViewController {
             let indexPath = IndexPath(row: index, section: 0)
             let cell = tableView.cellForRow(at: indexPath)
             return cell?.isSelected ?? false
-        }.map{ $1.uid }
+        }.compactMap { $1.imAccount }
     }
 }
 

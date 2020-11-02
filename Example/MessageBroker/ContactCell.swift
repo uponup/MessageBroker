@@ -37,20 +37,18 @@ class ContactCell: UITableViewCell {
         
     }
 
-    func updateData(_ contact: ContactModel) {
-        if contact.isGroup {
+    func updateData(_ contact: ContactCellModel) {
+        if let _ = contact.groupId {
             ivAvatar.image = #imageLiteral(resourceName: "chatroom_default")
-        }else {
-            ivAvatar.image = UIImage(named: contact.uid.capitalized) ?? #imageLiteral(resourceName: "avatar_default")
+        }else if let _ = contact.circleId {
+            ivAvatar.image = #imageLiteral(resourceName: "chatroom_default")
+            self.labelStatus.isHidden = true
+            self.statusView.isHidden = true
+        }else if let _ = contact.imAccount {
+            ivAvatar.image = UIImage(named: contact.name.capitalized) ?? #imageLiteral(resourceName: "avatar_default")
         }
-        labelName.text = contact.uid.capitalized
+        
+        labelName.text = contact.name.capitalized
         labelDetail.text = ""   //defail msg, just like signature, slogan, online status; default is “”
-        
-        self.labelStatus.isHidden = contact.isGroup
-        self.statusView.isHidden = contact.isGroup
-        
-        if !contact.isGroup {
-            status = contact.status
-        }
     }
 }

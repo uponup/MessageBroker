@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		390A8E05254FA3E400D242B2 /* DispatchQueueExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390A8E04254FA3E400D242B2 /* DispatchQueueExtension.swift */; };
 		390A8E07254FA54400D242B2 /* UserDefaultsExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390A8E06254FA54400D242B2 /* UserDefaultsExtension.swift */; };
+		390A8E0D254FBCEC00D242B2 /* GroupsDao.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390A8E0C254FBCEC00D242B2 /* GroupsDao.swift */; };
+		390A8E0F254FBCF800D242B2 /* CirclesDao.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390A8E0E254FBCF800D242B2 /* CirclesDao.swift */; };
+		390A8E11254FC25800D242B2 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390A8E10254FC25800D242B2 /* StringExtension.swift */; };
 		390B5F072535DFFF002B3CC4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F042535DFFF002B3CC4 /* README.md */; };
 		390B5F082535DFFF002B3CC4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F052535DFFF002B3CC4 /* LICENSE */; };
 		390B5F092535DFFF002B3CC4 /* MessageBroker.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */; };
@@ -16,7 +19,7 @@
 		3925046C254D64CE00B8C6F2 /* ContactsDao.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3925046B254D64CE00B8C6F2 /* ContactsDao.swift */; };
 		3925046E254D64DB00B8C6F2 /* MessageDao.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3925046D254D64DB00B8C6F2 /* MessageDao.swift */; };
 		39420D52251EC96C0009813A /* ContactsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D51251EC96C0009813A /* ContactsController.swift */; };
-		39420D54251ECA5B0009813A /* ContactModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D53251ECA5B0009813A /* ContactModel.swift */; };
+		39420D54251ECA5B0009813A /* ContactCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D53251ECA5B0009813A /* ContactCellModel.swift */; };
 		39420D5625206AF80009813A /* MesgDao.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D5525206AF80009813A /* MesgDao.swift */; };
 		397D440625187ED1005CB2D3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397D440525187ED1005CB2D3 /* AppDelegate.swift */; };
 		397D440825187ED1005CB2D3 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397D440725187ED1005CB2D3 /* SceneDelegate.swift */; };
@@ -44,6 +47,9 @@
 		1331F62E44CCB933C3F40B14 /* Pods_MessageBroker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MessageBroker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		390A8E04254FA3E400D242B2 /* DispatchQueueExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchQueueExtension.swift; sourceTree = "<group>"; };
 		390A8E06254FA54400D242B2 /* UserDefaultsExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsExtension.swift; sourceTree = "<group>"; };
+		390A8E0C254FBCEC00D242B2 /* GroupsDao.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsDao.swift; sourceTree = "<group>"; };
+		390A8E0E254FBCF800D242B2 /* CirclesDao.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CirclesDao.swift; sourceTree = "<group>"; };
+		390A8E10254FC25800D242B2 /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		390B5F042535DFFF002B3CC4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		390B5F052535DFFF002B3CC4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		390B5F062535DFFF002B3CC4 /* MessageBroker.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MessageBroker.podspec; path = ../MessageBroker.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
@@ -51,7 +57,7 @@
 		3925046B254D64CE00B8C6F2 /* ContactsDao.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsDao.swift; sourceTree = "<group>"; };
 		3925046D254D64DB00B8C6F2 /* MessageDao.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDao.swift; sourceTree = "<group>"; };
 		39420D51251EC96C0009813A /* ContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsController.swift; sourceTree = "<group>"; };
-		39420D53251ECA5B0009813A /* ContactModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactModel.swift; sourceTree = "<group>"; };
+		39420D53251ECA5B0009813A /* ContactCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactCellModel.swift; sourceTree = "<group>"; };
 		39420D5525206AF80009813A /* MesgDao.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MesgDao.swift; sourceTree = "<group>"; };
 		397D440225187ED1005CB2D3 /* 小牛Mesg.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "小牛Mesg.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		397D440525187ED1005CB2D3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -102,6 +108,7 @@
 			children = (
 				390A8E04254FA3E400D242B2 /* DispatchQueueExtension.swift */,
 				390A8E06254FA54400D242B2 /* UserDefaultsExtension.swift */,
+				390A8E10254FC25800D242B2 /* StringExtension.swift */,
 			);
 			path = MavFounation;
 			sourceTree = "<group>";
@@ -121,6 +128,8 @@
 			children = (
 				39250469254D64B800B8C6F2 /* SQLiteManager.swift */,
 				3925046B254D64CE00B8C6F2 /* ContactsDao.swift */,
+				390A8E0C254FBCEC00D242B2 /* GroupsDao.swift */,
+				390A8E0E254FBCF800D242B2 /* CirclesDao.swift */,
 				3925046D254D64DB00B8C6F2 /* MessageDao.swift */,
 			);
 			path = DAO;
@@ -188,7 +197,7 @@
 			children = (
 				397D442425188687005CB2D3 /* ChatMessage.swift */,
 				397D44372518B676005CB2D3 /* ChatSession.swift */,
-				39420D53251ECA5B0009813A /* ContactModel.swift */,
+				39420D53251ECA5B0009813A /* ContactCellModel.swift */,
 			);
 			name = Model;
 			path = ..;
@@ -375,12 +384,14 @@
 				397D44382518B676005CB2D3 /* ChatSession.swift in Sources */,
 				3925046C254D64CE00B8C6F2 /* ContactsDao.swift in Sources */,
 				397D44202518845E005CB2D3 /* SettingController.swift in Sources */,
+				390A8E0D254FBCEC00D242B2 /* GroupsDao.swift in Sources */,
+				390A8E0F254FBCF800D242B2 /* CirclesDao.swift in Sources */,
 				3998D287251B409C00818904 /* UserCenter.swift in Sources */,
 				39420D52251EC96C0009813A /* ContactsController.swift in Sources */,
 				397D440A25187ED1005CB2D3 /* ViewController.swift in Sources */,
 				397D443425189E83005CB2D3 /* ContactCell.swift in Sources */,
 				397D442625188687005CB2D3 /* ChatViewController.swift in Sources */,
-				39420D54251ECA5B0009813A /* ContactModel.swift in Sources */,
+				39420D54251ECA5B0009813A /* ContactCellModel.swift in Sources */,
 				397D443225189BC9005CB2D3 /* FriendListController.swift in Sources */,
 				390A8E05254FA3E400D242B2 /* DispatchQueueExtension.swift in Sources */,
 				390A8E07254FA54400D242B2 /* UserDefaultsExtension.swift in Sources */,
@@ -391,6 +402,7 @@
 				397D442925188687005CB2D3 /* ChatRightMessageCell.swift in Sources */,
 				397D440625187ED1005CB2D3 /* AppDelegate.swift in Sources */,
 				397D440825187ED1005CB2D3 /* SceneDelegate.swift in Sources */,
+				390A8E11254FC25800D242B2 /* StringExtension.swift in Sources */,
 				3998D28B251B8B0D00818904 /* UIScreenExtension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
