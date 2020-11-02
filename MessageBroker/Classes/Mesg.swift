@@ -22,7 +22,7 @@ public struct Mesg {
     public var localId: String?
     
     public var isGroup: Bool {
-        fromUid == groupId
+        fromUid != groupId
     }
     
 //    56_peter,56_peter,05aff857d249c2DS,1600935023224, 2,   1600935023,9090##
