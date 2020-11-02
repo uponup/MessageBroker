@@ -17,14 +17,24 @@ class ContactsController: UITableViewController {
         [groups, contacts].filter{ $0.count > 0 }
     }
     
+    private var _circles: [ContactCellModel]?
+    private var circles: [ContactCellModel] {
+        get {
+            if _circles == nil {
+                _circles = UserCenter.center.fetchCirclesList().map { ContactCellModel.circle($0) }
+            }
+            return _circles!
+        }
+        set {
+            _circles = newValue
+        }
+    }
+    
     private var _groups: [ContactCellModel]?
     private var groups: [ContactCellModel] {
         get {
             if _groups == nil {
-                _groups =  UserCenter.center.fetchGroupsList().map {
-                    ContactCellModel.group($0)
-                }
-                _groups = []
+                _groups =  UserCenter.center.fetchGroupsList().map { ContactCellModel.group($0) }
             }
             return _groups!
         }
@@ -37,9 +47,7 @@ class ContactsController: UITableViewController {
     private var contacts: [ContactCellModel] {
         get {
             if _contacts == nil {
-                _contacts = UserCenter.center.fetchContactsList().map{
-                    ContactCellModel.contact($0)
-                }
+                _contacts = UserCenter.center.fetchContactsList().map{ ContactCellModel.contact($0) }
             }
             return _contacts!
         }
@@ -55,18 +63,15 @@ class ContactsController: UITableViewController {
             itemAdd.isEnabled = isLogin ?? false
             _contacts = nil
             _groups = nil
+            _circles = nil
             
             tableView.reloadData()
-            
-            if isLogin == true {
-                checkStatus()
-            }
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        checkStatus()
+        
         itemAdd.isEnabled = MavlMessage.shared.isLogin
         MavlMessage.shared.delegateGroup = self
         
@@ -136,15 +141,6 @@ class ContactsController: UITableViewController {
     
     @objc func didLogoutSuccess() {
         isLogin = false
-    }
-    
-    // MARK: Private Method
-    private func checkStatus() {
-        for contact in contacts {
-            if let imAccount = contact.imAccount {
-                MavlMessage.shared.checkStatus(withUserName: imAccount)
-            }
-        }
     }
 }
 

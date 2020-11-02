@@ -47,6 +47,8 @@ class ViewController: UIViewController {
                 UserCenter.center.login(passport: passport)
                 
                 refreshData()
+                
+                checkStatus()
             }else {
                 navigationItem.title = "Offline"
                 tfUserName.text = ""
@@ -103,6 +105,14 @@ class ViewController: UIViewController {
     
     @IBAction func logout(_ sender: Any) {
         MavlMessage.shared.logout()
+    }
+    
+    // MARK: - Private Method
+    private func checkStatus() {
+        guard let passport = MavlMessage.shared.passport else { return }
+        for contact in ContactsDao.fetchAllContacts(owner: passport.uid) {
+            MavlMessage.shared.checkStatus(withUserName: contact.imAccount)
+        }
     }
 }
 
@@ -173,10 +183,12 @@ extension ViewController: MavlMessageStatusDelegate {
 extension ViewController: StatusQueueDelegate {
     func statusQueue(didOnline user: String) {
         print("\(user) 上线了！！！")
+        NotificationCenter.default.post(name: .userStatusDidChanged, object: nil)
     }
     
     func statusQueue(didOfflineUsers: [String]) {
         print("这些人下线了:\(didOfflineUsers)")
+        NotificationCenter.default.post(name: .userStatusDidChanged, object: nil)
     }
 }
 

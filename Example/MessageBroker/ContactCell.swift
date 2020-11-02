@@ -16,9 +16,9 @@ class ContactCell: UITableViewCell {
     @IBOutlet weak var statusView: UIView!
     @IBOutlet weak var labelStatus: UILabel!
     
-    private var status: String? {
+    private var isOnline: Bool = false {
         didSet {
-            if status == "online" {
+            if isOnline == true {
                 statusView.backgroundColor = UIColor.green
                 labelStatus.text = "online"
             }else {
@@ -27,9 +27,14 @@ class ContactCell: UITableViewCell {
             }
         }
     }
+    
+    private var model: ContactCellModel?
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(userStatusChangeAction), name: .userStatusDidChanged, object: nil)
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
@@ -38,8 +43,11 @@ class ContactCell: UITableViewCell {
     }
 
     func updateData(_ contact: ContactCellModel) {
+        model = contact
         if let _ = contact.groupId {
             ivAvatar.image = #imageLiteral(resourceName: "chatroom_default")
+            self.labelStatus.isHidden = true
+            self.statusView.isHidden = true
         }else if let _ = contact.circleId {
             ivAvatar.image = #imageLiteral(resourceName: "chatroom_default")
             self.labelStatus.isHidden = true
@@ -50,5 +58,10 @@ class ContactCell: UITableViewCell {
         
         labelName.text = contact.name.capitalized
         labelDetail.text = ""   //defail msg, just like signature, slogan, online status; default is “”
+    }
+    
+    @objc func userStatusChangeAction() {
+        guard let model = model, let im = model.imAccount else { return }
+        isOnline = StatusQueue.shared.isOnline(withImAccount: im)
     }
 }

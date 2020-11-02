@@ -83,10 +83,14 @@ class UserCenter {
 //        Contact
     }
     
-    // 返回（title，gid）
     func fetchGroupsList() -> [Group] {
         guard let passport = passport else { return [] }
         return GroupsDao.fetchAllGroups(owner: passport.uid)
+    }
+    
+    func fetchCirclesList() -> [Circle] {
+        guard let passport = passport else { return [] }
+        return CirclesDao.fetchAllCircles(owner: passport.uid)
     }
     
     private func storePassport() {
