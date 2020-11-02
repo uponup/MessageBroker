@@ -39,7 +39,7 @@ extension GroupsDao {
         
         let group = Group(name: "新群组-\(gid[0..<6])", groupId: gid)
         
-        if db.executeUpdate(sql, withArgumentsIn: [group.groupId, group.name, owner]) {
+        if db.executeUpdate(sql, withArgumentsIn: [owner, group.groupId, group.name]) {
             print("数据插入成功 t_group: \(group.name), \(gid)")
             return group
         }else {
@@ -51,10 +51,10 @@ extension GroupsDao {
     /**
      退出群组
      */
-    static func quitGroup(gid: String) {
+    static func quitGroup(gid: String, owner: String) {
         guard db.open() else { return }
-        let sql = "DELETE FROM t_groups WHERE gid = ?;"
-        if db.executeUpdate(sql, withArgumentsIn: [gid]) {
+        let sql = "DELETE FROM t_groups WHERE gid = ? AND owner = ?;"
+        if db.executeUpdate(sql, withArgumentsIn: [gid, owner]) {
             print("删除成功 t_group: \(gid)")
         }else {
             print("删除成功 t_group: \(gid)")
@@ -91,6 +91,24 @@ extension GroupsDao {
             contacts.append(Group(name: title, groupId: gid))
         }
         return contacts
+    }
+    
+    /**
+     查找某个群组信息
+     */
+    static func fetchGroup(gid: String) -> Group? {
+        let sql = "SELECT * FROM t_groups WHERE gid = ?;"
+        guard db.open() else { return nil }
+        
+        guard let res = try? db.executeQuery(sql, values: [gid]) else { return nil }
+        
+        var group: Group? = nil
+        while res.next() {
+            guard let title = res.string(forColumn: "title"),
+                let gid = res.string(forColumn: "gid") else { continue }
+            group = Group(name: title, groupId: gid)
+        }
+        return group
     }
 }
 

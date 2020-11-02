@@ -40,7 +40,7 @@ extension ContactsDao {
     
     /**
      查找所有好友
-     @return [(name, imAccount)]
+     @return [(Contact)]
     */
     static func fetchAllContacts(owner: String) -> [Contact] {
         let sql = "SELECT * FROM t_contacts WHERE owner = ?;"
@@ -55,5 +55,25 @@ extension ContactsDao {
             contacts.append(Contact(name: name, imAccount: imAccount))
         }
         return contacts
+    }
+    
+    /**
+     查找某个好友
+     @return Contact
+     */
+    static func fetchContact(imAccount: String) -> Contact? {
+        let sql = "SELECT *FROM t_contacts WHERE im_account = ?;"
+        
+        guard db.open() else { return nil }
+        
+        guard let res = try? db.executeQuery(sql, values: [imAccount]) else { return nil }
+        
+        var contact: Contact? = nil
+        while res.next() {
+            guard let name = res.string(forColumn: "name"),
+                let imAccount = res.string(forColumn: "im_account") else { continue }
+            contact = Contact(name: name, imAccount: imAccount)
+        }
+        return contact
     }
 }

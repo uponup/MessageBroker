@@ -50,47 +50,39 @@ class UserCenter {
         _passport = nil
     }
     
-    func save(sessionList list: [ChatSession]) {
-        guard let passport = passport else { return }
-        let sessionKey = "\(passport.uid)_sessionList"
-        UserDefaults.set(list.map{ $0.toDic() }, forKey: sessionKey)
+    // 获取会话列表
+    func fetchSessionList() -> [ChatSession] {
+        guard let passport = passport else { return [] }
+        return MessageDao.fetchRecentlyMesgs(from: passport.uid).map { ChatSession(msg: $0) }
     }
     
-    func fetchSessionList() -> [ChatSession]? {
-        guard let passport = passport else { return nil }
-        let sessionKey = "\(passport.uid)_sessionList"
-        guard let items = UserDefaults.object(forKey: sessionKey) as? [[String: Any]] else {
-            return nil
-        }
-        return items.map{ ChatSession(dict: $0) }
-    }
-    
-    
-    func save(contactsList contacts: [String]) {
-        guard let passport = passport else { return }
-        let contactsKey = "\(passport.uid)_contactsList"
-        UserDefaults.set(contacts, forKey: contactsKey)
-    }
-    
-    // 返回(name，im_account)
+    // 获取联系人列表
     func fetchContactsList() -> [Contact] {
         guard let passport = passport else { return [] }
         return ContactsDao.fetchAllContacts(owner: passport.uid)
     }
     
-    func quit(groupId: String) {
-        guard let passport = passport else { return }
-//        Contact
-    }
-    
+    // 获取群组列表
     func fetchGroupsList() -> [Group] {
         guard let passport = passport else { return [] }
         return GroupsDao.fetchAllGroups(owner: passport.uid)
     }
     
+    // 获取圈子列表
     func fetchCirclesList() -> [Circle] {
         guard let passport = passport else { return [] }
         return CirclesDao.fetchAllCircles(owner: passport.uid)
+    }
+    // 推出群组
+    func quit(groupId: String) {
+        guard let passport = passport else { return }
+        GroupsDao.quitGroup(gid: groupId, owner: passport.uid)
+    }
+    
+    // 删除会话
+    func deleteChatSession(gid: String) {
+        guard let passport = passport else { return }
+        MessageDao.deleteChatSession(from: passport.uid, gid: gid)
     }
     
     private func storePassport() {
@@ -107,7 +99,7 @@ extension UserCenter {
     }
 }
 
-
+// TODO: Delete
 extension UserDefaults {
     public class func set(_ value: Any?, forKey key: String) {
         UserDefaults.standard.set(value, forKey: key)

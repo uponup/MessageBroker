@@ -37,13 +37,27 @@ struct MessageDao {
         guard db.open() else { return }
         
         let date = Date(timeIntervalSince1970: msg.timestamp)
-        if db.executeUpdate(sql, withArgumentsIn: [msg.fromUid, msg.toUid, msg.groupId, msg.text, msg.localId ?? "", date]) {
+        if db.executeUpdate(sql, withArgumentsIn: [msg.fromUid, msg.toUid, msg.groupId, msg.status, msg.text, msg.localId ?? "", date]) {
             print("数据插入成功 t_msgs: \(msg.fromUid), \(msg.toUid) : \(msg.text)")
         }else {
             print("数据插入失败 t_msgs: \(msg.fromUid), \(msg.toUid) : \(msg.text)")
         }
     }
     
+    /**
+     删除会话
+     */
+    static func deleteChatSession(from: String, gid: String) {
+        guard db.open() else { return }
+
+        let sql = "DELETE FROM t_msgs WHERE fromUid = ? AND gid = ?;"
+        let res = db.executeUpdate(sql, withArgumentsIn: [from, gid])
+        if res {
+            print("删除成功")
+        }else {
+            print("删除失败")
+        }
+    }
     /**
      查找最近一条信息
      @return Mesg
@@ -72,14 +86,39 @@ struct MessageDao {
     }
     
     /**
+     查找所有最近的信息
+     */
+    static func fetchRecentlyMesgs(from: String) -> [Mesg] {
+        guard db.open() else { return [] }
+
+        let sql = "SELECT *FROM t_msgs WHERE fromUid = ? GROUP BY gid ORDER BY timestamp DESC ;"
+        guard let res = db.executeQuery(sql, withArgumentsIn: [from]) else { return [] }
+        var messages: [Mesg] = []
+        while res.next() {
+            let gid = res.string(forColumn: "gid")
+            let text = res.string(forColumn: "text")
+            let status = res.int(forColumn: "status")
+            let localId = res.string(forColumn: "localId")
+            let serverId = res.string(forColumn: "serverId")
+            let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
+            let to = res.string(forColumn: "toUid")
+            
+            var msg = Mesg(fromUid: from, toUid: to.value, groupId: gid.value, serverId: serverId.value, text: text.value, timestamp: timestamp, status: Int(status))
+            msg.localId = localId
+            messages.append(msg)
+        }
+        return messages
+    }
+    
+    /**
      查找所有信息
      @return [Mesg]
     */
     static func fetchAllMesgs(from: String, to: String) -> [Mesg] {
         guard db.open() else { return [] }
 
-        let sql = "SELECT * FROM t_msgs;"
-        guard let res = try? db.executeQuery(sql, values: []) else { return [] }
+        let sql = "SELECT * FROM t_msgs WHERE fromUid = ? AND toUid = ? ORDER BY timestamp ASC;"
+        guard let res = try? db.executeQuery(sql, values: [from, to]) else { return [] }
         
         var messages: [Mesg] = []
         while res.next() {

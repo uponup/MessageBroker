@@ -20,12 +20,7 @@ class ViewController: UIViewController {
     var sessions: [ChatSession] {
         get {
             if _sessions == nil {
-                guard let sessionList = UserCenter.center.fetchSessionList() else {
-                    TRACE("获取缓存信息失败")
-                    _sessions = nil
-                    return []
-                }
-                _sessions = sessionList
+                _sessions = UserCenter.center.fetchSessionList()
             }
             return _sessions!
         }
@@ -74,9 +69,7 @@ class ViewController: UIViewController {
     }
     
     func refreshData() {
-        let sortedSessions = sessions.sorted(by: >)
-        sessions = sortedSessions
-        
+        _sessions = nil
         tableView.reloadData()
     }
     
@@ -157,25 +150,15 @@ extension ViewController: MavlMessageStatusDelegate {
     
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {
         NotificationCenter.default.post(name: .didReceiveMesg, object: ["msg": messages, "isLoadMore": isLoadMore])
-
-        guard let msg = messages.last else { return }
-        // 保存最后一条收到的信息
-        if isLoadMore == false {
-            var item: ChatSession
-            if msg.isGroup {
-                item = ChatSession(gid: msg.groupId)
-            }else {
-                item = ChatSession(gid: msg.fromUid, sessionName: msg.fromUid, isGroup: false)
-            }
-            
-            if !(sessions.map{ $0.gid }.contains(item.gid)) {
-                sessions.append(item)
-            }
-            UserCenter.center.save(sessionList: sessions)
-            
-            MesgDao.save(latestMesg: msg)
-        }
         
+        for (_, msg) in messages.enumerated() {
+            //TODO: msg的groupId
+            var tempMsg = msg
+            if !msg.isGroup {
+                tempMsg.groupId = msg.fromUid
+            }
+            MessageDao.addMesg(msg: tempMsg)
+        }
         refreshData()
     }
 }
@@ -215,7 +198,9 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         
         guard let chatVc = storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
         chatVc.hidesBottomBarWhenPushed = true
-        chatVc.session = sessionModel
+        //TODO: 1、add Circle    2、传给chatVc的参数可能会画有问题
+        chatVc.chatTo = sessionModel.isGroup ?  .toGroup : .toContact
+        chatVc.chatToId = sessionModel.name.lowercased()
         navigationController?.pushViewController(chatVc, animated: true)
     }
     
@@ -232,7 +217,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
             self.sessions.remove(at: indexPath.row)
             self.refreshData()
             
-            UserCenter.center.save(sessionList: self.sessions)
+            UserCenter.center.deleteChatSession(gid: session.gid)
         }
         
         return UISwipeActionsConfiguration(actions: [actionDelete])

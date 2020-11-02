@@ -201,7 +201,7 @@ extension ContactsController: MavlMessageGroupDelegate {
         groups = groups.filter{ $0.groupId != gid }
         tableView.reloadData()
         
-        GroupsDao.quitGroup(gid: gid)
+        UserCenter.center.quit(groupId: gid)
         showHudSuccess(title: "Tip", msg: "You have quit the group：\(gid)")
     }
     
@@ -317,7 +317,16 @@ extension ContactsController {
                 
         guard let chatVc = self.storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
         chatVc.hidesBottomBarWhenPushed = true
-        chatVc.session = ChatSession(gid: "", sessionName: "", isGroup: true)
+        if let gid = cellModel.groupId {
+            chatVc.chatTo = .toGroup
+            chatVc.chatToId = gid
+        }else if let circleId = cellModel.circleId {
+            chatVc.chatTo = .toCircle
+            chatVc.chatToId = circleId
+        }else if let contactId = cellModel.imAccount {
+            chatVc.chatTo = .toContact
+            chatVc.chatToId = contactId
+        }
         self.navigationController?.pushViewController(chatVc, animated: true )
     }
 }

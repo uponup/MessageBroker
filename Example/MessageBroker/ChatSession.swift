@@ -9,47 +9,34 @@
 import Foundation
 
 struct ChatSession {
-    var gid: String = ""
-    var sessionName: String
-    var isGroup: Bool
+    var msg: Mesg
     
-    init(gid: String, sessionName: String = "", isGroup: Bool = true) {
-        self.gid = gid
-        self.sessionName = sessionName
-        self.isGroup = isGroup
-    }
-    
-    init(dict: [String: Any]) {
-        self.gid = dict["gid"] as! String
-        self.sessionName = dict["session"] as! String
-        self.isGroup = dict["isGroup"] as! Bool
-    }
-    
-    func toDic() -> [String: Any] {
-        return [
-            "gid": gid,
-            "session": sessionName,
-            "isGroup": isGroup
-        ]
-    }
-}
-
-extension ChatSession: Equatable {
-    static func < (lhs: ChatSession, rhs: ChatSession) -> Bool {
-        guard let lhsMesg = MesgDao.fetch(forTo: lhs.gid),
-            let rhsMesg = MesgDao.fetch(forTo: rhs.gid) else {
-            return false
+    var name: String {
+        if msg.isGroup {
+            guard let group = GroupsDao.fetchGroup(gid: msg.groupId) else {
+                return msg.groupId
+            }
+            return group.name
+        }else {
+            let n = UserCenter.isMe(uid: msg.fromUid) ? msg.toUid : msg.fromUid
+            return n.capitalized
         }
-
-        return lhsMesg.timestamp < rhsMesg.timestamp
     }
     
-    static func > (lhs: ChatSession, rhs: ChatSession) -> Bool {
-        guard let lhsMesg = MesgDao.fetch(forTo: lhs.gid),
-            let rhsMesg = MesgDao.fetch(forTo: rhs.gid) else {
-            return true
-        }
-
-        return lhsMesg.timestamp > rhsMesg.timestamp
+    var gid: String {
+        return msg.groupId  // group的话有gid，circle的话返回vmucid，contact的话返回fromUid
     }
+    
+    var isGroup: Bool {
+        return msg.isGroup
+    }
+    
+    var message: String {
+        return (isGroup && UserCenter.isMe(uid: msg.fromUid)) ?  "\(msg.text)" : "\(msg.fromUid.capitalized): \(msg.text)"
+    }
+    
+    var datetime: String {
+        return Date(timeIntervalSince1970: msg.timestamp).toString(with: .MMddHHmm)
+    }
+    
 }

@@ -10,15 +10,28 @@ import UIKit
 import CocoaMQTT
 import ESPullToRefresh
 
+enum ChatToType {
+    case toGroup
+    case toCircle
+    case toContact
+}
+
 class ChatViewController: UIViewController {
-    var session: ChatSession?
+    
+    var chatTo: ChatToType = .toContact
+    var chatToId: String = ""
     
     private var _messages: [ChatMessage]?
     var messages: [ChatMessage] {
         get {
             if _messages == nil {
-                if let mesg = MesgDao.fetch(forTo: session?.gid ?? "") {
-                    _messages = [ChatMessage(status: .sendSuccess, mesg: mesg)]
+                guard let passport = MavlMessage.shared.passport else {
+                    _messages = []
+                    return []
+                }
+                
+                if chatTo == .toContact {
+                    _messages = MessageDao.fetchAllMesgs(from: passport.uid, to: chatToId).map { ChatMessage(status: .send, mesg: $0)}
                 }else {
                     _messages = []
                 }
@@ -37,19 +50,22 @@ class ChatViewController: UIViewController {
     }
     
     private var slogan: String {
-        guard let session = session else {
-            return "Error: No Session To Match"
-        }
-        if session.isGroup {
-            return "Gid: \(session.gid)";
+        if chatTo == .toContact {
+            guard let contact = ContactsDao.fetchContact(imAccount: chatToId) else {
+                return "Invalid Contact"
+            }
+            
+            return "ImAccount: \(contact.name)";
+        }else if chatTo == .toGroup {
+            return "Gid: \(chatToId)";
         }else {
-            return "\(session.sessionName)";
+            return "Circle: \(chatToId)"
         }
     }
         
-    private var status: String? {
+    private var isOnline: Bool = false {
         didSet {
-            if status == "online" {
+            if isOnline {
                 statusView.backgroundColor = .green
                 statusLabel.text = "online"
             }else {
@@ -88,17 +104,19 @@ class ChatViewController: UIViewController {
     @IBAction func sendMessage() {
         guard let message = messageTextView.text else { return }
         
-        guard let session = session else { return }
-        if session.isGroup {
-            MavlMessage.shared.sendToChatRoom(message: message, isToGroup: true, toId: session.gid)
+        if chatTo == .toGroup {
+            MavlMessage.shared.sendToChatRoom(message: message, isToGroup: true, toId: chatToId)
+        }else if chatTo == .toCircle {
+            showHud("暂未开放此功能")
         }else {
-            MavlMessage.shared.sendToChatRoom(message: message, isToGroup: false, toId: session.gid)
+            MavlMessage.shared.sendToChatRoom(message: message, isToGroup: false, toId: chatToId)
         }
         messageTextView.text = ""
         sendMessageButton.isEnabled = false
         messageTextViewHeightConstraint.constant = messageTextView.contentSize.height
         messageTextView.layoutIfNeeded()
         view.endEditing(true)
+        
     }
     
     override func viewDidLoad() {
@@ -111,33 +129,33 @@ class ChatViewController: UIViewController {
         tableView.estimatedRowHeight = 50
         tableView.es.addPullToRefresh { [weak self] in
             
-            guard let session = self?.session else {
+            guard self?.chatTo != .toCircle else {
                 self?.tableView.es.stopPullToRefresh()
                 return
             }
-            let type: FetchMessagesType = session.isGroup ? .more : .one
+            let type: FetchMessagesType = self?.chatTo == .toGroup ? .more : .one
 
             print("====>从\((self?.latestMessagesId).value)开始请求")
 
-            MavlMessage.shared.fetchMessages(msgId: (self?.latestMessagesId).value, from: session.gid, type: type, offset: 10)
+            MavlMessage.shared.fetchMessages(msgId: (self?.latestMessagesId).value, from: (self?.chatToId).value, type: type, offset: 10)
         }
         
-        animalAvatarImageView.image = (session?.isGroup ?? false) ?  #imageLiteral(resourceName: "chatroom_default") : #imageLiteral(resourceName: "avatar_default")
+        animalAvatarImageView.image = chatTo != .toContact ?  #imageLiteral(resourceName: "chatroom_default") : #imageLiteral(resourceName: "avatar_default")
         sloganLabel.text = slogan
-        
-        if let session = session, !session.isGroup {
-            // TODO：订阅status通知
-        }else {
-            statusView.isHidden = true
-            statusLabel.isHidden = true
-        }
         
         NotificationCenter.default.addObserver(self, selector: #selector(receivedMessage(notification:)), name: .didReceiveMesg, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardChanged(notification:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receivedWillSendMessage(notification:)), name: .willSendMesg, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receiveDidSendMessageFailed(notification:)), name: .didSendMesgFailed, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receiveDidSendMessage(notification:)), name: .didSendMesg, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(receiveDidChangedUserStatus), name: .userStatusDidChanged, object: nil)
         
+        if chatTo == .toContact {
+            isOnline = StatusQueue.shared.isOnline(withImAccount: chatToId)
+        }else {
+            statusView.isHidden = true
+            statusLabel.isHidden = true
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -238,6 +256,12 @@ class ChatViewController: UIViewController {
                 dict[message.localId] = message
             }
             messages = Array(dict.values).sorted(by: <)
+        }
+    }
+    
+    @objc func receiveDidChangedUserStatus() {
+        if chatTo == .toContact {
+            isOnline = StatusQueue.shared.isOnline(withImAccount: chatToId)
         }
     }
     
