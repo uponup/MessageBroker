@@ -8,6 +8,10 @@
 
 import Foundation
 
+public enum MesgType: Int {
+    case single = 0
+    case group
+}
 /**
     接收到的信息数据模型
  */
@@ -20,11 +24,12 @@ public struct Mesg {
     public var status: Int
     public var timestamp: TimeInterval
     public var localId: String?
+    public var mesgType: MesgType
     
     public var isGroup: Bool {
-        fromUid != groupId
+        return mesgType == .group
     }
-    
+
 //    56_peter,56_peter,05aff857d249c2DS,1600935023224, 2,   1600935023,9090##
 //    Fromuid，Touid，   Gid，            Servermsgid，Status，Timestamp， Msg
     public init?(payload: String) {
@@ -39,9 +44,14 @@ public struct Mesg {
         timestamp = TimeInterval(segments[5])!
         let index = segments.count
         text = segments[6..<index].joined(separator: ",")
+        if segments[0] == segments[2] || segments[1] == segments[2] {
+            mesgType = .single
+        }else {
+            mesgType = .group
+        }
     }
     
-    public init(fromUid: String, toUid: String, groupId: String, serverId: String, text: String, timestamp: TimeInterval, status: Int) {
+    public init(fromUid: String, toUid: String, groupId: String, serverId: String, text: String, timestamp: TimeInterval, status: Int, isGroup: Bool) {
         self.fromUid = fromUid
         self.toUid = toUid
         self.groupId = groupId
@@ -49,6 +59,7 @@ public struct Mesg {
         self.text = text
         self.timestamp = timestamp
         self.status = status
+        self.mesgType = MesgType(rawValue: isGroup ? 1 : 0) ?? .single
     }
 }
 
@@ -64,7 +75,8 @@ extension Mesg {
             "text": text,
             "status": status,
             "timestamp": timestamp,
-            "localId": localId ?? ""
+            "localId": localId ?? "",
+            "mesgType": mesgType.rawValue
         ]
     }
     
@@ -77,5 +89,11 @@ extension Mesg {
         self.status = dict["status"] as! Int
         self.timestamp = dict["timestamp"]  as! TimeInterval
         self.localId = dict["localId"] as? String
+        if dict["fromUid"] as! String == dict["groupId"] as! String
+            || dict["toUid"] as! String == dict["groupId"] as! String {
+            mesgType = .single
+        }else {
+            mesgType = .group
+        }
     }
 }
