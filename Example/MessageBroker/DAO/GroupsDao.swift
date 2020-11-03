@@ -37,7 +37,7 @@ extension GroupsDao {
         let sql = "INSERT INTO t_groups (owner, gid, title) VALUES (?, ?, ?);"
         guard db.open() else { return nil }
         
-        let group = Group(name: "新群组-\(gid[0..<6])", groupId: gid)
+        let group = Group(name: "新群组-\(gid[gid.count-6..<gid.count])", groupId: gid)
         
         if db.executeUpdate(sql, withArgumentsIn: [owner, group.groupId, group.name]) {
             print("数据插入成功 t_group: \(group.name), \(gid)")

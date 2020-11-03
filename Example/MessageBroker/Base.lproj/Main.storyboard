@@ -108,7 +108,7 @@
                                                     </constraints>
                                                 </imageView>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="--" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UMf-RI-hHs">
-                                                    <rect key="frame" x="68" y="11" width="262" height="20.5"/>
+                                                    <rect key="frame" x="68" y="11" width="16" height="20.5"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -119,7 +119,7 @@
                                                     <color key="textColor" red="0.57414853570000002" green="0.57416242360000003" blue="0.57415497299999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="--" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gkD-fY-hDK">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="--" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gkD-fY-hDK">
                                                     <rect key="frame" x="388.5" y="8" width="12.5" height="16"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                     <color key="textColor" red="0.57045853140000002" green="0.57047235969999999" blue="0.57046490910000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -137,7 +137,7 @@
                                                 <constraint firstItem="Rya-Ks-Rn7" firstAttribute="top" secondItem="LHb-GC-8YL" secondAttribute="top" constant="11" id="g3S-Mu-Cfg"/>
                                                 <constraint firstItem="fXy-hk-Z95" firstAttribute="leading" secondItem="UMf-RI-hHs" secondAttribute="leading" id="kx3-m9-wlU"/>
                                                 <constraint firstItem="gkD-fY-hDK" firstAttribute="top" secondItem="LHb-GC-8YL" secondAttribute="top" constant="8" id="nZg-kD-YWg"/>
-                                                <constraint firstAttribute="trailingMargin" relation="lessThanOrEqual" secondItem="UMf-RI-hHs" secondAttribute="trailing" constant="64" id="w5i-PV-VUX"/>
+                                                <constraint firstAttribute="trailingMargin" relation="greaterThanOrEqual" secondItem="UMf-RI-hHs" secondAttribute="trailing" constant="64" id="w5i-PV-VUX"/>
                                                 <constraint firstItem="UMf-RI-hHs" firstAttribute="leading" secondItem="Rya-Ks-Rn7" secondAttribute="trailing" constant="12" id="zaD-0m-AVo"/>
                                             </constraints>
                                         </tableViewCellContentView>
@@ -759,6 +759,7 @@
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="animalAvatarImageView" destination="AZM-a0-qqu" id="Ux0-QR-8Uo"/>
+                        <outlet property="inputBaseView" destination="YFS-ie-1K4" id="Emn-pT-1B7"/>
                         <outlet property="inputViewBottomConstraint" destination="is0-6M-XFq" id="W5x-aT-oSI"/>
                         <outlet property="messageTextView" destination="MLo-tU-xBj" id="GgL-bg-ix1"/>
                         <outlet property="messageTextViewHeightConstraint" destination="5ZY-Fq-LDq" id="QpO-fY-Ntg"/>

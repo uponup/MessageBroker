@@ -90,9 +90,9 @@ class ViewController: UIViewController {
         MavlMessage.shared.login(userName: username, password: password)
         
         // 添加默认联系人
-        let _ = UserDefaults.executeOnce(withKey: "\(username)_AddDefaultFriends") {
-            ContactsDao.addContact(owner: username, name: "bob", imAccount: "bob")
-            ContactsDao.addContact(owner: username, name: "peter", imAccount: "peter")
+        let _ = UserDefaults.executeOnce(withKey: "\(username.lowercased())_AddDefaultFriends") {
+            ContactsDao.addContact(owner: username.lowercased(), name: "bob", imAccount: "bob")
+            ContactsDao.addContact(owner: username.lowercased(), name: "peter", imAccount: "peter")
         }
     }
     
@@ -152,12 +152,7 @@ extension ViewController: MavlMessageStatusDelegate {
         NotificationCenter.default.post(name: .didReceiveMesg, object: ["msg": messages, "isLoadMore": isLoadMore])
         
         for (_, msg) in messages.enumerated() {
-            //TODO: msg的groupId
-            var tempMsg = msg
-            if !msg.isGroup {
-                tempMsg.groupId = msg.fromUid
-            }
-            MessageDao.addMesg(msg: tempMsg)
+            MessageDao.addMesg(msg: msg)
         }
         refreshData()
     }
@@ -200,7 +195,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         chatVc.hidesBottomBarWhenPushed = true
         //TODO: 1、add Circle    2、传给chatVc的参数可能会画有问题
         chatVc.chatTo = sessionModel.isGroup ?  .toGroup : .toContact
-        chatVc.chatToId = sessionModel.name.lowercased()
+        chatVc.chatToId = sessionModel.toId
         navigationController?.pushViewController(chatVc, animated: true)
     }
     
@@ -217,7 +212,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
             self.sessions.remove(at: indexPath.row)
             self.refreshData()
             
-            UserCenter.center.deleteChatSession(gid: session.gid)
+            UserCenter.center.deleteChatSession(gid: session.toId)
         }
         
         return UISwipeActionsConfiguration(actions: [actionDelete])

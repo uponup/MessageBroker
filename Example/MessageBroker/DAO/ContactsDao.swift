@@ -18,7 +18,7 @@ struct ContactsDao {
         guard db.open() else { return }
 
         if db.executeStatements(sqlContacts) {
-            print("=====t_contacts 创建成功")
+            print("=====t_contacts 创建成功, DB Path: \(db.databasePath.value)")
         }else {
             print("=====t_contacts 创建失败")
         }

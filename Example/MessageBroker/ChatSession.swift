@@ -14,17 +14,16 @@ struct ChatSession {
     var name: String {
         if msg.isGroup {
             guard let group = GroupsDao.fetchGroup(gid: msg.groupId) else {
-                return msg.groupId
+                return "已删除群组-\(msg.groupId)"
             }
             return group.name
         }else {
-            let n = UserCenter.isMe(uid: msg.fromUid) ? msg.toUid : msg.fromUid
-            return n.capitalized
+            return msg.groupId.capitalized
         }
     }
     
-    var gid: String {
-        return msg.groupId  // group的话有gid，circle的话返回vmucid，contact的话返回fromUid
+    var toId: String {
+        return msg.groupId
     }
     
     var isGroup: Bool {
@@ -32,7 +31,7 @@ struct ChatSession {
     }
     
     var message: String {
-        return (isGroup && UserCenter.isMe(uid: msg.fromUid)) ?  "\(msg.text)" : "\(msg.fromUid.capitalized): \(msg.text)"
+        return (isGroup && UserCenter.isMe(uid: msg.fromUid)) ? "\(msg.fromUid.capitalized): \(msg.text)" : "\(msg.text)"
     }
     
     var datetime: String {

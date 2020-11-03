@@ -53,14 +53,22 @@ class ContactCell: UITableViewCell {
             self.labelStatus.isHidden = true
             self.statusView.isHidden = true
         }else if let _ = contact.imAccount {
+            self.labelStatus.isHidden = false
+            self.statusView.isHidden = false
             ivAvatar.image = UIImage(named: contact.name.capitalized) ?? #imageLiteral(resourceName: "avatar_default")
         }
         
         labelName.text = contact.name.capitalized
         labelDetail.text = ""   //defail msg, just like signature, slogan, online status; default is “”
+        
+        refreshOnlineStatus()
     }
     
     @objc func userStatusChangeAction() {
+        refreshOnlineStatus()
+    }
+    
+    private func refreshOnlineStatus() {
         guard let model = model, let im = model.imAccount else { return }
         isOnline = StatusQueue.shared.isOnline(withImAccount: im)
     }

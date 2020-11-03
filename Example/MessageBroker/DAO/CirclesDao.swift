@@ -39,8 +39,8 @@ extension CirclesDao {
         guard db.open() else { return nil }
         
         let sql = "INSERT INTO t_circles VALUES (?, ?, ?, ?);"
-        
-        let circle = Circle(name: "新圈子-\(vmucId[0..<6])", vmucId: vmucId, users: users.joined(separator: "_"))
+                
+        let circle = Circle(name: "新圈子-\(vmucId[vmucId.count-6..<vmucId.count])", vmucId: vmucId, users: users.joined(separator: "_"))
         
         if db.executeUpdate(sql, withArgumentsIn: [circle.vmucId, circle.users, circle.name, owner]) {
             print("加入圈子成功：\(vmucId)")
@@ -92,5 +92,22 @@ extension CirclesDao {
             circles.append(Circle(name: name, vmucId: vmucId, users: users))
         }
         return circles
+    }
+    
+    /**
+        查找某个圈子的所有用户
+     */
+    static func fetchAllMembers(fromCircle circleId: String) -> [String] {
+        guard db.open() else { return [] }
+        
+        let sql = "SELECT users FROM t_circles WHERE vmuc_id = ?;"
+        guard let res = db.executeQuery(sql, withArgumentsIn: [circleId]) else { return [] }
+        
+        var members: [String] = []
+        while res.next() {
+            let vmucId = res.string(forColumn: "users").value
+            members = vmucId.split(separator: "_").map{ String($0) }
+        }
+        return members
     }
 }

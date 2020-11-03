@@ -51,8 +51,6 @@ enum ContactCellModel {
             return nil
         }
     }
-    
-    
 }
 
 struct Group {

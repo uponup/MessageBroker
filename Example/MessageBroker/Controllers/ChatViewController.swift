@@ -33,7 +33,7 @@ class ChatViewController: UIViewController {
                 if chatTo == .toContact {
                     _messages = MessageDao.fetchAllMesgs(from: passport.uid, to: chatToId).map { ChatMessage(status: .send, mesg: $0)}
                 }else {
-                    _messages = []
+                    _messages = MessageDao.fetchAllMesgs(fromGroup: chatToId).map { ChatMessage(status: .send, mesg: $0) }
                 }
             }
             return _messages!
@@ -94,6 +94,7 @@ class ChatViewController: UIViewController {
     
     @IBOutlet weak var messageTextViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var inputViewBottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var inputBaseView: UIView!
     
     @IBOutlet weak var sendMessageButton: UIButton! {
         didSet {
@@ -105,11 +106,12 @@ class ChatViewController: UIViewController {
         guard let message = messageTextView.text else { return }
         
         if chatTo == .toGroup {
-            MavlMessage.shared.sendToChatRoom(message: message, isToGroup: true, toId: chatToId)
+            MavlMessage.shared.send(message: message, toGroup: chatToId)
         }else if chatTo == .toCircle {
-            showHud("暂未开放此功能")
+            let friends = CirclesDao.fetchAllMembers(fromCircle: chatToId)
+            MavlMessage.shared.send(message: message, toGroup: chatToId, withFriends: friends)
         }else {
-            MavlMessage.shared.sendToChatRoom(message: message, isToGroup: false, toId: chatToId)
+            MavlMessage.shared.send(message: message, toFriend: chatToId)
         }
         messageTextView.text = ""
         sendMessageButton.isEnabled = false
@@ -155,6 +157,18 @@ class ChatViewController: UIViewController {
         }else {
             statusView.isHidden = true
             statusLabel.isHidden = true
+        }
+        
+        if chatTo == .toGroup  {
+            if GroupsDao.fetchGroup(gid: chatToId) == nil {
+                inputBaseView.isHidden = true
+            }
+        }else if chatTo == .toCircle {
+            
+        }else {
+            if ContactsDao.fetchContact(imAccount: chatToId) == nil {
+                inputBaseView.isHidden = true
+            }
         }
     }
     
