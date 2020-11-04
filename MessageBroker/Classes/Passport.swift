@@ -36,7 +36,7 @@ enum MBDomainConfig {
     
     static let localHost = "192.168.1.186"
     
-    static let port: UInt16 = 9883
+    static let port: UInt16 = 443
 }
 
 // MARK: - SDK初始化配置
