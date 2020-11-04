@@ -9,21 +9,21 @@
 import Foundation
 
 struct ChatSession {
-    var msg: Mesg
+    var msg: Message
     
     var name: String {
         if msg.isGroup {
-            guard let group = GroupsDao.fetchGroup(gid: msg.groupId) else {
-                return "已删除群组-\(msg.groupId)"
+            guard let group = GroupsDao.fetchGroup(gid: msg.conversationId) else {
+                return "已删除群组-\(msg.conversationId)"
             }
             return group.name
         }else {
-            return msg.groupId.capitalized
+            return msg.conversationId.capitalized
         }
     }
     
     var toId: String {
-        return msg.groupId
+        return msg.conversationId
     }
     
     var isGroup: Bool {
@@ -31,7 +31,7 @@ struct ChatSession {
     }
     
     var message: String {
-        return (isGroup && UserCenter.isMe(uid: msg.fromUid)) ? "\(msg.fromUid.capitalized): \(msg.text)" : "\(msg.text)"
+        return msg.text
     }
     
     var datetime: String {

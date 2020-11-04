@@ -23,6 +23,16 @@ struct ContactsDao {
             print("=====t_contacts 创建失败")
         }
     }
+    
+    static func dropTable() {
+        guard db.open() else { return }
+        let sql = "DROP TABLE t_contacts;"
+        if db.executeStatements(sql) {
+            print("=====t_contacts 删除成功")
+        }else {
+            print("=====t_contacts 删除失败")
+        }
+    }
 }
 
 // MARK: - 联系人管理

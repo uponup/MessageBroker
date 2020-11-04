@@ -17,38 +17,30 @@ enum SendingStatus {
 
 class ChatMessage {
     
-    private var mesg: Mesg?
+    private var mesg: Message
     var status: SendingStatus
     
-    var sender: String {
-        guard let mesg = mesg else {
-            return ""
-        }
-        return mesg.fromUid.capitalized
+    var isOutgoing: Bool {
+        mesg.isOutgoing
     }
+    
     var content: String {
-        guard let mesg = mesg else {
-            return ""
-        }
-        return mesg.text
+        mesg.text
     }
     
     var uuid: String {
-        guard let mesg = mesg else {
-            return ""
-        }
-        return mesg.serverId
+        mesg.serverId
     }
     
     var localId: String {
-        guard let mesg = mesg else {
-            return ""
-        }
-        return mesg.localId.value
+        mesg.localId
     }
     
+    var timestamp: TimeInterval {
+        mesg.timestamp
+    }
     
-    init(status: SendingStatus = .send, mesg: Mesg? = nil) {
+    init(status: SendingStatus = .send, mesg: Message) {
         self.mesg = mesg
         self.status = status
     }
@@ -60,9 +52,6 @@ extension ChatMessage: Equatable {
     }
     
     static func < (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
-        guard let lhsMesg = lhs.mesg, let rhsMesg = rhs.mesg else {
-            return false
-        }
-        return lhsMesg.timestamp < rhsMesg.timestamp
+        return lhs.timestamp < rhs.timestamp
     }
 }

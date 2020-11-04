@@ -178,17 +178,17 @@ extension MavlMessage: MavlMessageClient {
     public func createAGroup(withUsers users: [String]) {
         let payload = users.map{ "\($0.lowercased())" }.joined(separator: ",")
         let operation = Operation.createGroup
-        _send(msg: payload, operation: operation)
+        _send(text: payload, operation: operation)
     }
     
     public func joinGroup(withGroupId gid: String) {
         let operation = Operation.joinGroup(gid)
-        _send(msg: "", operation: operation)
+        _send(text: "", operation: operation)
     }
  
     public func quitGroup(withGroupId gid: String) {
         let operation = Operation.quitGroup(gid)
-        _send(msg: "", operation: operation)
+        _send(text: "", operation: operation)
     }
     
     public func addFriend(withUserName: String) {
@@ -199,7 +199,7 @@ extension MavlMessage: MavlMessageClient {
     public func send(message msg: String, toFriend fid: String) {
         let localId = nextMessageLocalID()
         let operation = Operation.oneToOne(localId, fid)
-        _send(msg: msg, operation: operation)
+        _send(text: msg, operation: operation)
     }
     
     public func send(message msg: String, toGroup gid: String, withFriends fids: [String] = []) {
@@ -207,58 +207,49 @@ extension MavlMessage: MavlMessageClient {
 
         if fids.count > 0 {
             // vmuc
-            operation = .vitualGroup(gid)
+            let localId = nextMessageLocalID()
+            operation = .vitualGroup(localId, gid)
         }else {
             // group
             let localId = nextMessageLocalID()
             operation = .oneToMany(localId, gid)
         }
-        _send(msg: msg, operation: operation)
+        _send(text: msg, operation: operation)
     }
     
     public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
         let operation = Operation.fetchMsgs(from, type, msgId, offset)
-        _send(msg: "", operation: operation)
+        _send(text: "", operation: operation)
     }
     
-    private func _send(msg: String, operation: Operation) {
-        guard let tuple = getMqttMessage(msg: msg, operation: operation) else {
+    private func _send(text: String, operation: Operation) {
+        guard let mesg = getMesg(text: text, operation: operation) else {
+            // TODO: 消息发送失败
             return
         }
-        mqtt?.publish(tuple.0)
+        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: mesg.text, qos: .qos0)
+        mqtt?.publish(mqttMsg)
         
-        // 超时检测
+        
+        // TODO: 超时检测
         let sendingTimer = MavlTimer.after(3) { [unowned self] in
-            self.delegateMsg?.mavl(didSend: tuple.1, error: MavlMessageError.sendFailed)
+            self.delegateMsg?.mavl(didSend: mesg, error: MavlMessageError.sendFailed)
         }
         _sendingMessages[operation.localId] = sendingTimer
     }
     
-    private func getMqttMessage(msg: String, operation: Operation) -> (CocoaMQTTMessage, Mesg)? {
-        guard let topicModel = SendingTopicModel(operation.topic) else { return nil }
-        
-        var mqttMsg: CocoaMQTTMessage
-        var msgModel: Mesg
-        
-        if operation.localId != "0" {
-            // 对发送的消息加密处理
-            guard let cipherMsg = EncryptUtils.encrypt(msg) else {
-                let payload = topicModel.payload(status: 0, text: msg)
-                msgModel = Mesg(payload: payload)!
-                msgModel.localId = operation.localId
-                delegateMsg?.mavl(didSend: msgModel, error: MavlMessageError.encryptFailed)
+    private func getMesg(text: String, operation: Operation) -> Mesg? {
+        if operation.isNeedCipher {
+            // 发送的是文本消息, 需要加密
+            guard let cipherText = EncryptUtils.encrypt(text),
+                let cipherTopic = SendTopicModel(operation.topic, cipherText) else {
                 return nil
             }
-            let payload = topicModel.payload(status: 0, text: msg)
-            msgModel = Mesg(payload: payload)!
-            mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: cipherMsg, qos: .qos0)
+            return Mesg(topicModel: cipherTopic)
         }else {
-            let payload = topicModel.payload(status: 0, text: msg)
-            msgModel = Mesg(payload: payload)!
-            msgModel.localId = operation.localId
-            mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: msg, qos: .qos0)
+            guard let topicModel = SendTopicModel(operation.topic, text) else { return nil }
+            return Mesg(topicModel: topicModel)
         }
-        return (mqttMsg, msgModel)
     }
 }
 
@@ -330,16 +321,15 @@ extension MavlMessage: CocoaMQTTDelegate {
         TRACE("message pub: \(message.string.value), id: \(id)")
         
 //        TODO: 这儿为什么用SendingTopicModel，而不是用TopicModel
-        guard let topicModel = SendingTopicModel(message.topic) else { return }
+        guard var topicModel = SendTopicModel(message.topic, message.string.value) else { return }
         
-        if topicModel.operation == 1 || topicModel.operation == 2 {
+        if topicModel.isNeedDecrypt {
             //解密
-            guard let originText = EncryptUtils.decrypt(message.string.value) else { return }
-            let payload = topicModel.payload(status: 2, text: originText)
-            
-            guard var msg = Mesg(payload: payload) else {  return }
-            msg.localId = topicModel.localId
-            delegateMsg?.mavl(willSend: msg)
+            guard let originText = EncryptUtils.decrypt(message.string.value) else {
+                // TODO: 解密willSend的消息失败, 是否需要报错
+                return }
+            topicModel.text = originText
+            delegateMsg?.mavl(willSend: Mesg(topicModel: topicModel))
         }
     }
     
@@ -352,10 +342,10 @@ extension MavlMessage: CocoaMQTTDelegate {
         
         let topic = message.topic
         
-        if let topicModel = StatusTopicModel(topic) {
+        if let topicModel = UserStatusTopicModel(topic) {
             // 用户状态交付StatusQueue队列维护
             StatusQueue.shared.updateUserStatus(imAccount: topicModel.friendId, status: message.string.value)
-        }else if let topicModel = TopicModel(message.topic) {
+        }else if let topicModel = ReceivedTopicModel(topic, message.string.value) {
             if topicModel.operation == 0 {
                 // create a group
                 guard let passport = passport else { return }
@@ -367,18 +357,23 @@ extension MavlMessage: CocoaMQTTDelegate {
                 delegateGroup?.quitGroup(gid: topicModel.to, error: nil)
             }else if topicModel.operation == 401 {
                 let msgs = message.string.value.components(separatedBy: "##").compactMap { element -> Mesg? in
-                    guard let originText = EncryptUtils.decrypt(element) else { return Mesg(payload: element) }
-                    return Mesg(payload: originText)
+                    guard let originText = EncryptUtils.decrypt(element) else {
+                        // TODO: 解密失败，返回错误信息
+                        guard let received = ReceivedTopicModel(topic, element) else {  return nil }
+                        return Mesg(topicModel: received)
+                    }
+                    
+                    guard let received = ReceivedTopicModel(topic, originText) else { return nil }
+                    return Mesg(topicModel: received)
                 }
                 delegateMsg?.mavl(didRevceived: msgs, isLoadMore: true)
             }else {
-                // 接收的 virtul 群组信息不需要单独处理
-                // TODO：接收到的消息的时间戳，怎么处理。目前使用的本地时间，应该使用topic里面的时间
-                guard let originText = EncryptUtils.decrypt(message.string.value) else { return }
-                let payload = topicModel.payload(status: 2, timestamp: Date().timeIntervalSince1970, text: originText)
-                
-                guard var msg = Mesg(payload: payload) else { return }
-                msg.localId = topicModel.localId
+                guard let originText = EncryptUtils.decrypt(message.string.value),
+                    let received = ReceivedTopicModel(topic, originText) else {
+                    // TODO: 解密失败，返回错误信息
+                    return
+                }
+                let msg = Mesg(topicModel: received)
                 delegateMsg?.mavl(didRevceived: [msg], isLoadMore: false)
                 
                 let sendingTimer = _sendingMessages[topicModel.localId]
@@ -386,6 +381,7 @@ extension MavlMessage: CocoaMQTTDelegate {
                 _sendingMessages.removeValue(forKey: topicModel.localId)
             }
         }else {
+            // TODO: 非法Topic，返回错误状态
             TRACE("收到的信息Topic不符合规范：\(topic)")
         }
     }

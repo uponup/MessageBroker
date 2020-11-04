@@ -151,8 +151,8 @@ extension ViewController: MavlMessageStatusDelegate {
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {
         NotificationCenter.default.post(name: .didReceiveMesg, object: ["msg": messages, "isLoadMore": isLoadMore])
         
-        for (_, msg) in messages.enumerated() {
-            MessageDao.addMesg(msg: msg)
+        for mesg in messages.map({ Message($0) }) {
+            MessageDao.addMesg(msg: mesg)
         }
         refreshData()
     }

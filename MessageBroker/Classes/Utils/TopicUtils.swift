@@ -7,37 +7,29 @@
 //
 
 import Foundation
-   
-//收到 appid/0/localid/togid/serverid/fromid
-//    appid/1/localid/touid/serverid/fromuid
-//    appid/2/localid/togid/serverid/fromuid
 
-//    peter发给bob：56/1/1/bob/1604406789700/peter
-//    bob发给peter：56/1/2/peter/1604406911908/bob
-
-protocol TopicPayload {
-    func payload(status: Int, timestamp: TimeInterval, text: String) -> String
-}
 /**
-    接收的Topic模型
-    56/2/1/05b048e53e813dMJ/1603684050822/peter       群组发给peter
-    56/2/1/05b3304c425c72DS/1604395116895/ss            群组发给ss
+ TopicModle的作用：隔离Mesg和topicStr
+    在协议中，我们自定义了多种topic字符串，来实现不同的功能
+    如果我们构造Mesg的时候，直接传入topic字符串，那么就会导致Mesg的构造方法过于复杂，所以我们设计了TopicModel，对Mesg进行解耦。
  */
-struct TopicModel {
-    var appid: String
-    var operation: Int
-    var localId: String
-    var to: String
-    var from: String
-    var serverId: String
-    var isGroupMsg: Bool {
-        operation == 2 || operation == 0
-    }
-    var gid: String {
-//        56/1/5/peter/1604407229084/bob
-        if isGroupMsg {
-            return to
-        }else {
+protocol TopicModelProtocol {
+    var appid: String { get set }
+    var operation: Int { get set }      // 这儿operation选择Int型，上游Operation模型为enum，下游Mesg中为enum（单聊/群聊/虚拟群组）
+    var from: String { get set }
+    var to: String { get set }
+    var text: String { get set }
+    
+    var localId: String { get set }
+    var serverId: String { get set }
+    var status: Int { set get }
+    var timestamp: TimeInterval? { set get }
+    var conversationId: String { get }
+}
+
+extension TopicModelProtocol {
+    var conversationId: String {
+        if operation == Operation.oneToOne(0, "").value {
             guard let passport = MavlMessage.shared.passport else {
                 return to
             }
@@ -45,81 +37,127 @@ struct TopicModel {
              「A给B发」 和「B给A发」这两种case应该指定同一个gid，即对方账户
              */
             return passport.uid == from ? to : from
+        }else {
+            return to
         }
     }
     
-    init?(_ topic: String) {
-        let segments = topic.components(separatedBy: "/")
-        guard segments.count >= 6, let op = Int(segments[1]) else { return nil }
-        
-        appid = segments[0]
-        operation = op
-        localId = appid == MavlMessage.shared.appid ? segments[2] : ""
-        to = segments[3]
-        serverId = segments[4]
-        from = segments[5]
+    var isNeedDecrypt: Bool {
+        if operation == 1
+        || operation == 2
+        || operation == 3 {
+            return true
+        }else {
+            return false
+        }
     }
 }
 
-extension TopicModel: TopicPayload {
-    //Fromuid，Touid，   Gid，            Servermsgid，Status，Timestamp， Msg
-    func payload(status: Int, timestamp: TimeInterval, text: String) -> String {
-        "\(from),\(to),\(gid),\(serverId),\(status),\(timestamp),\(text)"
-    }
-}
-
-
-//发送 appid/0/localid/gid            create group
-//    appid/1/localid/toid           1v1
-//    appid/2/localid/togid      1vN
-//    appid/2/localid/togid/serverid/fromuid
+// MARK: - Send
 /**
-    发送的Topic模型
-    56/2/2/05b048e53e813dMJ
+    发送信息的Topic模型
+    appid/operation/localId/toid
  */
-
-struct SendingTopicModel {
+struct SendTopicModel: TopicModelProtocol {
     var appid: String
     var operation: Int
-    var localId: String
+    var from: String
     var to: String
-    var isGroupMsg: Bool {
-        operation == 2 || operation == 1
-    }
-    var gid: String {
-        return to   //不论是一对一，还是一对多，在自定义协议中只有toId的概念。
-    }
+    var text: String
+    var localId: String
+    var serverId: String
+    var status: Int
+    var timestamp: TimeInterval?
     
-    
-    init?(_ topic: String) {
+    init?(_ topic: String, _ mesgText: String) {
+        guard let passport = MavlMessage.shared.passport else { return nil }
         let segments = topic.components(separatedBy: "/")
         guard segments.count >= 4, let op = Int(segments[1]) else { return nil }
         
         appid = segments[0]
         operation = op
-        localId = segments[2]
+        from = passport.uid
         to = segments[3]
+        text = mesgText
+        localId = segments[2]
+        serverId = ""
+        status = 0
     }
 }
 
-extension SendingTopicModel: TopicPayload {
-    //Fromuid，Touid，   Gid，            Servermsgid，Status，Timestamp， Msg
-    func payload(status: Int, timestamp: TimeInterval = Date().timeIntervalSince1970, text: String) -> String {
-        guard let passport = MavlMessage.shared.passport else {
-            return ""
-        }
-        return "\(passport.uid),\(to),\(gid),,\(status),\(timestamp),\(text)"
+// MARK: - Receive
+/**
+    接收到信息的Topic模型
+    appid/operation/localId/to/serverId/from
+ */
+struct ReceivedTopicModel: TopicModelProtocol {
+    var appid: String
+    var operation: Int
+    var from: String
+    var to: String
+    var text: String
+    var localId: String
+    var serverId: String
+    var status: Int = 2
+    var timestamp: TimeInterval?
+    
+    init?(_ topic: String, _ mesgText: String) {
+        let segments = topic.components(separatedBy: "/")
+        guard segments.count >= 6, let op = Int(segments[1]) else { return nil }
+        
+        appid = segments[0]
+        operation = op
+        from = segments[5]
+        to = segments[3]
+        text = mesgText
+        localId = segments[2]
+        serverId = segments[4]
+    }
+}
+
+// MARK: - History
+/**
+    历史信息Topic模型
+    from/to/gid/serverId/status/timestamp/msg
+ */
+struct HistoryTopicModel: TopicModelProtocol {
+    var appid: String
+    var operation: Int
+    var from: String
+    var to: String
+    var text: String
+    var localId: String
+    var serverId: String
+    var status: Int
+    var timestamp: TimeInterval?
+    
+    private var gid: String
+    
+    
+    init?(_ topic: String) {
+        let segments = topic.components(separatedBy: "/")
+        guard segments.count >= 7 else { return nil }
+        
+        appid = MavlMessage.shared.appid
+        operation = 401     //fake operation，历史信息不存在operation这个概念，客户端将其归纳到401中
+        from = segments[0]
+        to = segments[1]
+        gid = segments[2]
+        localId = ""
+        serverId = segments[3]
+        status = Int(segments[4]) ?? 2
+        timestamp = TimeInterval(segments[5]) ?? 0
+        text = segments[6]
     }
 }
 
 
-
-//用户状态  appid/userstatus/uid/online
-
+// MARK: - User Status
 /**
     用户状态Topic模型
+    appid/userstatus/uid/online
  */
-struct StatusTopicModel {
+struct UserStatusTopicModel {
     var appid: String
     var friendId: String
     
@@ -135,4 +173,3 @@ struct StatusTopicModel {
         self.friendId = segments[2]
     }
 }
-

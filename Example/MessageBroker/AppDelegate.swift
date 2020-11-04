@@ -13,6 +13,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
+        let _ = UserDefaults.executeOnce(withKey: "UpdateDB2") {
+            MessageDao.dropTable()
+        }
+        
         ContactsDao.createTable()
         GroupsDao.createTable()
         CirclesDao.createTable()

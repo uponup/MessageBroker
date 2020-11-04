@@ -31,7 +31,7 @@ class ChatViewController: UIViewController {
                 }
                 
                 if chatTo == .toContact {
-                    _messages = MessageDao.fetchAllMesgs(from: passport.uid, to: chatToId).map { ChatMessage(status: .send, mesg: $0)}
+                    _messages = MessageDao.fetchAllMesgs(local: passport.uid, remote: chatToId).map { ChatMessage(status: .send, mesg: $0)}
                 }else {
                     _messages = MessageDao.fetchAllMesgs(fromGroup: chatToId).map { ChatMessage(status: .send, mesg: $0) }
                 }
@@ -208,7 +208,7 @@ class ChatViewController: UIViewController {
         guard let object = notification.object as? [String: Mesg],
             let msg = object["msg"] else { return }
         
-        let message = ChatMessage(status: .sending, mesg: msg)
+        let message = ChatMessage(status: .sending, mesg: Message(msg))
         messages.append(message)
         tableView.reloadData()
         
@@ -238,7 +238,7 @@ class ChatViewController: UIViewController {
         
         messages = messages.map {
             if $0.localId == msg.localId.value {
-                return ChatMessage(status: .sendfail, mesg: msg)
+                return ChatMessage(status: .sendfail, mesg: Message(msg))
             }else {
                 return $0
             }
@@ -257,7 +257,7 @@ class ChatViewController: UIViewController {
         
         guard let msgs = receivedMsgs else { return }
         let sortedMsgs = msgs.map{
-            ChatMessage(status: .sendSuccess, mesg: $0)
+            ChatMessage(status: .sendSuccess, mesg: Message($0))
         }.reversed()
         
         if isLoadMore {
@@ -316,7 +316,7 @@ extension ChatViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = messages[indexPath.row]
-        if message.sender.lowercased() == MavlMessage.shared.passport?.uid.lowercased() {
+        if message.isOutgoing {
             let cell = tableView.dequeueReusableCell(withIdentifier: "rightMessageCell", for: indexPath) as! ChatRightMessageCell
             cell.contentLabel.text = messages[indexPath.row].content
             cell.avatarImageView.image = #imageLiteral(resourceName: "iv_chat_local")

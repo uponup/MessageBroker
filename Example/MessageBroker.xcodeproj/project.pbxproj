@@ -21,6 +21,7 @@
 		3925046E254D64DB00B8C6F2 /* MessageDao.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3925046D254D64DB00B8C6F2 /* MessageDao.swift */; };
 		39420D52251EC96C0009813A /* ContactsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D51251EC96C0009813A /* ContactsController.swift */; };
 		39420D54251ECA5B0009813A /* ContactCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39420D53251ECA5B0009813A /* ContactCellModel.swift */; };
+		3968BA5725529803005B3ED7 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3968BA5625529803005B3ED7 /* Message.swift */; };
 		397D440625187ED1005CB2D3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397D440525187ED1005CB2D3 /* AppDelegate.swift */; };
 		397D440825187ED1005CB2D3 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397D440725187ED1005CB2D3 /* SceneDelegate.swift */; };
 		397D440A25187ED1005CB2D3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397D440925187ED1005CB2D3 /* ViewController.swift */; };
@@ -59,6 +60,7 @@
 		3925046D254D64DB00B8C6F2 /* MessageDao.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageDao.swift; sourceTree = "<group>"; };
 		39420D51251EC96C0009813A /* ContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsController.swift; sourceTree = "<group>"; };
 		39420D53251ECA5B0009813A /* ContactCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactCellModel.swift; sourceTree = "<group>"; };
+		3968BA5625529803005B3ED7 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		397D440225187ED1005CB2D3 /* 小牛Mesg.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "小牛Mesg.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		397D440525187ED1005CB2D3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		397D440725187ED1005CB2D3 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -136,6 +138,14 @@
 			path = DAO;
 			sourceTree = "<group>";
 		};
+		3968BA55255297D5005B3ED7 /* Entity */ = {
+			isa = PBXGroup;
+			children = (
+				3968BA5625529803005B3ED7 /* Message.swift */,
+			);
+			path = Entity;
+			sourceTree = "<group>";
+		};
 		397D43F925187ED1005CB2D3 = {
 			isa = PBXGroup;
 			children = (
@@ -158,6 +168,7 @@
 		397D440425187ED1005CB2D3 /* MessageBroker */ = {
 			isa = PBXGroup;
 			children = (
+				3968BA55255297D5005B3ED7 /* Entity */,
 				390A8E02254FA2E600D242B2 /* Library */,
 				39250468254D649300B8C6F2 /* DAO */,
 				3998D288251B40C500818904 /* Module */,
@@ -399,6 +410,7 @@
 				397D442725188687005CB2D3 /* ChatLeftMessageCell.swift in Sources */,
 				3925046A254D64B800B8C6F2 /* SQLiteManager.swift in Sources */,
 				397D442F25188EF6005CB2D3 /* Global.swift in Sources */,
+				3968BA5725529803005B3ED7 /* Message.swift in Sources */,
 				397D442925188687005CB2D3 /* ChatRightMessageCell.swift in Sources */,
 				397D440625187ED1005CB2D3 /* AppDelegate.swift in Sources */,
 				397D440825187ED1005CB2D3 /* SceneDelegate.swift in Sources */,

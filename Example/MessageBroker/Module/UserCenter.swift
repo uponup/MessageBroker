@@ -82,7 +82,7 @@ class UserCenter {
     // 删除会话
     func deleteChatSession(gid: String) {
         guard let passport = passport else { return }
-        MessageDao.deleteChatSession(from: passport.uid, gid: gid)
+        MessageDao.deleteChatSession(local: passport.uid, conversationId: gid)
     }
     
     private func storePassport() {

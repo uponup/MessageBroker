@@ -24,7 +24,16 @@ struct GroupsDao {
         if db.executeStatements(sqlGroups) {
             print("=====t_groups 创建成功")
         }else {
-            print("=====t_contacts 创建失败")
+            print("=====t_groups 创建失败")
+        }
+    }
+    static func dropTable() {
+        guard db.open() else { return }
+        let sql = "DROP TABLE t_groups;"
+        if db.executeStatements(sql) {
+            print("=====t_groups 删除成功")
+        }else {
+            print("=====t_groups 删除失败")
         }
     }
 }

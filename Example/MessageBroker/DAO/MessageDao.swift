@@ -8,8 +8,8 @@
 
 import Foundation
 
-//public var fromUid: String
-//public var toUid: String
+//public var local: String
+//public var remote: String
 //public var groupId: String
 //public var serverId: String
 //public var text: String
@@ -21,7 +21,7 @@ struct MessageDao {
     static let db = SQLiteManager.sharedManager().db
 
     static func createTable() {
-        let sqlMesg = "CREATE TABLE IF NOT EXISTS t_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, fromUid VARCHAR(32), toUid VARCHAR(32), gid VARCHAR(32), text TEXT, status SMALLINT DEFAULT 0, localId VARCHAR(32) DEFAULT 0, serverId VARCHAR(32) DEFAULT 0, timestamp DATETIME, isGroup Bool);"
+        let sqlMesg = "CREATE TABLE IF NOT EXISTS t_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, local VARCHAR(32), remote VARCHAR(32), conversationId VARCHAR(32), text TEXT, status SMALLINT DEFAULT 0, localId VARCHAR(32) DEFAULT 0, serverId VARCHAR(32) DEFAULT 0, timestamp DATETIME, isOut Bool, isGroup Bool);"
         
         guard db.open() else { return }
 
@@ -32,26 +32,39 @@ struct MessageDao {
         }
     }
     
-    static func addMesg(msg: Mesg) {
-        let sql = "INSERT INTO t_msgs (fromUid, toUid, gid, text, status, localId, timestamp, isGroup) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    static func dropTable() {
+        guard db.open() else { return }
+        let sql = "DROP TABLE t_msgs;"
+        if db.executeStatements(sql) {
+            print("=====t_msgs 删除成功")
+        }else {
+            print("=====t_msgs 删除失败")
+        }
+    }
+}
+
+extension MessageDao {
+    
+    static func addMesg(msg: Message) {
+        let sql = "INSERT INTO t_msgs (local, remote, conversationId, text, status, localId, timestamp, isOut, isGroup) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         guard db.open() else { return }
         
         let date = Date(timeIntervalSince1970: msg.timestamp)
-        if db.executeUpdate(sql, withArgumentsIn: [msg.fromUid, msg.toUid, msg.groupId, msg.text, msg.status, msg.localId ?? "", date, msg.isGroup]) {
-            print("数据插入成功 t_msgs: \(msg.fromUid), \(msg.toUid) : \(msg.text)")
+        if db.executeUpdate(sql, withArgumentsIn: [msg.localAccount, msg.remoteAccount, msg.conversationId, msg.text, msg.status, msg.localId, date, msg.isOutgoing, msg.isGroup]) {
+            print("数据插入成功 t_msgs: \(msg.remoteAccount) : \(msg.text)")
         }else {
-            print("数据插入失败 t_msgs: \(msg.fromUid), \(msg.toUid) : \(msg.text)")
+            print("数据插入失败 t_msgs: \(msg.remoteAccount) : \(msg.text)")
         }
     }
     
     /**
      删除会话
      */
-    static func deleteChatSession(from: String, gid: String) {
+    static func deleteChatSession(local: String, conversationId: String) {
         guard db.open() else { return }
 
-        let sql = "DELETE FROM t_msgs WHERE fromUid = ? AND gid = ?;"
-        let res = db.executeUpdate(sql, withArgumentsIn: [from, gid])
+        let sql = "DELETE FROM t_msgs WHERE local = ? AND conversationId = ?;"
+        let res = db.executeUpdate(sql, withArgumentsIn: [local, conversationId])
         if res {
             print("删除成功")
         }else {
@@ -62,24 +75,26 @@ struct MessageDao {
     /**
      查找所有最近的信息
      */
-    static func fetchRecentlyMesgs(from: String) -> [Mesg] {
+    static func fetchRecentlyMesgs(from: String) -> [Message] {
         guard db.open() else { return [] }
 
-        let sql = "SELECT * FROM (SELECT *FROM t_msgs WHERE fromUid = ? or toUid = ? ORDER BY timestamp DESC ) GROUP BY gid;"
+        let sql = "SELECT * FROM (SELECT *FROM t_msgs WHERE local = ? ORDER BY timestamp DESC ) GROUP BY conversationId;"
         guard let res = db.executeQuery(sql, withArgumentsIn: [from, from]) else { return [] }
-        var messages: [Mesg] = []
+        var messages: [Message] = []
         while res.next() {
-            let gid = res.string(forColumn: "gid")
-            let text = res.string(forColumn: "text")
-            let status = res.int(forColumn: "status")
-            let localId = res.string(forColumn: "localId")
-            let serverId = res.string(forColumn: "serverId")
+            let id = res.int(forColumn: "id")
+            let text = res.string(forColumn: "text").value
+            let localAccount = res.string(forColumn: "local").value
+            let remoteAccount = res.string(forColumn: "remote").value
+            let conversationId = res.string(forColumn: "conversationId").value
+            let localId = res.string(forColumn: "localId").value
+            let serverId = res.string(forColumn: "serverId").value
+            let status = Int(res.int(forColumn: "status"))
             let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
-            let to = res.string(forColumn: "toUid")
             let isGroup = res.bool(forColumn: "isGroup")
-
-            var msg = Mesg(fromUid: from, toUid: to.value, groupId: gid.value, serverId: serverId.value, text: text.value, timestamp: timestamp, status: Int(status), isGroup: isGroup)
-            msg.localId = localId
+            let isOut = res.bool(forColumn: "isOut")
+            
+            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, isGroup: isGroup, isOutgoing: isOut)
             messages.append(msg)
         }
         return messages
@@ -89,65 +104,53 @@ struct MessageDao {
      查找所有信息
      @return [Mesg]
     */
-    static func fetchAllMesgs(from: String, to: String) -> [Mesg] {
+    static func fetchAllMesgs(local: String, remote: String) -> [Message] {
         guard db.open() else { return [] }
 
-        let sql = "SELECT * FROM t_msgs WHERE fromUid = ? AND toUid = ? ORDER BY timestamp ASC;"
-        guard let res = try? db.executeQuery(sql, values: [from, to]) else { return [] }
+        let sql = "SELECT * FROM t_msgs WHERE local = ? AND remote = ? ORDER BY timestamp ASC;"
+        guard let res = try? db.executeQuery(sql, values: [local, remote]) else { return [] }
         
-        var messages: [Mesg] = []
+        var messages: [Message] = []
         while res.next() {
-            let gid = res.string(forColumn: "gid")
-            let text = res.string(forColumn: "text")
-            let status = res.int(forColumn: "status")
-            let localId = res.string(forColumn: "localId")
-            let serverId = res.string(forColumn: "serverId")
+            let id = res.int(forColumn: "id")
+            let text = res.string(forColumn: "text").value
+            let localAccount = res.string(forColumn: "local").value
+            let remoteAccount = res.string(forColumn: "remote").value
+            let conversationId = res.string(forColumn: "conversationId").value
+            let localId = res.string(forColumn: "localId").value
+            let serverId = res.string(forColumn: "serverId").value
+            let status = Int(res.int(forColumn: "status"))
             let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
             let isGroup = res.bool(forColumn: "isGroup")
+            let isOut = res.bool(forColumn: "isOut")
 
-            var msg = Mesg(fromUid: from, toUid: to, groupId: gid.value, serverId: serverId.value, text: text.value, timestamp: timestamp, status: Int(status), isGroup: isGroup)
-            msg.localId = localId
+            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, isGroup: isGroup, isOutgoing: isOut)
             messages.append(msg)
         }
-        
-        guard let res2 = try? db.executeQuery(sql, values: [to, from]) else { return messages }
-        while res2.next() {
-            let gid = res2.string(forColumn: "gid")
-            let text = res2.string(forColumn: "text")
-            let status = res2.int(forColumn: "status")
-            let localId = res2.string(forColumn: "localId")
-            let serverId = res2.string(forColumn: "serverId")
-            let timestamp = res2.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
-            let isGroup = res2.bool(forColumn: "isGroup")
-
-            var msg = Mesg(fromUid: to, toUid: from, groupId: gid.value, serverId: serverId.value, text: text.value, timestamp: timestamp, status: Int(status), isGroup: isGroup)
-            msg.localId = localId
-            messages.append(msg)
-        }
-
         return messages
     }
     
-    static func fetchAllMesgs(fromGroup gid: String) -> [Mesg] {
+    static func fetchAllMesgs(fromGroup conversationId: String) -> [Message] {
         guard db.open() else { return [] }
         
-        let sql = "SELECT *FROM t_msgs WHERE toUId = ? ORDER BY timestamp ASC;"
-        guard let res = try? db.executeQuery(sql, values: [gid]) else { return [] }
+        let sql = "SELECT *FROM t_msgs WHERE conversationId = ? ORDER BY timestamp ASC;"
+        guard let res = try? db.executeQuery(sql, values: [conversationId]) else { return [] }
         
-        var messages: [Mesg] = []
+        var messages: [Message] = []
         while res.next() {
-            let from = res.string(forColumn: "fromUid")
-            let to = res.string(forColumn: "toUid")
-            let gid = res.string(forColumn: "gid")
-            let text = res.string(forColumn: "text")
-            let status = res.int(forColumn: "status")
-            let localId = res.string(forColumn: "localId")
-            let serverId = res.string(forColumn: "serverId")
+            let id = res.int(forColumn: "id")
+            let text = res.string(forColumn: "text").value
+            let localAccount = res.string(forColumn: "local").value
+            let remoteAccount = res.string(forColumn: "remote").value
+            let conversationId = res.string(forColumn: "conversationId").value
+            let localId = res.string(forColumn: "localId").value
+            let serverId = res.string(forColumn: "serverId").value
+            let status = Int(res.int(forColumn: "status"))
             let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
             let isGroup = res.bool(forColumn: "isGroup")
-
-            var msg = Mesg(fromUid: from.value, toUid: to.value, groupId: gid.value, serverId: serverId.value, text: text.value, timestamp: timestamp, status: Int(status), isGroup: isGroup)
-            msg.localId = localId
+            let isOut = res.bool(forColumn: "isOut")
+            
+            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, isGroup: isGroup, isOutgoing: isOut)
             messages.append(msg)
         }
 

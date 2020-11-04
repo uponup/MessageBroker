@@ -24,9 +24,18 @@ struct CirclesDao {
         guard db.open() else { return }
         
         if db.executeStatements(sqlGroups) {
-            print("=====t_groups 创建成功")
+            print("=====t_circles 创建成功")
         }else {
-            print("=====t_contacts 创建失败")
+            print("=====t_circles 创建失败")
+        }
+    }
+    static func dropTable() {
+        guard db.open() else { return }
+        let sql = "DROP TABLE t_circles;"
+        if db.executeStatements(sql) {
+            print("=====t_circles 删除成功")
+        }else {
+            print("=====t_circles 删除失败")
         }
     }
 }

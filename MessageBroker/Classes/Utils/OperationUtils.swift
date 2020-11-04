@@ -25,7 +25,7 @@ enum Operation {
     case createGroup
     case oneToOne(_ localId: UInt16, _ toUid: String)
     case oneToMany(_ localId: UInt16, _ toGid: String)
-    case vitualGroup(_ toGid: String)
+    case vitualGroup(_ localId: UInt16, _ toGid: String)
     
     case joinGroup(_ toGid: String)
     case quitGroup(_ toGid: String)
@@ -76,12 +76,23 @@ enum Operation {
     
     var localId: String {
         switch self {
-        case .createGroup, .vitualGroup, .joinGroup, .quitGroup, .uploadToken, .fetchMsgs:
+        case .createGroup, .joinGroup, .quitGroup, .uploadToken, .fetchMsgs:
             return "0"
         case .oneToOne(let localId, _):
             return "\(localId)"
         case .oneToMany(let localId, _):
             return "\(localId)"
+        case .vitualGroup(let localId, _):
+            return "\(localId)"
+        }
+    }
+    
+    var isNeedCipher: Bool {
+        switch self {
+        case .oneToOne, .oneToMany, .vitualGroup, .fetchMsgs:
+            return true
+        default:
+            return false
         }
     }
 }
