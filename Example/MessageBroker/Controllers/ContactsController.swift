@@ -327,8 +327,9 @@ extension ContactsController {
             chatVc.chatTo = .toContact
             chatVc.chatToId = contactId
         }
-        if let _ = cellModel.circleId {
-            showHudInfo(title: "提示：", msg: "此功能暂未开放")
+        
+        if isMe(cellModel.imAccount)  {
+            showHudInfo(title: "Tips:", msg: "Sending yourself a message is not expected")
             return
         }
         self.navigationController?.pushViewController(chatVc, animated: true )

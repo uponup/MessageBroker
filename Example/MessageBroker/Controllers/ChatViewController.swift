@@ -142,7 +142,13 @@ class ChatViewController: UIViewController {
             MavlMessage.shared.fetchMessages(msgId: (self?.latestMessagesId).value, from: (self?.chatToId).value, type: type, offset: 10)
         }
         
-        animalAvatarImageView.image = chatTo != .toContact ?  #imageLiteral(resourceName: "chatroom_default") : #imageLiteral(resourceName: "avatar_default")
+        if chatTo == .toContact {
+            animalAvatarImageView.image = #imageLiteral(resourceName: "cn_single_default")
+        }else if chatTo == .toCircle {
+            animalAvatarImageView.image = #imageLiteral(resourceName: "cn_circle_default")
+        }else {
+            animalAvatarImageView.image = #imageLiteral(resourceName: "cn_chatroom_default")
+        }
         sloganLabel.text = slogan
         
         NotificationCenter.default.addObserver(self, selector: #selector(receivedMessage(notification:)), name: .didReceiveMesg, object: nil)

@@ -13,7 +13,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var loginView: UIView!
     @IBOutlet weak var tfUserName: UITextField!
     @IBOutlet weak var tfPassword: UITextField!
-    @IBOutlet weak var itemClose: UIBarButtonItem!
     @IBOutlet weak var tableView: UITableView!
     
     private var _sessions: [ChatSession]?
@@ -35,7 +34,6 @@ class ViewController: UIViewController {
             if isLogin {
                 navigationItem.title = "Online"
                 loginView.isHidden = true
-                itemClose.isEnabled = true
                 _sessions = nil
                 
                 let passport = Passport(tfUserName.text.value, tfPassword.text.value)
@@ -49,7 +47,6 @@ class ViewController: UIViewController {
                 tfUserName.text = ""
                 tfPassword.text = "xxxxxx"
                 loginView.isHidden = false
-                itemClose.isEnabled = false
                 
                 UserCenter.center.logout()
             }
@@ -94,10 +91,6 @@ class ViewController: UIViewController {
             ContactsDao.addContact(owner: username.lowercased(), name: "bob", imAccount: "bob")
             ContactsDao.addContact(owner: username.lowercased(), name: "peter", imAccount: "peter")
         }
-    }
-    
-    @IBAction func logout(_ sender: Any) {
-        MavlMessage.shared.logout()
     }
     
     // MARK: - Private Method

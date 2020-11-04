@@ -168,15 +168,8 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="jkt-MM-Y8C"/>
                     </view>
-                    <navigationItem key="navigationItem" id="Pgy-iz-3E4">
-                        <barButtonItem key="leftBarButtonItem" systemItem="stop" id="ehl-TI-dF4">
-                            <connections>
-                                <action selector="logout:" destination="BYZ-38-t0r" id="4so-jb-TgW"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" id="Pgy-iz-3E4"/>
                     <connections>
-                        <outlet property="itemClose" destination="ehl-TI-dF4" id="Bf7-gi-m4a"/>
                         <outlet property="loginView" destination="ouI-Is-zwC" id="H4Z-2z-bYg"/>
                         <outlet property="tableView" destination="AYo-z3-8HM" id="nht-1c-uTy"/>
                         <outlet property="tfPassword" destination="ltd-ax-Afo" id="a8c-mY-t5f"/>
@@ -194,14 +187,63 @@
                     <view key="view" contentMode="scaleToFill" id="D9y-Ba-mvg">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="avatar_default" translatesAutoresizingMaskIntoConstraints="NO" id="mO4-IO-Mdb">
+                                <rect key="frame" x="171" y="144" width="72" height="72"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="mO4-IO-Mdb" secondAttribute="height" multiplier="1:1" id="K37-6s-Vt0"/>
+                                    <constraint firstAttribute="width" constant="72" id="te2-RC-eoL"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Il-5K-Jaj">
+                                <rect key="frame" x="207" y="228" width="0.0" height="0.0"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="24"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vmb-jD-E3o">
+                                <rect key="frame" x="87" y="723" width="240" height="48"/>
+                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="48" id="L6Z-r8-QWK"/>
+                                    <constraint firstAttribute="width" constant="240" id="Z0P-gP-7fE"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="18"/>
+                                <state key="normal" title="LogOut">
+                                    <color key="titleColor" red="0.96862745100000003" green="0.96862745100000003" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="clipsToBounds" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="logoutAction:" destination="CgO-r1-QRe" eventType="touchUpInside" id="oSQ-ZN-y8I"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="vmb-jD-E3o" firstAttribute="centerX" secondItem="1oo-9F-KQ6" secondAttribute="centerX" id="I7k-UF-MDj"/>
+                            <constraint firstItem="1oo-9F-KQ6" firstAttribute="bottom" secondItem="vmb-jD-E3o" secondAttribute="bottom" constant="42" id="LVw-9F-GIg"/>
+                            <constraint firstItem="6Il-5K-Jaj" firstAttribute="top" secondItem="mO4-IO-Mdb" secondAttribute="bottom" constant="12" id="RbF-Nr-tvJ"/>
+                            <constraint firstItem="mO4-IO-Mdb" firstAttribute="top" secondItem="1oo-9F-KQ6" secondAttribute="top" constant="56" id="cZc-rs-jGN"/>
+                            <constraint firstItem="mO4-IO-Mdb" firstAttribute="centerX" secondItem="1oo-9F-KQ6" secondAttribute="centerX" id="eXJ-kp-6oH"/>
+                            <constraint firstItem="6Il-5K-Jaj" firstAttribute="centerX" secondItem="mO4-IO-Mdb" secondAttribute="centerX" id="mgM-vt-dSa"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="1oo-9F-KQ6"/>
                     </view>
                     <navigationItem key="navigationItem" id="R1d-5T-MFG"/>
+                    <connections>
+                        <outlet property="btnLogout" destination="vmb-jD-E3o" id="Lrl-b3-H16"/>
+                        <outlet property="ivAvatar" destination="mO4-IO-Mdb" id="OL4-bm-GJl"/>
+                        <outlet property="labelAccount" destination="6Il-5K-Jaj" id="zhQ-fa-r77"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="h0k-8Q-8Uy" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1958" y="1687"/>
+            <point key="canvasLocation" x="1957.9710144927537" y="1686.8303571428571"/>
         </scene>
         <!--Contacts-->
         <scene sceneID="rrC-6d-1Hq">
@@ -776,6 +818,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="avatar_default" width="64" height="64"/>
         <image name="btn_disable" width="456" height="98"/>
         <image name="btn_enable" width="420" height="90"/>
         <image name="chatfrom_bg_normal" width="32" height="55"/>

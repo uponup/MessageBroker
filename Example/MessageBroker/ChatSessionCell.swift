@@ -27,7 +27,7 @@ class ChatSessionCell: UITableViewCell {
     }
 
     func updateData(session: ChatSession) {
-        ivSessionIcon.image = session.isGroup ? #imageLiteral(resourceName: "chatroom_default") : #imageLiteral(resourceName: "avatar_default")
+        ivSessionIcon.image = session.isGroup ? #imageLiteral(resourceName: "cn_chatroom_default") : #imageLiteral(resourceName: "cn_single_default")
         labelName.text = session.name
         
         labelDate.isHidden = false

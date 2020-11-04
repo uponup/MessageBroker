@@ -31,3 +31,10 @@ extension Notification.Name {
 func showHud(_ msg: String) {
     print(msg)
 }
+
+func isMe(_ imAccount: String?) -> Bool {
+    guard let passport = UserCenter.center.passport, let imAccount = imAccount else {
+        return false
+    }
+    return imAccount == passport.uid
+}
