@@ -27,7 +27,13 @@ class ChatSessionCell: UITableViewCell {
     }
 
     func updateData(session: ChatSession) {
-        ivSessionIcon.image = session.isGroup ? #imageLiteral(resourceName: "cn_chatroom_default") : #imageLiteral(resourceName: "cn_single_default")
+        if session.isGroup {
+            ivSessionIcon.image = #imageLiteral(resourceName: "cn_chatroom_default")
+        }else if session.isCircle {
+            ivSessionIcon.image = #imageLiteral(resourceName: "cn_circle_default")
+        }else {
+            ivSessionIcon.image = #imageLiteral(resourceName: "cn_single_default")
+        }
         labelName.text = session.name
         
         labelDate.isHidden = false

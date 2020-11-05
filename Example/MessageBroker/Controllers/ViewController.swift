@@ -199,9 +199,13 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let session = sessions[indexPath.row]
         
-        guard session.isGroup  else { return UISwipeActionsConfiguration(actions: []) }
+        guard session.isGroup || session.isCircle  else { return UISwipeActionsConfiguration(actions: []) }
         
         let actionDelete = UIContextualAction(style: .destructive, title: "Delete") { [unowned self] (action, view, block) in
+            guard session.isGroup else {
+                self.showHudInfo(title: "Tips:", msg: "圈子信息由业务层维护，Demo中不可删除")
+                return
+            }
             self.sessions.remove(at: indexPath.row)
             self.refreshData()
             
@@ -237,5 +241,14 @@ extension ViewController {
         }) { finished  in
             launchVc.view.removeFromSuperview()
         }
+    }
+}
+
+extension ViewController {
+    func showHudInfo(title: String, msg: String) {
+        let alertVc = UIAlertController(title: title, message: msg, preferredStyle: .alert)
+        let actionOk = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertVc.addAction(actionOk)
+        self.present(alertVc, animated: true, completion: nil)
     }
 }

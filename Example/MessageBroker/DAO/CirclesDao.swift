@@ -13,13 +13,13 @@ import Foundation
  圈子的数据库
  采用vmuc，创建虚拟群组。在IM后台不保存圈子的信息，
  
- vmuc_id 信息由业务层自行维护
+ circleId 信息由业务层自行维护
  */
 struct CirclesDao {
     static let db = SQLiteManager.sharedManager().db
 
     static func createTable() {
-        let sqlGroups = "CREATE TABLE IF NOT EXISTS t_circles (vmuc_id VARCHAR(32) PRIMARY KEY, users TEXT, title VARCHAR(32), owner VARCHAR(32));"
+        let sqlGroups = "CREATE TABLE IF NOT EXISTS t_circles (circleId VARCHAR(32) PRIMARY KEY, users TEXT, title VARCHAR(32), owner VARCHAR(32));"
 
         guard db.open() else { return }
         
@@ -63,7 +63,7 @@ extension CirclesDao {
     static func quitCircles(vmucId: String) {
         guard db.open() else { return }
         
-        let sql = "DELETE FROM t_circles WHERE vmuc_id = ?;"
+        let sql = "DELETE FROM t_circles WHERE circleId = ?;"
         if db.executeUpdate(sql, withArgumentsIn: [vmucId]) {
             print("退出圈子成功：\(vmucId)")
         }else {
@@ -74,7 +74,7 @@ extension CirclesDao {
     static func updateCircle(name n: String, vmucId: String) {
         guard db.open() else { return }
 
-        let sql = "UPDATE t_circles SET title = ? WHERE vmuc_id = ?;"
+        let sql = "UPDATE t_circles SET title = ? WHERE circleId = ?;"
         if db.executeUpdate(sql, withArgumentsIn: [n, vmucId]) {
             print("修改圈子成功：\(vmucId)，名称：\(n)")
         }else {
@@ -84,7 +84,7 @@ extension CirclesDao {
     
     /**
      查找所有圈子
-     返回（vmuc_Id, 用户列表，圈子名称）
+     返回（circleId, 用户列表，圈子名称）
      */
     static func fetchAllCircles(owner: String) -> [Circle] {
         guard db.open() else { return [] }
@@ -94,7 +94,7 @@ extension CirclesDao {
         
         var circles: [Circle] = []
         while res.next() {
-            let vmucId = res.string(forColumn: "vmuc_id").value
+            let vmucId = res.string(forColumn: "circleId").value
             let users = res.string(forColumn: "users").value
             let name = res.string(forColumn: "title").value
             
@@ -109,14 +109,34 @@ extension CirclesDao {
     static func fetchAllMembers(fromCircle circleId: String) -> [String] {
         guard db.open() else { return [] }
         
-        let sql = "SELECT users FROM t_circles WHERE vmuc_id = ?;"
+        let sql = "SELECT users FROM t_circles WHERE circleId = ?;"
         guard let res = db.executeQuery(sql, withArgumentsIn: [circleId]) else { return [] }
         
         var members: [String] = []
         while res.next() {
-            let vmucId = res.string(forColumn: "users").value
-            members = vmucId.split(separator: "_").map{ String($0) }
+            let circleUsers = res.string(forColumn: "users").value
+            members = circleUsers.split(separator: "_").map{ String($0) }
         }
         return members
+    }
+    
+    /**
+     查找某个圈子信息
+     */
+    static func fetchCircle(circleId: String) -> Circle? {
+        let sql = "SELECT * FROM t_circles WHERE circleId = ?;"
+        guard db.open() else { return nil }
+        
+        guard let res = try? db.executeQuery(sql, values: [circleId]) else { return nil }
+        
+        var circle: Circle? = nil
+        while res.next() {
+            let vmucId = res.string(forColumn: "circleId").value
+            let users = res.string(forColumn: "users").value
+            let name = res.string(forColumn: "title").value
+            
+            circle = Circle(name: name, vmucId: vmucId, users: users)
+        }
+        return circle
     }
 }

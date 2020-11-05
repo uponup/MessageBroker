@@ -8,6 +8,12 @@
 
 import Foundation
 
+enum ConversationType: Int {
+    case single = 1
+    case group
+    case circle
+}
+
 struct Message {
     var id: Int32?
     var text: String
@@ -18,28 +24,46 @@ struct Message {
     var serverId: String
     var status: Int
     var timestamp: TimeInterval
-    var isGroup: Bool
     var isOutgoing: Bool
-    
+    var conversationType: ConversationType
     
     private var imMesg: Mesg?
     
     init(_ imMesg: Mesg) {
         self.imMesg = imMesg
+                
+        let uid = (UserCenter.center.passport?.uid).value
         
         text = imMesg.text
-        localAccount = imMesg.isOutgoing ? imMesg.fromUid : imMesg.toUid
-        remoteAccount = imMesg.isOutgoing ? imMesg.toUid : imMesg.fromUid
+        if imMesg.conversationType == .single {
+            localAccount = imMesg.isOutgoing ? imMesg.fromUid : imMesg.toUid
+            remoteAccount = imMesg.isOutgoing ? imMesg.toUid : imMesg.fromUid
+        }else {
+            // 群组
+            if imMesg.isOutgoing {
+                localAccount = imMesg.fromUid
+                remoteAccount = imMesg.toUid
+            }else {
+                localAccount = uid
+                remoteAccount = imMesg.fromUid
+            }
+        }
         conversationId = imMesg.conversationId
         localId = imMesg.localId.value
         serverId = imMesg.serverId
         status = imMesg.status
         timestamp = imMesg.timestamp
-        isGroup = !(imMesg.mesgType == .single)
+        if imMesg.conversationType == .vmuc {
+            conversationType = .circle
+        }else if imMesg.conversationType == .group {
+            conversationType = .group
+        }else {
+            conversationType = .single
+        }
         isOutgoing = imMesg.isOutgoing
     }
     
-    init(id: Int32, text: String, local: String, remote: String, conversationId: String, localId: String, serverId: String, status: Int, timestamp: TimeInterval, isGroup: Bool, isOutgoing: Bool) {
+    init(id: Int32, text: String, local: String, remote: String, conversationId: String, localId: String, serverId: String, status: Int, timestamp: TimeInterval, conversationType: Int, isOutgoing: Bool) {
         self.id = id
         self.text = text
         self.localAccount = local
@@ -49,7 +73,7 @@ struct Message {
         self.serverId = serverId
         self.status = status
         self.timestamp = timestamp
-        self.isGroup = isGroup
         self.isOutgoing = isOutgoing
+        self.conversationType = ConversationType(rawValue: conversationType) ?? .single
     }
 }

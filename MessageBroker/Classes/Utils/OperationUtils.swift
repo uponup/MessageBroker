@@ -61,7 +61,7 @@ enum Operation {
             return "\(topicPrefix)/\(uid)"
         case .oneToMany(_, let gid):
             return "\(topicPrefix)/\(gid)"
-        case .vitualGroup(let gid):
+        case .vitualGroup(_, let gid):
             return "\(topicPrefix)/\(gid)"
         case .joinGroup(let gid):
             return "\(topicPrefix)/\(gid)"

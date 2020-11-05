@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum MesgType: Int {
+public enum ConversationType: Int {
     case single = 0
     case group
     case vmuc
@@ -20,35 +20,36 @@ public struct Mesg {
     public var fromUid: String
     public var toUid: String
     public var conversationId: String
-    public var serverId: String
+    public var conversationType: ConversationType
+    public var isOutgoing: Bool
+
     public var text: String
+    public var localId: String?
+    public var serverId: String
     public var status: Int
     public var timestamp: TimeInterval
-    public var localId: String?
-    public var mesgType: MesgType
     
-    public var isOutgoing: Bool {
-        guard let passport = MavlMessage.shared.passport else {
-            return false
-        }
-        return passport.uid == fromUid
-    }
-
     init(topicModel: TopicModelProtocol) {
+        let uid = (MavlMessage.shared.passport?.uid).value
+        
         fromUid = topicModel.from
         toUid = topicModel.to
-        conversationId = topicModel.conversationId
+        isOutgoing = topicModel.from == uid
+
+        if topicModel.operation == 2 {
+            conversationType = .group
+            conversationId = topicModel.to
+        }else if topicModel.operation == 3 {
+            conversationType = .vmuc
+            conversationId = topicModel.to
+        }else {
+            conversationType = .single
+            conversationId = isOutgoing ? topicModel.to : topicModel.from
+        }
         serverId = topicModel.serverId
         text = topicModel.text
         status = topicModel.status
         timestamp = topicModel.timestamp ?? Date().timeIntervalSince1970
         localId = topicModel.localId
-        if topicModel.operation == 0 || topicModel.operation == 2 {
-            mesgType = .group
-        }else if topicModel.operation == 3 {
-            mesgType = .vmuc
-        }else {
-            mesgType = .single
-        }
     }
 }

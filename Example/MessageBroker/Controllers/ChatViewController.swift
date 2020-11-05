@@ -262,7 +262,9 @@ class ChatViewController: UIViewController {
         }
         
         guard let msgs = receivedMsgs else { return }
-        let sortedMsgs = msgs.map{
+        let sortedMsgs = msgs.filter {
+            $0.conversationId == chatToId
+        }.map{
             ChatMessage(status: .sendSuccess, mesg: Message($0))
         }.reversed()
         

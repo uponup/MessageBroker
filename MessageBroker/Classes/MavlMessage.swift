@@ -214,7 +214,7 @@ extension MavlMessage: MavlMessageClient {
             let localId = nextMessageLocalID()
             operation = .oneToMany(localId, gid)
         }
-        _send(text: msg, operation: operation)
+        _send(text: msg, operation: operation, fids: fids)
     }
     
     public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
@@ -222,12 +222,16 @@ extension MavlMessage: MavlMessageClient {
         _send(text: "", operation: operation)
     }
     
-    private func _send(text: String, operation: Operation) {
+    private func _send(text: String, operation: Operation, fids: [String] = []) {
         guard let mesg = getMesg(text: text, operation: operation) else {
             // TODO: 消息发送失败
             return
         }
-        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: mesg.text, qos: .qos0)
+        var willSend = mesg.text
+        if fids.count > 0 {
+            willSend = "\(fids.joined(separator: ","))#\(mesg.text)"
+        }
+        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: willSend, qos: .qos0)
         mqtt?.publish(mqttMsg)
         
         
@@ -327,6 +331,7 @@ extension MavlMessage: CocoaMQTTDelegate {
             //解密
             guard let originText = EncryptUtils.decrypt(message.string.value) else {
                 // TODO: 解密willSend的消息失败, 是否需要报错
+                // 如果是vmuc的话，也无法解密
                 return }
             topicModel.text = originText
             delegateMsg?.mavl(willSend: Mesg(topicModel: topicModel))
