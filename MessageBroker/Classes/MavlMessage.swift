@@ -23,7 +23,7 @@ public protocol MavlMessageClient {
     
     func addFriend(withUserName: String)
     func send(message msg: String, toFriend fid: String, localId: String)
-    func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: [String])
+    func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: Set<String>)
     
     func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int)
 }
@@ -212,11 +212,15 @@ extension MavlMessage: MavlMessageClient {
         _send(text: msg, operation: operation)
     }
     
-    public func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: [String] = []) {
+    public func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: Set<String> = []) {
+        guard let passport = passport else { return }
         var operation: Operation
 
+        var allMembers = fids
+        
         if fids.count > 0 {
             // vmuc
+            allMembers.insert(passport.uid)
             operation = .vitualGroup(localId, gid)
         }else {
             // group
@@ -230,7 +234,7 @@ extension MavlMessage: MavlMessageClient {
         _send(text: "", operation: operation)
     }
     
-    private func _send(text: String, operation: Operation, fids: [String] = []) {
+    private func _send(text: String, operation: Operation, fids: Set<String> = []) {
         guard let mesg = getMesg(text: text, operation: operation) else {
             // TODO: 消息发送失败
             return
