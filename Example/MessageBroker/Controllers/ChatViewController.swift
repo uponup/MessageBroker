@@ -110,7 +110,7 @@ class ChatViewController: UIViewController {
         if chatTo == .toGroup {
             MavlMessage.shared.send(message: message, toGroup: chatToId, localId:localId)
         }else if chatTo == .toCircle {
-            let friends = CirclesDao.fetchAllMembers(fromCircle: chatToId)
+            let friends = Set(CirclesDao.fetchAllMembers(fromCircle: chatToId))
             MavlMessage.shared.send(message: message, toGroup: chatToId, localId: localId, withFriends: friends)
         }else {
             MavlMessage.shared.send(message: message, toFriend: chatToId, localId:localId)
