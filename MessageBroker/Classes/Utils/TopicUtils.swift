@@ -29,7 +29,7 @@ protocol TopicModelProtocol {
 
 extension TopicModelProtocol {
     var conversationId: String {
-        if operation == Operation.oneToOne(0, "").value {
+        if operation == Operation.oneToOne("", "").value {
             guard let passport = MavlMessage.shared.passport else {
                 return to
             }

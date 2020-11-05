@@ -23,9 +23,9 @@ public enum FetchMessagesType {
 
 enum Operation {
     case createGroup
-    case oneToOne(_ localId: UInt16, _ toUid: String)
-    case oneToMany(_ localId: UInt16, _ toGid: String)
-    case vitualGroup(_ localId: UInt16, _ toGid: String)
+    case oneToOne(_ localId: String, _ toUid: String)
+    case oneToMany(_ localId: String, _ toGid: String)
+    case vitualGroup(_ localId: String, _ toGid: String)
     
     case joinGroup(_ toGid: String)
     case quitGroup(_ toGid: String)

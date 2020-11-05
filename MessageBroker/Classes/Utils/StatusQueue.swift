@@ -7,6 +7,10 @@
 
 import Foundation
 
+extension NSNotification.Name {
+    static let connectTimeout = Notification.Name("ConnectTimeout")
+}
+
 // MARK: - 模型
 private enum Status: String {
     case online = "online"
@@ -31,22 +35,29 @@ public class StatusQueue {
     public weak var delegate: StatusQueueDelegate?
     
     private var queue: [String: UserStatus] = [:]
-    private var maxInterval: TimeInterval = 180
+    private var maxInterval: TimeInterval = 80
     private var timer: Timer?
+    private var count = 0
     
     init() {
-        timer = Timer(timeInterval: 30, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
-        timer?.fireDate = Date.distantFuture
+        timer = Timer(timeInterval: 1, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
+        guard let t = timer else {  return }
+
+        t.fireDate = Date.distantFuture
+        RunLoop.current.add(t, forMode: .default)
     }
     
     func updateUserStatus(imAccount account: String, status type: String = "online") {
         guard let statusEnum = Status(rawValue: type.lowercased()) else { return }
+        guard MavlMessage.shared.isLogin else {
+            connectTimeout()
+            return
+        }
         
         // 数组发生变化的时候，需要通知给业务层
         if statusEnum == .offline {
             guard queue.keys.contains(account) else { return }
             queue.removeValue(forKey: account)
-            // todo：如果此用户的在线状态在当前队列中，是否需要发通知（1）给业务层
             delegate?.statusQueue(didOfflineUsers: [account])
         }else {
             let newUserStatus = UserStatus(imAccount: account, status: statusEnum)
@@ -82,15 +93,23 @@ public class StatusQueue {
         }.map { $0.key }
     }
     
+    func logout() {
+        connectTimeout()
+    }
+    
     // MARK: - Action
-    // 检查是否有连接超时的用户,有的话反馈给用户
+    // 检查自己是否连接超时
     @objc func timerAction() {
-        let offlineUsers = queue.filter { !isOnlineStatus(withImAccount: $0.value.imAccount) }.map { $0.value.imAccount }
-        
-        if offlineUsers.count > 0 {
-            delegate?.statusQueue(didOfflineUsers: offlineUsers)
-            print("检测到这些用户离线: \(offlineUsers)")
+
+        guard let passport = MavlMessage.shared.passport else {
+            connectTimeout()
+            return
         }
+        
+        print("check status")
+        guard !isOnlineStatus(withImAccount:passport.uid) else { return  }
+        
+        connectTimeout()
     }
     
     // MARK: - Private
@@ -115,6 +134,21 @@ public class StatusQueue {
         guard let timer = timer else { return }
         
         timer.fireDate = queue.count == 0 ? Date.distantFuture : Date.distantPast
+    }
+    
+    private func connectTimeout() {
+        
+        let offlineUsers = queue.map { $0.value.imAccount }
+        delegate?.statusQueue(didOfflineUsers: offlineUsers)
+        
+        timer?.fireDate = Date.distantFuture
+        queue.removeAll()
+            
+        // 在线的话，发一个通知给SDK MavlMessage
+        guard MavlMessage.shared.isLogin else { return }
+
+        // 离线后发一个全局通知
+        NotificationCenter.default.post(name: .connectTimeout, object: nil)
     }
     
     deinit {

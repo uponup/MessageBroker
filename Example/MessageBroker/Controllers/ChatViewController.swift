@@ -105,13 +105,15 @@ class ChatViewController: UIViewController {
     @IBAction func sendMessage() {
         guard let message = messageTextView.text else { return }
         
+        let localId = "\(MessageDao.fetchLastOne() + 1)"
+        
         if chatTo == .toGroup {
-            MavlMessage.shared.send(message: message, toGroup: chatToId)
+            MavlMessage.shared.send(message: message, toGroup: chatToId, localId:localId)
         }else if chatTo == .toCircle {
             let friends = CirclesDao.fetchAllMembers(fromCircle: chatToId)
-            MavlMessage.shared.send(message: message, toGroup: chatToId, withFriends: friends)
+            MavlMessage.shared.send(message: message, toGroup: chatToId, localId: localId, withFriends: friends)
         }else {
-            MavlMessage.shared.send(message: message, toFriend: chatToId)
+            MavlMessage.shared.send(message: message, toFriend: chatToId, localId:localId)
         }
         messageTextView.text = ""
         sendMessageButton.isEnabled = false

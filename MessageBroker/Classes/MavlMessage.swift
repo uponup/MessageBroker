@@ -22,8 +22,8 @@ public protocol MavlMessageClient {
     func quitGroup(withGroupId gid: String)
     
     func addFriend(withUserName: String)
-    func send(message msg: String, toFriend fid: String)
-    func send(message msg: String, toGroup gid: String, withFriends fids: [String])
+    func send(message msg: String, toFriend fid: String, localId: String)
+    func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: [String])
     
     func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int)
 }
@@ -41,7 +41,6 @@ public protocol MavlMessageClientStatus {
 public protocol MavlMessageClientConfig {
     func uploadToken()
 }
-
 
 /**
     SDK登录状态的回调
@@ -80,6 +79,12 @@ extension MavlMessageStatusDelegate {
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {}
 }
 
+
+
+
+/**
+ MessageBroker主类
+ */
 public class MavlMessage {
     public static let shared = MavlMessage()
     public var passport: Passport? {
@@ -139,12 +144,18 @@ public class MavlMessage {
         guard let mqtt = mqtt else { return }
         mqtt.username = mqttUserName
         mqtt.password = mqttPassword
-        mqtt.keepAlive = 6000
+        mqtt.keepAlive = 60
         mqtt.delegate = self
         mqtt.enableSSL = true
         mqtt.allowUntrustCACertificate = true
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(connectTimeoutAction), name: .connectTimeout, object: nil)
     }
     
+    @objc func connectTimeoutAction() {
+        let err = NSError(domain: "", code: 0, userInfo: ["errmsg": "connect timeout"]) as Error
+        delegateLogin?.logout(withError: err)
+    }
     
     fileprivate func nextMessageLocalID() -> UInt16 {
         if _localMsgId == UInt16.max {
@@ -196,22 +207,19 @@ extension MavlMessage: MavlMessageClient {
         delegateGroup?.addFriendSuccess(friendName: withUserName)
     }
     
-    public func send(message msg: String, toFriend fid: String) {
-        let localId = nextMessageLocalID()
+    public func send(message msg: String, toFriend fid: String, localId: String) {
         let operation = Operation.oneToOne(localId, fid)
         _send(text: msg, operation: operation)
     }
     
-    public func send(message msg: String, toGroup gid: String, withFriends fids: [String] = []) {
+    public func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: [String] = []) {
         var operation: Operation
 
         if fids.count > 0 {
             // vmuc
-            let localId = nextMessageLocalID()
             operation = .vitualGroup(localId, gid)
         }else {
             // group
-            let localId = nextMessageLocalID()
             operation = .oneToMany(localId, gid)
         }
         _send(text: msg, operation: operation, fids: fids)
@@ -272,8 +280,7 @@ extension MavlMessage: MavlMessageClientConfig {
             return
         }
         
-        let msgId = nextMessageLocalID()
-        let topic = "\(appid)/300/\(msgId)/"
+        let topic = "\(appid)/300/0/"
         
         mqtt?.publish(topic, withString: deviceToken)
     }
@@ -304,9 +311,11 @@ extension MavlMessage: CocoaMQTTDelegate {
     
     public func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
         TRACE("\(err?.localizedDescription ?? "")")
-        
-        delegateLogin?.logout(withError: err)
         _isLogin = false
+
+        // 先将_isLogin 设置为false，然后再去通知StatusQueue和delegate
+        StatusQueue.shared.logout()
+        delegateLogin?.logout(withError: err)
     }
     
     public func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {

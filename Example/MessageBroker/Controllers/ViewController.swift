@@ -117,8 +117,8 @@ extension ViewController: MavlMessageDelegate {
     func logout(withError: Error?) {
         isLogin = false
         
+        NotificationCenter.default.post(name: .logoutSuccess, object: nil)
         guard let err = withError else {
-            NotificationCenter.default.post(name: .logoutSuccess, object: nil)
             return
         }
         // 如果有err，说明是异常断开连接
@@ -130,6 +130,9 @@ extension ViewController: MavlMessageDelegate {
 
 extension ViewController: MavlMessageStatusDelegate {
     func mavl(willSend: Mesg) {
+        let message = Message(willSend)
+        MessageDao.addMesg(msg: message)
+        
         NotificationCenter.default.post(name: .willSendMesg, object: ["msg": willSend])
     }
     
@@ -145,7 +148,11 @@ extension ViewController: MavlMessageStatusDelegate {
         NotificationCenter.default.post(name: .didReceiveMesg, object: ["msg": messages, "isLoadMore": isLoadMore])
         
         for mesg in messages.map({ Message($0) }) {
-            MessageDao.addMesg(msg: mesg)
+            if mesg.isOutgoing {
+                MessageDao.updateMessage(msg: mesg)
+            }else {
+                MessageDao.addMesg(msg: mesg)
+            }
         }
         refreshData()
     }

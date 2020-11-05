@@ -25,6 +25,11 @@ class ContactCell: UITableViewCell {
                 statusView.backgroundColor = UIColor.darkGray
                 labelStatus.text = "offline"
             }
+            
+            if isMe(model?.imAccount) {
+                self.statusView.isHidden = true
+                self.labelStatus.text = "(yourself)"
+            }
         }
     }
     
@@ -58,9 +63,13 @@ class ContactCell: UITableViewCell {
             ivAvatar.image = #imageLiteral(resourceName: "cn_single_default")
         }
         
-        labelName.text = isMe(contact.imAccount) ? "\(contact.name.capitalized)（yourself）" : contact.name.capitalized
+        labelName.text =  contact.name.capitalized
         labelDetail.text = ""   //defail msg, just like signature, slogan, online status; default is “”
         
+        if isMe(contact.imAccount) {
+            self.statusView.isHidden = true
+            self.labelStatus.text = "(yourself)"
+        }
         refreshOnlineStatus()
     }
     

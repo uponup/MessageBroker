@@ -73,6 +73,21 @@ extension MessageDao {
     }
     
     /**
+     更新
+     */
+    static func updateMessage(msg: Message) {
+        guard db.open() else { return }
+        
+        let sql = "UPDATE t_msgs SET status = ?, SET serverId = ?, set timestamp = ? WHERE localId = ?"
+        let res = db.executeUpdate(sql, withArgumentsIn: [msg.status, msg.serverId, msg.timestamp, msg.localId])
+        if res {
+            print("更新成功")
+        }else {
+            print("更新失败")
+        }
+    }
+    
+    /**
      查找所有最近的信息
      */
     static func fetchRecentlyMesgs(from: String) -> [Message] {
@@ -155,6 +170,17 @@ extension MessageDao {
         }
 
         return messages
+    }
+    
+    static func fetchLastOne() -> Int32 {
+        guard db.open() else { return 0 }
+        let sql = "SELECT MAX(localId) as max FROM t_msgs"
         
+        guard let res = try? db.executeQuery(sql, values: []) else { return 0}
+        while res.next() {
+            let id = res.int(forColumn: "max")
+            return id
+        }
+        return 0
     }
 }
