@@ -325,8 +325,10 @@ extension MavlMessage: CocoaMQTTDelegate {
             delegateLogin?.loginSuccess()
 
             _isLogin = true
-    //        成功建立连接，上传token
+            // 成功建立连接，上传token
             uploadToken()
+            // 通知StatusQUeue
+            StatusQueue.shared.login()
         }
     }
     
@@ -358,6 +360,7 @@ extension MavlMessage: CocoaMQTTDelegate {
         
         if let topicModel = UserStatusTopicModel(topic) {
             // 用户状态交付StatusQueue队列维护
+            print("\(topicModel.friendId)-----上线了")
             StatusQueue.shared.updateUserStatus(imAccount: topicModel.friendId, status: message.string.value)
         }else if let topicModel = ReceivedTopicModel(topic, message.string.value) {
             if topicModel.operation == 0 {

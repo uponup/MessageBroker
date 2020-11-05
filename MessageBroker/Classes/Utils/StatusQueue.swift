@@ -97,6 +97,11 @@ public class StatusQueue {
         connectTimeout()
     }
     
+    func login() {
+        guard let passport = MavlMessage.shared.passport else { return }
+        updateUserStatus(imAccount: passport.uid)
+    }
+    
     // MARK: - Action
     // 检查自己是否连接超时
     @objc func timerAction() {

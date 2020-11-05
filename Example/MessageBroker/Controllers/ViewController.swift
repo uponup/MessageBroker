@@ -40,7 +40,6 @@ class ViewController: UIViewController {
                 UserCenter.center.login(passport: passport)
                 
                 refreshData()
-                
                 checkStatus()
             }else {
                 navigationItem.title = "Offline"
