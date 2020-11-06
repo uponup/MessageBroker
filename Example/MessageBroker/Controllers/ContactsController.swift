@@ -213,7 +213,7 @@ extension ContactsController: MavlMessageGroupDelegate {
         tableView.reloadData()
 
         // 添加成功后，需要监听好友状态
-        MavlMessage.shared.checkStatus(withUserName: name.lowercased())
+        StatusQueue.shared.checkStatus(name.lowercased())
         ContactsDao.addContact(owner: passport.uid, name: name.lowercased(), imAccount: name.lowercased())
     }
     

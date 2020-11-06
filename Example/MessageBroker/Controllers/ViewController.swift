@@ -96,7 +96,7 @@ class ViewController: UIViewController {
     private func checkStatus() {
         guard let passport = MavlMessage.shared.passport else { return }
         for contact in ContactsDao.fetchAllContacts(owner: passport.uid) {
-            MavlMessage.shared.checkStatus(withUserName: contact.imAccount)
+            StatusQueue.shared.checkStatus(contact.imAccount)
         }
     }
 }

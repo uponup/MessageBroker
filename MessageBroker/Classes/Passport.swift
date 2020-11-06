@@ -41,15 +41,15 @@ enum MBDomainConfig {
 
 // MARK: - SDK初始化配置
 public struct MavlMessageConfiguration {
-    var appid: String
-    var appkey: String
+    var appId: String
+    var appKey: String
     var msgKey: String
     var host: String = MBDomainConfig.awsLB
     var port: UInt16 = MBDomainConfig.port
        
     public init(appid id: String, appkey key: String, msgKey mkey: String) {
-        appid = id
-        appkey = key
+        appId = id
+        appKey = key
         msgKey = mkey
     }
 }

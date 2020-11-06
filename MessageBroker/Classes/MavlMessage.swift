@@ -27,14 +27,6 @@ public protocol MavlMessageClient {
     
     func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int)
 }
-
-/**
-    Status相关功能的协议
- */
-public protocol MavlMessageClientStatus {
-    func checkStatus(withUserName username: String)
-}
-
 /**
     Config相关功能的协议
  */
@@ -100,7 +92,7 @@ public class MavlMessage {
     
     var appid: String {
         guard let config = config else { return "" }
-        return config.appid
+        return config.appId
     }
     
     var msgKey: String {
@@ -136,9 +128,9 @@ public class MavlMessage {
             return
         }
         
-        let clientId = "\(config.appid)_\(passport.uid)"
-        let mqttUserName = "\(config.appid)_\(passport.uid)"
-        let mqttPassword = "\(passport.pwd)_\(config.appkey)"
+        let clientId = "\(config.appId)_\(passport.uid)"
+        let mqttUserName = "\(config.appId)_\(passport.uid)"
+        let mqttPassword = "\(passport.pwd)_\(config.appKey)"
     
         mqtt = CocoaMQTT(clientID: clientId, host: config.host, port: config.port)
         guard let mqtt = mqtt else { return }
@@ -155,6 +147,11 @@ public class MavlMessage {
     @objc func connectTimeoutAction() {
         let err = NSError(domain: "", code: 0, userInfo: ["errmsg": "connect timeout"]) as Error
         delegateLogin?.logout(withError: err)
+    }
+    
+    func checkStatus(withUserName username: String) {
+        let topic = "\(appid)/userstatus/\(username)/online"
+        mqtt?.subscribe(topic)
     }
     
     fileprivate func nextMessageLocalID() -> UInt16 {
@@ -266,14 +263,6 @@ extension MavlMessage: MavlMessageClient {
             guard let topicModel = SendTopicModel(operation.topic, text) else { return nil }
             return Mesg(topicModel: topicModel)
         }
-    }
-}
-
-extension MavlMessage: MavlMessageClientStatus {
-    public func checkStatus(withUserName username: String) {
-        let topic = "\(appid)/userstatus/\(username)/online"
-        
-        mqtt?.subscribe(topic)
     }
 }
 

@@ -13,7 +13,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        let _ = UserDefaults.executeOnce(withKey: "UpdateDB_6") {
+        let _ = UserDefaults.executeOnce(withKey: "UpdateDB_7") {
             MessageDao.dropTable()
         }
         

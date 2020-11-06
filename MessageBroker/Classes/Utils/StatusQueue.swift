@@ -7,20 +7,9 @@
 
 import Foundation
 
-extension NSNotification.Name {
-    static let connectTimeout = Notification.Name("ConnectTimeout")
-}
-
-// MARK: - 模型
-private enum Status: String {
-    case online = "online"
-    case offline = "offline"
-}
-
-private struct UserStatus {
-    var imAccount: String
-    var status: Status = .offline
-    var lastUpdate: TimeInterval = Date().timeIntervalSince1970
+// MARK: - 协议
+protocol OnlineStatus {
+    func checkStatus(_ username: String)
 }
 
 // MARK: - 代理接口
@@ -160,4 +149,27 @@ public class StatusQueue {
         self.timer?.invalidate()
         self.timer = nil
     }
+}
+
+extension StatusQueue: OnlineStatus {
+    public func checkStatus(_ username: String) {
+        MavlMessage.shared.checkStatus(withUserName: username)
+    }
+}
+
+// MARK: - 模型
+private enum Status: String {
+    case online = "online"
+    case offline = "offline"
+}
+
+private struct UserStatus {
+    var imAccount: String
+    var status: Status = .offline
+    var lastUpdate: TimeInterval = Date().timeIntervalSince1970
+}
+
+// MARK: - Notification Extension
+extension NSNotification.Name {
+    static let connectTimeout = Notification.Name("ConnectTimeout")
 }

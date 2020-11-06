@@ -46,11 +46,11 @@ struct MessageDao {
 extension MessageDao {
     
     static func addMesg(msg: Message) {
-        let sql = "INSERT INTO t_msgs (local, remote, conversationId, text, status, localId, timestamp, isOut, conversationType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        let sql = "INSERT INTO t_msgs (local, remote, conversationId, text, status, localId, serverId, timestamp, isOut, conversationType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         guard db.open() else { return }
         
         let date = Date(timeIntervalSince1970: msg.timestamp)
-        if db.executeUpdate(sql, withArgumentsIn: [msg.localAccount, msg.remoteAccount, msg.conversationId, msg.text, msg.status, msg.localId, date, msg.isOutgoing, msg.conversationType.rawValue]) {
+        if db.executeUpdate(sql, withArgumentsIn: [msg.localAccount, msg.remoteAccount, msg.conversationId, msg.text, msg.status, msg.localId, msg.serverId, date, msg.isOutgoing, msg.conversationType.rawValue]) {
             print("数据插入成功 t_msgs: \(msg.remoteAccount) : \(msg.text)")
         }else {
             print("数据插入失败 t_msgs: \(msg.remoteAccount) : \(msg.text)")
