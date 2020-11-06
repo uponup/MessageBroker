@@ -33,7 +33,7 @@ public class StatusQueue {
         guard let t = timer else {  return }
 
         t.fireDate = Date.distantFuture
-        RunLoop.current.add(t, forMode: .defaultRunLoopMode)
+        RunLoop.current.add(t, forMode: .default)
     }
     
     func updateUserStatus(imAccount account: String, status type: String = "online") {
