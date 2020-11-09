@@ -61,12 +61,14 @@ public protocol MavlMessageGroupDelegate: class {
  */
 public protocol MavlMessageStatusDelegate: class {
     func mavl(willSend: Mesg)
+    func mavl(willResend: Mesg)
     func mavl(didSend: Mesg, error: Error?)
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool)
 }
 
-extension MavlMessageStatusDelegate {
+public extension MavlMessageStatusDelegate {
     func mavl(willSend: Mesg) {}
+    func mavl(willResend: Mesg) {}
     func mavl(didSend: Mesg, error: Error?) {}
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {}
 }
@@ -111,8 +113,8 @@ public class MavlMessage {
     private var mqtt: CocoaMQTT?
     
     private var _localMsgId: UInt16 = 0
-    private var _sendingMessages: [String: MavlTimer] = [:]
-    
+    private var _sendingMessages: [String: TopicModelProtocol] = [:]
+    private let qos: CocoaMQTTQOS = .qos0
     public func initializeSDK(config: MavlMessageConfiguration) {
         self.config = config
     }
@@ -145,6 +147,17 @@ public class MavlMessage {
     }
     
     @objc func connectTimeoutAction() {
+        // 清空发送队列
+        for (_, topicModel) in _sendingMessages {
+            let sendfailed = NSError(domain: "", code: 0, userInfo: ["errmsg": "send failed"]) as Error
+            delegateMsg?.mavl(didSend: Mesg(topicModel: topicModel), error: sendfailed)
+        }
+        _sendingMessages.removeAll()
+        if qos.rawValue > 0 {
+            // TODO: 清空mqtt的inflight队列(如果qos > 0)，否则inflight不会释放
+            
+        }
+        
         let err = NSError(domain: "", code: 0, userInfo: ["errmsg": "connect timeout"]) as Error
         delegateLogin?.logout(withError: err)
     }
@@ -240,15 +253,8 @@ extension MavlMessage: MavlMessageClient {
         if fids.count > 0 {
             willSend = "\(fids.joined(separator: ","))#\(mesg.text)"
         }
-        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: willSend, qos: .qos0)
+        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: willSend, qos: qos)
         mqtt?.publish(mqttMsg)
-        
-        
-        // TODO: 超时检测
-        let sendingTimer = MavlTimer.after(3) { [unowned self] in
-            self.delegateMsg?.mavl(didSend: mesg, error: MavlMessageError.sendFailed)
-        }
-        _sendingMessages[operation.localId] = sendingTimer
     }
     
     private func getMesg(text: String, operation: Operation) -> Mesg? {
@@ -338,8 +344,17 @@ extension MavlMessage: CocoaMQTTDelegate {
                 // 如果是vmuc的话，也无法解密
                 return }
             topicModel.text = originText
-            delegateMsg?.mavl(willSend: Mesg(topicModel: topicModel))
         }
+        
+        if _sendingMessages.keys.contains(topicModel.localId) {
+            // 说明已经在重试队列中了，告诉业务层，这是重试
+            delegateMsg?.mavl(willResend: Mesg(topicModel: topicModel))
+        }else {
+            // 发送消息出去的同时，将消息缓存到发送队列中，成功和失败后再移除
+            _sendingMessages[topicModel.localId] = topicModel
+        }
+        // 给业务层的回调，将要发送信息
+        delegateMsg?.mavl(willSend: Mesg(topicModel: topicModel))
     }
     
     public func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
@@ -386,8 +401,7 @@ extension MavlMessage: CocoaMQTTDelegate {
                 let msg = Mesg(topicModel: received)
                 delegateMsg?.mavl(didRevceived: [msg], isLoadMore: false)
                 
-                let sendingTimer = _sendingMessages[topicModel.localId]
-                sendingTimer?.suspend()
+                // 从发送队列中移除
                 _sendingMessages.removeValue(forKey: topicModel.localId)
             }
         }else {

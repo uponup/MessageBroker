@@ -78,7 +78,7 @@ extension MessageDao {
     static func updateMessage(msg: Message) {
         guard db.open() else { return }
         
-        let sql = "UPDATE t_msgs SET status = ?, SET serverId = ?, set timestamp = ? WHERE localId = ?"
+        let sql = "UPDATE t_msgs SET status = ?, serverId = ?, timestamp = ? WHERE localId = ?"
         let res = db.executeUpdate(sql, withArgumentsIn: [msg.status, msg.serverId, msg.timestamp, msg.localId])
         if res {
             print("更新成功")
