@@ -99,8 +99,8 @@ public class StatusQueue {
             connectTimeout()
             return
         }
-        
-        print("check status")
+        count += 1
+        print("check status：\(count)")
         guard !isOnlineStatus(withImAccount:passport.uid) else { return  }
         
         connectTimeout()

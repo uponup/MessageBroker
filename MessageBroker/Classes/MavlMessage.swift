@@ -236,7 +236,7 @@ extension MavlMessage: MavlMessageClient {
             // group
             operation = .oneToMany(localId, gid)
         }
-        _send(text: msg, operation: operation, fids: fids)
+        _send(text: msg, operation: operation, fids: allMembers)
     }
     
     public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
