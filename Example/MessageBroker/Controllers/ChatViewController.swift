@@ -254,33 +254,32 @@ class ChatViewController: UIViewController {
     }
     
     @objc func receivedMessage(notification: NSNotification) {
-        
         let object = notification.object as! [String: Any]
-        let receivedMsgs = object["msg"] as? [Mesg]
+        let _ = object["msg"] as? [Mesg]
         let isLoadMore = object["isLoadMore"] as! Bool
         
         if isLoadMore {
             tableView.es.stopPullToRefresh()
         }
         
-        guard let msgs = receivedMsgs else { return }
-        let sortedMsgs = msgs.filter {
-            $0.conversationId == chatToId
-        }.map{
-            ChatMessage(status: .sendSuccess, mesg: Message($0))
-        }.reversed()
-        
+        _messages = nil
+        tableView.reloadData()
         if isLoadMore {
-            messages.insert(contentsOf: sortedMsgs, at: 0)
             scrollToTop()
         }else {
-            messages.append(contentsOf: sortedMsgs)
-            var dict: [String: ChatMessage] = [:]
-            for message in messages {
-                dict[message.localId] = message
-            }
-            messages = Array(dict.values).sorted(by: <)
+            scrollToBottom()
         }
+    }
+    
+    func numOfElements(arr: Array<ChatMessage>, localId: String) -> Int {
+        var count = 0
+        
+        for chatmessage in arr {
+            if chatmessage.localId == localId {
+                count += 1
+            }
+        }
+        return count
     }
     
     @objc func receiveDidChangedUserStatus() {

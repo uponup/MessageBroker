@@ -21,7 +21,7 @@ struct MessageDao {
     static let db = SQLiteManager.sharedManager().db
 
     static func createTable() {
-        let sqlMesg = "CREATE TABLE IF NOT EXISTS t_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, local VARCHAR(32), remote VARCHAR(32), conversationId VARCHAR(32), text TEXT, status SMALLINT DEFAULT 0, localId VARCHAR(32) DEFAULT 0, serverId VARCHAR(32) DEFAULT 0, timestamp DATETIME, isOut Bool, conversationType SMALLINT);"
+        let sqlMesg = "CREATE TABLE IF NOT EXISTS t_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, local VARCHAR(32), remote VARCHAR(32), conversationId VARCHAR(32), text TEXT, status SMALLINT DEFAULT 0, localId BIGINT DEFAULT 0, serverId VARCHAR(32) DEFAULT 0, timestamp DATETIME, isOut Bool, conversationType SMALLINT);"
         
         guard db.open() else { return }
 
@@ -102,7 +102,7 @@ extension MessageDao {
             let localAccount = res.string(forColumn: "local").value
             let remoteAccount = res.string(forColumn: "remote").value
             let conversationId = res.string(forColumn: "conversationId").value
-            let localId = res.string(forColumn: "localId").value
+            let localId = res.int(forColumn: "localId")
             let serverId = res.string(forColumn: "serverId").value
             let status = Int(res.int(forColumn: "status"))
             let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
@@ -132,7 +132,7 @@ extension MessageDao {
             let localAccount = res.string(forColumn: "local").value
             let remoteAccount = res.string(forColumn: "remote").value
             let conversationId = res.string(forColumn: "conversationId").value
-            let localId = res.string(forColumn: "localId").value
+            let localId = res.int(forColumn: "localId")
             let serverId = res.string(forColumn: "serverId").value
             let status = Int(res.int(forColumn: "status"))
             let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
@@ -158,7 +158,7 @@ extension MessageDao {
             let localAccount = res.string(forColumn: "local").value
             let remoteAccount = res.string(forColumn: "remote").value
             let conversationId = res.string(forColumn: "conversationId").value
-            let localId = res.string(forColumn: "localId").value
+            let localId = res.int(forColumn: "localId")
             let serverId = res.string(forColumn: "serverId").value
             let status = Int(res.int(forColumn: "status"))
             let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0

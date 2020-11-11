@@ -75,7 +75,7 @@ class ViewController: UIViewController {
     
     @objc func didSelectedContacts(noti: Notification) {
         guard let object = noti.object as? [String: [String]], let contacts = object["contacts"] else { return }
-        MavlMessage.shared.createAGroup(withUsers: contacts)
+        MavlMessage.shared.createAGroup(withUsers: Set(contacts))
     }
 
     @IBAction func loginAction(_ sender: Any) {
@@ -144,8 +144,6 @@ extension ViewController: MavlMessageStatusDelegate {
     }
     
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {
-        NotificationCenter.default.post(name: .didReceiveMesg, object: ["msg": messages, "isLoadMore": isLoadMore])
-        
         for mesg in messages.map({ Message($0) }) {
             if mesg.isOutgoing {
                 MessageDao.updateMessage(msg: mesg)
@@ -154,6 +152,8 @@ extension ViewController: MavlMessageStatusDelegate {
             }
         }
         refreshData()
+        
+        NotificationCenter.default.post(name: .didReceiveMesg, object: ["msg": messages, "isLoadMore": isLoadMore])
     }
 }
 

@@ -26,7 +26,6 @@ public class StatusQueue {
     private var queue: [String: UserStatus] = [:]
     private var maxInterval: TimeInterval = 80
     private var timer: Timer?
-    private var count = 0
     
     init() {
         timer = Timer(timeInterval: 1, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
@@ -99,11 +98,21 @@ public class StatusQueue {
             connectTimeout()
             return
         }
-        count += 1
-        print("check status：\(count)")
-        guard !isOnlineStatus(withImAccount:passport.uid) else { return  }
+        guard isOnlineStatus(withImAccount:passport.uid) else {
+            connectTimeout()
+            return
+        }
         
-        connectTimeout()
+        let offlineUsers = queue.keys.filter{
+            !isOnlineStatus(withImAccount: $0)
+        }
+        
+        guard offlineUsers.count > 0 else { return }
+        delegate?.statusQueue(didOfflineUsers: offlineUsers)
+        // 下线后移除队列中的元素
+        queue = queue.filter {
+            !offlineUsers.contains($0.key)
+        }
     }
     
     // MARK: - Private

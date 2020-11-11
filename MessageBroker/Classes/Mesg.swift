@@ -19,7 +19,6 @@ public enum ConversationType: Int {
 public struct Mesg {
     public var fromUid: String
     public var toUid: String
-    public var conversationId: String
     public var conversationType: ConversationType
     public var isOutgoing: Bool
 
@@ -38,18 +37,15 @@ public struct Mesg {
 
         if topicModel.operation == 2 {
             conversationType = .group
-            conversationId = topicModel.to
         }else if topicModel.operation == 3 {
             conversationType = .vmuc
-            conversationId = topicModel.to
         }else {
             conversationType = .single
-            conversationId = isOutgoing ? topicModel.to : topicModel.from
         }
         serverId = topicModel.serverId
         text = topicModel.text
         status = topicModel.status
-        timestamp = topicModel.timestamp ?? Date().timeIntervalSince1970
+        timestamp = topicModel.timestamp
         localId = topicModel.localId
     }
 }

@@ -17,7 +17,7 @@ public protocol MavlMessageClient {
     func login(userName name: String, password pwd: String)
     func logout()
     
-    func createAGroup(withUsers users: [String])
+    func createAGroup(withUsers users: Set<String>)
     func joinGroup(withGroupId gid: String)
     func quitGroup(withGroupId gid: String)
     
@@ -62,14 +62,12 @@ public protocol MavlMessageGroupDelegate: class {
 public protocol MavlMessageStatusDelegate: class {
     func mavl(willSend: Mesg)
     func mavl(willResend: Mesg)
-    func mavl(didSend: Mesg, error: Error?)
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool)
 }
 
 public extension MavlMessageStatusDelegate {
     func mavl(willSend: Mesg) {}
     func mavl(willResend: Mesg) {}
-    func mavl(didSend: Mesg, error: Error?) {}
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {}
 }
 
@@ -148,14 +146,9 @@ public class MavlMessage {
     
     @objc func connectTimeoutAction() {
         // 清空发送队列
-        for (_, topicModel) in _sendingMessages {
-            let sendfailed = NSError(domain: "", code: 0, userInfo: ["errmsg": "send failed"]) as Error
-            delegateMsg?.mavl(didSend: Mesg(topicModel: topicModel), error: sendfailed)
-        }
         _sendingMessages.removeAll()
         if qos.rawValue > 0 {
             // TODO: 清空mqtt的inflight队列(如果qos > 0)，否则inflight不会释放
-            
         }
         
         let err = NSError(domain: "", code: 0, userInfo: ["errmsg": "connect timeout"]) as Error
@@ -196,7 +189,12 @@ extension MavlMessage: MavlMessageClient {
         mqtt.disconnect()
     }
     
-    public func createAGroup(withUsers users: [String]) {
+    public func createAGroup(withUsers users: Set<String>) {
+        guard let passport = passport else { return }
+        // set中不包含自己的话，需要加进去
+        var frinedsList = users
+        frinedsList.insert(passport.uid)
+        
         let payload = users.map{ "\($0.lowercased())" }.joined(separator: ",")
         let operation = Operation.createGroup
         _send(text: payload, operation: operation)
@@ -332,10 +330,11 @@ extension MavlMessage: CocoaMQTTDelegate {
     }
     
     public func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
-        TRACE("message pub: \(message.string.value), id: \(id)")
+        TRACE("message pub | topic: \(message.topic), message: \(message.string.value), id: \(id)")
         
-//        TODO: 这儿为什么用SendingTopicModel，而不是用TopicModel
         guard var topicModel = SendTopicModel(message.topic, message.string.value) else { return }
+        
+        guard topicModel.isMesg else { return }
         
         if topicModel.isNeedDecrypt {
             //解密

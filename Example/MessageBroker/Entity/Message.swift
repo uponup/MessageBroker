@@ -20,7 +20,7 @@ struct Message {
     var localAccount: String
     var remoteAccount: String
     var conversationId: String
-    var localId: String
+    var localId: Int32
     var serverId: String
     var status: Int
     var timestamp: TimeInterval
@@ -48,8 +48,18 @@ struct Message {
                 remoteAccount = imMesg.fromUid
             }
         }
-        conversationId = imMesg.conversationId
-        localId = imMesg.localId.value
+        if imMesg.conversationType == .group {
+            conversationId = imMesg.toUid
+        }else if imMesg.conversationType == .vmuc {
+            conversationId = imMesg.toUid
+        }else {
+            if let passport = UserCenter.center.passport {
+                conversationId = passport.uid == imMesg.fromUid ? imMesg.toUid : imMesg.fromUid
+            }else {
+                conversationId = imMesg.toUid
+            }
+        }
+        localId = Int32(imMesg.localId.value) ?? 0
         serverId = imMesg.serverId
         status = imMesg.status
         timestamp = imMesg.timestamp
@@ -63,7 +73,7 @@ struct Message {
         isOutgoing = imMesg.isOutgoing
     }
     
-    init(id: Int32, text: String, local: String, remote: String, conversationId: String, localId: String, serverId: String, status: Int, timestamp: TimeInterval, conversationType: Int, isOutgoing: Bool) {
+    init(id: Int32, text: String, local: String, remote: String, conversationId: String, localId: Int32, serverId: String, status: Int, timestamp: TimeInterval, conversationType: Int, isOutgoing: Bool) {
         self.id = id
         self.text = text
         self.localAccount = local

@@ -33,7 +33,7 @@ class ChatMessage {
     }
     
     var localId: String {
-        mesg.localId
+        "\(mesg.localId)"
     }
     
     var timestamp: TimeInterval {

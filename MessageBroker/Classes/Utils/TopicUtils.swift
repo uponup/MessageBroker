@@ -23,26 +23,21 @@ protocol TopicModelProtocol {
     var localId: String { get set }
     var serverId: String { get set }
     var status: Int { set get }
-    var timestamp: TimeInterval? { set get }
-    var conversationId: String { get }
+    var timestamp: TimeInterval { set get }
 }
 
 extension TopicModelProtocol {
-    var conversationId: String {
-        if operation == Operation.oneToOne("", "").value {
-            guard let passport = MavlMessage.shared.passport else {
-                return to
-            }
-            /**
-             「A给B发」 和「B给A发」这两种case应该指定同一个gid，即对方账户
-             */
-            return passport.uid == from ? to : from
+    var isNeedDecrypt: Bool {
+        if operation == 1
+        || operation == 2
+        || operation == 3 {
+            return true
         }else {
-            return to
+            return false
         }
     }
     
-    var isNeedDecrypt: Bool {
+    var isMesg: Bool {
         if operation == 1
         || operation == 2
         || operation == 3 {
@@ -67,7 +62,7 @@ struct SendTopicModel: TopicModelProtocol {
     var localId: String
     var serverId: String
     var status: Int
-    var timestamp: TimeInterval?
+    var timestamp: TimeInterval
     
     init?(_ topic: String, _ mesgText: String) {
         guard let passport = MavlMessage.shared.passport else { return nil }
@@ -82,6 +77,7 @@ struct SendTopicModel: TopicModelProtocol {
         localId = segments[2]
         serverId = ""
         status = 0
+        timestamp = Date().timeIntervalSince1970
     }
 }
 
@@ -99,7 +95,7 @@ struct ReceivedTopicModel: TopicModelProtocol {
     var localId: String
     var serverId: String
     var status: Int = 2
-    var timestamp: TimeInterval?
+    var timestamp: TimeInterval
     
     init?(_ topic: String, _ mesgText: String) {
         let segments = topic.components(separatedBy: "/")
@@ -112,6 +108,7 @@ struct ReceivedTopicModel: TopicModelProtocol {
         text = mesgText
         localId = segments[2]
         serverId = segments[4]
+        timestamp = (TimeInterval(segments[4]) ?? 0) / 1000.0
     }
 }
 
@@ -129,7 +126,7 @@ struct HistoryTopicModel: TopicModelProtocol {
     var localId: String
     var serverId: String
     var status: Int
-    var timestamp: TimeInterval?
+    var timestamp: TimeInterval
     
     private var gid: String
     
