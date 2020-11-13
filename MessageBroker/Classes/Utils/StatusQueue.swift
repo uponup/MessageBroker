@@ -24,7 +24,7 @@ public class StatusQueue {
     public weak var delegate: StatusQueueDelegate?
     
     private var queue: [String: UserStatus] = [:]
-    private var maxInterval: TimeInterval = 80
+    private var maxInterval: TimeInterval = 150
     private var timer: Timer?
     
     init() {
@@ -88,6 +88,9 @@ public class StatusQueue {
     func login() {
         guard let passport = MavlMessage.shared.passport else { return }
         updateUserStatus(imAccount: passport.uid)
+        
+        // 登录成功，自动订阅自己的状态
+        checkStatus(passport.uid)
     }
     
     // MARK: - Action

@@ -49,6 +49,16 @@ extension String {
     }
 }
 
+// MARK: - URLEncode
+extension String {
+    func URLDecoding() -> String? {
+        return self.removingPercentEncoding
+    }
+    
+    func URLEncoding() -> String? {
+        return self.addingPercentEncoding(withAllowedCharacters: NSCharacterSet(charactersIn: "!*'\"();:@&=+$,/?%#[]% ").inverted)
+    }
+}
 extension Substring {
     public func toString() -> String {
         return String(self)

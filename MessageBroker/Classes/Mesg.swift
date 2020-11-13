@@ -23,6 +23,7 @@ public struct Mesg {
     public var isOutgoing: Bool
 
     public var text: String
+    public var type: String
     public var localId: String?
     public var serverId: String
     public var status: Int
@@ -47,5 +48,6 @@ public struct Mesg {
         status = topicModel.status
         timestamp = topicModel.timestamp
         localId = topicModel.localId
+        type = topicModel.type
     }
 }

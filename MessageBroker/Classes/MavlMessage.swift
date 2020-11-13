@@ -22,9 +22,11 @@ public protocol MavlMessageClient {
     func quitGroup(withGroupId gid: String)
     
     func addFriend(withUserName: String)
+    func send(mediaMessage msg: MultiMedia, toFriend fid: String, localId: String)
+    func send(mediaMessage msg: MultiMedia, toGroup gid: String, localId: String, withFriends fids: Set<String>)
+    
     func send(message msg: String, toFriend fid: String, localId: String)
     func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: Set<String>)
-    
     func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int)
 }
 /**
@@ -215,12 +217,12 @@ extension MavlMessage: MavlMessageClient {
         delegateGroup?.addFriendSuccess(friendName: withUserName)
     }
     
-    public func send(message msg: String, toFriend fid: String, localId: String) {
+    public func send(mediaMessage msg: MultiMedia, toFriend fid: String, localId: String) {
         let operation = Operation.oneToOne(localId, fid)
-        _send(text: msg, operation: operation)
+        _send(text: msg.content, operation: operation)
     }
     
-    public func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: Set<String> = []) {
+    public func send(mediaMessage msg: MultiMedia, toGroup gid: String, localId: String, withFriends fids: Set<String>) {
         guard let passport = passport else { return }
         var operation: Operation
 
@@ -234,7 +236,18 @@ extension MavlMessage: MavlMessageClient {
             // group
             operation = .oneToMany(localId, gid)
         }
-        _send(text: msg, operation: operation, fids: allMembers)
+        _send(text: msg.content, operation: operation, fids: allMembers)
+    }
+    
+    public func send(message msg: String, toFriend fid: String, localId: String) {
+        let textMedia = NormalMedia(type: .text, mesg: msg)
+        
+        send(mediaMessage: textMedia, toFriend: fid, localId: localId)
+    }
+    
+    public func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: Set<String> = []) {
+        let textMedia = NormalMedia(type: .text, mesg: msg)
+        send(mediaMessage: textMedia, toGroup: gid, localId: localId, withFriends: fids)
     }
     
     public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
@@ -332,18 +345,20 @@ extension MavlMessage: CocoaMQTTDelegate {
     public func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
         TRACE("message pub | topic: \(message.topic), message: \(message.string.value), id: \(id)")
         
-        guard var topicModel = SendTopicModel(message.topic, message.string.value) else { return }
+        guard var tempTopicModel = SendTopicModel(message.topic, message.string.value) else { return }
         
-        guard topicModel.isMesg else { return }
+        guard tempTopicModel.isMesg else { return }
         
-        if topicModel.isNeedDecrypt {
+        if tempTopicModel.isNeedDecrypt {
             //解密
             guard let originText = EncryptUtils.decrypt(message.string.value) else {
                 // TODO: 解密willSend的消息失败, 是否需要报错
                 // 如果是vmuc的话，也无法解密
                 return }
-            topicModel.text = originText
+            tempTopicModel.text = originText
         }
+        
+        guard let topicModel = SendTopicModel(message.topic, tempTopicModel.text) else { return }
         
         if _sendingMessages.keys.contains(topicModel.localId) {
             // 说明已经在重试队列中了，告诉业务层，这是重试
