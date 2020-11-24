@@ -59,6 +59,7 @@ extension String {
         return self.addingPercentEncoding(withAllowedCharacters: NSCharacterSet(charactersIn: "!*'\"();:@&=+$,/?%#[]% ").inverted)
     }
 }
+
 extension Substring {
     public func toString() -> String {
         return String(self)

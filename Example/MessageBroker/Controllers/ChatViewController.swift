@@ -81,6 +81,10 @@ class ChatViewController: UIViewController {
         return lastestMessage.uuid
     }
     
+    private var localId: String {
+        "\(MessageDao.fetchLastOne() + 1)"
+    }
+    
     @IBOutlet weak var statusLabel: UILabel!
     @IBOutlet weak var statusView: UIView!
     @IBOutlet weak var tableView: UITableView!
@@ -100,27 +104,6 @@ class ChatViewController: UIViewController {
         didSet {
             sendMessageButton.isEnabled = false
         }
-    }
-    
-    @IBAction func sendMessage() {
-        guard let message = messageTextView.text else { return }
-        
-        let localId = "\(MessageDao.fetchLastOne() + 1)"
-        
-        if chatTo == .toGroup {
-            MavlMessage.shared.send(message: message, toGroup: chatToId, localId: localId)
-        }else if chatTo == .toCircle {
-            let friends = Set(CirclesDao.fetchAllMembers(fromCircle: chatToId))
-            MavlMessage.shared.send(message: message, toGroup: chatToId, localId: localId, withFriends: friends)
-        }else {
-            MavlMessage.shared.send(message: message, toFriend: chatToId, localId: localId)
-        }
-        messageTextView.text = ""
-        sendMessageButton.isEnabled = false
-        messageTextViewHeightConstraint.constant = messageTextView.contentSize.height
-        messageTextView.layoutIfNeeded()
-        view.endEditing(true)
-        
     }
     
     override func viewDidLoad() {
@@ -183,6 +166,8 @@ class ChatViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(true, animated: animated)
         super.viewWillAppear(animated)
+        
+        scrollToBottom(false)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -192,6 +177,66 @@ class ChatViewController: UIViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    
+    @IBAction func sendMultiMediaMesgAction(_ sender: Any) {
+        let alertVc = UIAlertController(title: "You will send", message: "You can choose from the following types of multimedia messages", preferredStyle: .actionSheet)
+        let actionText = UIAlertAction(title: "Text", style: .default) { [unowned self] _ in
+            self.sendText()
+        }
+        
+        let actionImage = UIAlertAction(title: "Image", style: .default) { [unowned self] _ in
+            self.sendImage()
+        }
+
+        let actionVideo = UIAlertAction(title: "Video", style: .default) { [unowned self] _ in
+            self.sendVideo()
+        }
+
+        let actionAudio = UIAlertAction(title: "Audio", style: .default) { [unowned self] _ in
+            self.sendAudio()
+        }
+
+        let actionFile = UIAlertAction(title: "File", style: .default) { [unowned self] _ in
+            self.sendFile()
+        }
+
+        let actionLocation = UIAlertAction(title: "Location", style: .default) { [unowned self] _ in
+            self.sendLocation()
+        }
+        
+        let actionInvalid = UIAlertAction(title: "Invalid", style: .default) { [unowned self] _ in
+            self.sendInvalid()
+        }
+
+
+        let actionCancel = UIAlertAction(title: "Cancel", style: .cancel) {_ in }
+
+        let actions = [actionText, actionImage, actionAudio, actionVideo, actionFile, actionLocation, actionInvalid, actionCancel]
+        for action in actions {
+            alertVc.addAction(action)
+        }
+        
+        self.present(alertVc, animated: true, completion: nil)
+    }
+
+    @IBAction func sendMessage() {
+        guard let message = messageTextView.text else { return }
+
+        if chatTo == .toGroup {
+           MavlMessage.shared.send(message: message, toGroup: chatToId, localId: localId)
+        }else if chatTo == .toCircle {
+           let friends = Set(CirclesDao.fetchAllMembers(fromCircle: chatToId))
+           MavlMessage.shared.send(message: message, toGroup: chatToId, localId: localId, withFriends: friends)
+        }else {
+           MavlMessage.shared.send(message: message, toFriend: chatToId, localId: localId)
+        }
+        messageTextView.text = ""
+        sendMessageButton.isEnabled = false
+        messageTextViewHeightConstraint.constant = messageTextView.contentSize.height
+        messageTextView.layoutIfNeeded()
+        view.endEditing(true)
     }
     
     @IBAction func backAction(_ sender: Any) {
@@ -288,11 +333,11 @@ class ChatViewController: UIViewController {
         }
     }
     
-    func scrollToBottom() {
+    func scrollToBottom(_ animated: Bool = true) {
         guard messages.count > 3 else { return }
         
         let indexPath = IndexPath(row: messages.count - 1, section: 0)
-        tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+        tableView.scrollToRow(at: indexPath, at: .bottom, animated: animated)
     }
     
     func scrollToTop() {
@@ -355,5 +400,59 @@ extension ChatViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         view.endEditing(true)
+    }
+}
+
+// MARK: - 发送多媒体消息
+extension ChatViewController {
+    func sendText() {
+        let media = NormalMedia(type: .text, mesg: "hello file server")
+        _send(media)
+    }
+    
+    func sendImage() {
+        let url = "https://fs.cocomobi.com/api/v1/file?name=d192c0f8162e38cf588bdc7511488fcd.png"
+        let media = NormalMedia(type: .image, mesg: url)
+        _send(media)
+    }
+    
+    func sendVideo() {
+        let url = "https://fs.cocomobi.com/api/v1/file?name=d192c0f8162e38cf588bdc7511488fcd.mp4"
+        let media = NormalMedia(type: .video, mesg: url)
+        _send(media)
+    }
+    
+    func sendAudio() {
+        let url = "https://fs.cocomobi.com/api/v1/file?name=d192c0f8162e38cf588bdc7511488fcd.wav"
+        let media = NormalMedia(type: .audio, mesg: url)
+        _send(media)
+    }
+    
+    func sendFile() {
+        let url = "https://fs.cocomobi.com/api/v1/file?name=d192c0f8162e38cf588bdc7511488fcd.txt"
+        let media = NormalMedia(type: .file, mesg: url)
+        _send(media)
+    }
+    
+    func sendLocation() {
+        let media = LocationMedia(type: .location, latitude: 117.0, longitude: 38)
+        _send(media)
+    }
+    
+    func sendInvalid() {
+        let media = NormalMedia(type: .invalid, mesg: "")
+        _send(media)
+    }
+    
+    private func _send(_ media: MultiMedia) {
+        
+        if chatTo == .toContact {
+            MavlMessage.shared.send(mediaMessage: media, toFriend: chatToId, localId: localId)
+        }else if chatTo == .toGroup {
+            MavlMessage.shared.send(mediaMessage: media, toGroup: chatToId, localId: localId, withFriends: [])
+        }else {
+            let friends = Set(CirclesDao.fetchAllMembers(fromCircle: chatToId))
+            MavlMessage.shared.send(mediaMessage: media, toGroup: chatToId, localId: localId, withFriends: friends)
+        }
     }
 }

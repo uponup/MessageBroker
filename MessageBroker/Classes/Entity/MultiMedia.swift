@@ -33,6 +33,11 @@ public struct NormalMedia: MultiMedia {
     public var content: String {
         return "\(type.scheme)\(mesg.URLEncoding() ?? "")"
     }
+    
+    public init(type: MediaType, mesg: String) {
+        self.type = type
+        self.mesg = mesg
+    }
 }
 
 public struct LocationMedia: MultiMedia {
@@ -40,7 +45,13 @@ public struct LocationMedia: MultiMedia {
     public var latitude: Double
     public var longitude: Double
     public var content: String {
-        return "\(type.scheme)location?lantitude=\(latitude)&longitude=\(longitude)"
+        return "\(type.scheme)location?latitude=\(latitude)&longitude=\(longitude)"
+    }
+    
+    public init(type: MediaType, latitude: Double, longitude: Double) {
+        self.type = type
+        self.latitude = latitude
+        self.longitude = longitude
     }
 }
 
@@ -49,10 +60,18 @@ public struct LocationMedia: MultiMedia {
     返回元祖（多媒体消息类型，消息内容）
  */
 func parseMediaMesg(content: String) -> (String, String)? {
-    guard let url = URL(string: content), let scheme = url.scheme else { return nil }
+    guard let url = URL(string: content), let scheme = url.scheme else {
+        return (MediaType.invalid.rawValue, content)
+    }
     guard let type = MediaType(rawValue: scheme) else {
         return (MediaType.invalid.rawValue, content)
     }
-    let msg = (url.host ?? "").URLDecoding() ?? ""
-    return (type.rawValue, msg)
+    
+    if type == .location {
+        let msg = url.query.value
+        return (type.rawValue, msg)
+    }else {
+        let msg = url.host.value.URLDecoding() ?? ""
+        return (type.rawValue, msg)
+    }
 }
