@@ -59,19 +59,29 @@ public struct LocationMedia: MultiMedia {
 /**
     返回元祖（多媒体消息类型，消息内容）
  */
-func parseMediaMesg(content: String) -> (String, String)? {
-    guard let url = URL(string: content), let scheme = url.scheme else {
-        return (MediaType.invalid.rawValue, content)
-    }
-    guard let type = MediaType(rawValue: scheme) else {
-        return (MediaType.invalid.rawValue, content)
+func parseMediaMesg(content: String) -> MultiMedia {
+    guard let type = content.components(separatedBy: "://").first, let schema = MediaType(rawValue: type) else {
+        return NormalMedia(type: .invalid, mesg: content)
     }
     
-    if type == .location {
-        let msg = url.query.value
-        return (type.rawValue, msg)
+    if schema == .location {
+        
     }else {
-        let msg = url.host.value.URLDecoding() ?? ""
-        return (type.rawValue, msg)
+        
     }
+//
+//    guard let url = URL(string: content), let scheme = url.scheme else {
+//        return (MediaType.invalid.rawValue, content)
+//    }
+//    guard let type = MediaType(rawValue: scheme) else {
+//        return (MediaType.invalid.rawValue, content)
+//    }
+//
+//    if type == .location {
+//        let msg = url.query.value
+//        return (type.rawValue, msg)
+//    }else {
+//        let msg = url.host.value.URLDecoding() ?? ""
+//        return (type.rawValue, msg)
+//    }
 }
