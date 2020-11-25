@@ -20,7 +20,8 @@ struct EncryptUtils {
     }
 
     static func decrypt(_ cipherText: String) -> String? {
-        guard let decodeData = NSData(base64Encoded: cipherText, options: NSData.Base64DecodingOptions.init(rawValue: 0)) else {
+        let cipher = cipherText.removeWhitespaceAndNewLine()
+        guard let decodeData = NSData(base64Encoded: cipher, options: NSData.Base64DecodingOptions.init(rawValue: 0)) else {
             print("解析失败")
             return nil
         }

@@ -74,6 +74,15 @@ extension String {
     }
 }
 
+extension String {
+    func removeWhitespaceAndNewLine() -> String {
+        var string = replacingOccurrences(of: " ", with: "")
+        string = replacingOccurrences(of: "\r", with: "")
+        string = replacingOccurrences(of: "\n", with: "")
+        return string
+    }
+}
+
 extension Substring {
     public func toString() -> String {
         return String(self)
