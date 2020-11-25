@@ -56,7 +56,21 @@ extension String {
     }
     
     func URLEncoding() -> String? {
-        return self.addingPercentEncoding(withAllowedCharacters: NSCharacterSet(charactersIn: "!*'\"();:@&=+$,/?%#[]% ").inverted)
+        return self.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+    }
+    
+    // query to dict
+    func queryParameters() -> [String: Double] {
+        let queryPairs = self.components(separatedBy: "&").compactMap { pair -> (String, Double)? in
+            let components = pair.components(separatedBy: "=")
+            guard let key = components.first, let value = components.last else {
+                return nil
+            }
+                        
+            return (key, Double(value) ?? 0)
+        }
+
+        return Dictionary(uniqueKeysWithValues: queryPairs)
     }
 }
 

@@ -20,6 +20,10 @@ class ChatMessage {
     private var mesg: Message
     var status: SendingStatus
     
+    var type: String {
+        mesg.type
+    }
+    
     var isOutgoing: Bool {
         mesg.isOutgoing
     }

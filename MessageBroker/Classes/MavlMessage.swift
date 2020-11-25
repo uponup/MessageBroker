@@ -256,30 +256,23 @@ extension MavlMessage: MavlMessageClient {
     }
     
     private func _send(text: String, operation: Operation, fids: Set<String> = []) {
-        guard let mesg = getMesg(text: text, operation: operation) else {
+        guard var cipherText = getCipherText(text: text, operation: operation) else {
             // TODO: 消息发送失败
             return
         }
-        var willSend = mesg.text
         if fids.count > 0 {
-            willSend = "\(fids.joined(separator: ","))#\(mesg.text)"
+            cipherText = "\(fids.joined(separator: ","))#\(cipherText)"
         }
-        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: willSend, qos: qos)
+        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: cipherText, qos: qos)
         mqtt?.publish(mqttMsg)
     }
     
-    private func getMesg(text: String, operation: Operation) -> Mesg? {
-        if operation.isNeedCipher {
-            // 发送的是文本消息, 需要加密
-            guard let cipherText = EncryptUtils.encrypt(text),
-                let cipherTopic = SendTopicModel(operation.topic, cipherText) else {
-                return nil
-            }
-            return Mesg(topicModel: cipherTopic)
-        }else {
-            guard let topicModel = SendTopicModel(operation.topic, text) else { return nil }
-            return Mesg(topicModel: topicModel)
+    private func getCipherText(text: String, operation: Operation) -> String? {
+        // 发送的是文本消息, 需要加密
+        guard let cipherText = EncryptUtils.encrypt(text), operation.isNeedCipher else {
+            return text
         }
+        return cipherText
     }
 }
 
@@ -345,23 +338,13 @@ extension MavlMessage: CocoaMQTTDelegate {
     public func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
         TRACE("message pub | topic: \(message.topic), message: \(message.string.value), id: \(id)")
         
-        guard var tempTopicModel = SendTopicModel(message.topic, message.string.value) else { return }
+        guard let tempTopicModel = SendTopicModel(message.topic, message.string.value) else { return }
         
         guard tempTopicModel.isMesg else { return }
-        
-        if tempTopicModel.isNeedDecrypt {
-            //解密
-            guard let originText = EncryptUtils.decrypt(message.string.value) else {
-                // TODO: 解密willSend的消息失败, 是否需要报错
-                // 如果是vmuc的话，也无法解密
-                return }
-            tempTopicModel.text = originText
-        }
-        
         guard let topicModel = SendTopicModel(message.topic, tempTopicModel.text) else { return }
         
         if _sendingMessages.keys.contains(topicModel.localId) {
-            // 说明已经在重试队列中了，告诉业务层，这是重试
+            // 说明已经在重试队列中了，告诉业务层，这是重试(qos > 0的时候)
             delegateMsg?.mavl(willResend: Mesg(topicModel: topicModel))
         }else {
             // 发送消息出去的同时，将消息缓存到发送队列中，成功和失败后再移除
@@ -396,20 +379,16 @@ extension MavlMessage: CocoaMQTTDelegate {
                 delegateGroup?.quitGroup(gid: topicModel.to, error: nil)
             }else if topicModel.operation == 401 {
                 let msgs = message.string.value.components(separatedBy: "##").compactMap { element -> Mesg? in
-                    guard let originText = EncryptUtils.decrypt(element) else {
-                        // TODO: 解密失败，返回错误信息
-                        guard let received = ReceivedTopicModel(topic, element) else {  return nil }
-                        return Mesg(topicModel: received)
+                    guard let received = ReceivedTopicModel(topic, element) else {
+                        // 这儿是遍历历史信息，如果解密失败的话，暂定将错误忽略，不必传给业务层
+                        return nil
                     }
-                    
-                    guard let received = ReceivedTopicModel(topic, originText) else { return nil }
                     return Mesg(topicModel: received)
                 }
                 delegateMsg?.mavl(didRevceived: msgs, isLoadMore: true)
             }else {
-                guard let originText = EncryptUtils.decrypt(message.string.value),
-                    let received = ReceivedTopicModel(topic, originText) else {
-                    // TODO: 解密失败，返回错误信息
+                guard let received = ReceivedTopicModel(topic, message.string.value) else {
+                    // TODO: 错误信息
                     return
                 }
                 let msg = Mesg(topicModel: received)

@@ -21,7 +21,7 @@ struct MessageDao {
     static let db = SQLiteManager.sharedManager().db
 
     static func createTable() {
-        let sqlMesg = "CREATE TABLE IF NOT EXISTS t_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, local VARCHAR(32), remote VARCHAR(32), conversationId VARCHAR(32), text TEXT, status SMALLINT DEFAULT 0, localId BIGINT DEFAULT 0, serverId VARCHAR(32) DEFAULT 0, timestamp DATETIME, isOut Bool, conversationType SMALLINT);"
+        let sqlMesg = "CREATE TABLE IF NOT EXISTS t_msgs (id INTEGER PRIMARY KEY AUTOINCREMENT, local VARCHAR(32), remote VARCHAR(32), conversationId VARCHAR(32), text TEXT, type VARCHAR(20), status SMALLINT DEFAULT 0, localId BIGINT DEFAULT 0, serverId VARCHAR(32) DEFAULT 0, timestamp DATETIME, isOut Bool, conversationType SMALLINT);"
         
         guard db.open() else { return }
 
@@ -46,14 +46,14 @@ struct MessageDao {
 extension MessageDao {
     
     static func addMesg(msg: Message) {
-        let sql = "INSERT INTO t_msgs (local, remote, conversationId, text, status, localId, serverId, timestamp, isOut, conversationType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        let sql = "INSERT INTO t_msgs (local, remote, conversationId, text, type, status, localId, serverId, timestamp, isOut, conversationType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         guard db.open() else { return }
         
         let date = Date(timeIntervalSince1970: msg.timestamp)
-        if db.executeUpdate(sql, withArgumentsIn: [msg.localAccount, msg.remoteAccount, msg.conversationId, msg.text, msg.status, msg.localId, msg.serverId, date, msg.isOutgoing, msg.conversationType.rawValue]) {
-            print("数据插入成功 t_msgs: \(msg.remoteAccount) : \(msg.text)")
+        if db.executeUpdate(sql, withArgumentsIn: [msg.localAccount, msg.remoteAccount, msg.conversationId, msg.text, msg.type, msg.status, msg.localId, msg.serverId, date, msg.isOutgoing, msg.conversationType.rawValue]) {
+            print("数据插入成功 t_msgs: \(msg.type) | \(msg.remoteAccount) : \(msg.text)")
         }else {
-            print("数据插入失败 t_msgs: \(msg.remoteAccount) : \(msg.text)")
+            print("数据插入失败 t_msgs: \(msg.type) | \(msg.remoteAccount) : \(msg.text)")
         }
     }
     
@@ -99,6 +99,7 @@ extension MessageDao {
         while res.next() {
             let id = res.int(forColumn: "id")
             let text = res.string(forColumn: "text").value
+            let type = res.string(forColumn: "type") ?? "text"
             let localAccount = res.string(forColumn: "local").value
             let remoteAccount = res.string(forColumn: "remote").value
             let conversationId = res.string(forColumn: "conversationId").value
@@ -109,7 +110,7 @@ extension MessageDao {
             let isOut = res.bool(forColumn: "isOut")
             let conversationType = Int(res.int(forColumn: "conversationType"))
             
-            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, conversationType: conversationType, isOutgoing: isOut)
+            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, conversationType: conversationType, isOutgoing: isOut, type: type)
             messages.append(msg)
         }
         return messages
@@ -129,6 +130,7 @@ extension MessageDao {
         while res.next() {
             let id = res.int(forColumn: "id")
             let text = res.string(forColumn: "text").value
+            let type = res.string(forColumn: "type") ?? "text"
             let localAccount = res.string(forColumn: "local").value
             let remoteAccount = res.string(forColumn: "remote").value
             let conversationId = res.string(forColumn: "conversationId").value
@@ -139,7 +141,7 @@ extension MessageDao {
             let isOut = res.bool(forColumn: "isOut")
             let conversationType = Int(res.int(forColumn: "conversationType"))
             
-            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, conversationType: conversationType, isOutgoing: isOut)
+            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, conversationType: conversationType, isOutgoing: isOut, type: type)
             messages.append(msg)
         }
         return messages
@@ -155,6 +157,7 @@ extension MessageDao {
         while res.next() {
             let id = res.int(forColumn: "id")
             let text = res.string(forColumn: "text").value
+            let type = res.string(forColumn: "type") ?? "text"
             let localAccount = res.string(forColumn: "local").value
             let remoteAccount = res.string(forColumn: "remote").value
             let conversationId = res.string(forColumn: "conversationId").value
@@ -165,7 +168,7 @@ extension MessageDao {
             let isOut = res.bool(forColumn: "isOut")
             let conversationType = Int(res.int(forColumn: "conversationType"))
             
-            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, conversationType: conversationType, isOutgoing: isOut)
+            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, conversationType: conversationType, isOutgoing: isOut, type: type)
             messages.append(msg)
         }
 

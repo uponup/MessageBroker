@@ -17,6 +17,7 @@ enum ConversationType: Int {
 struct Message {
     var id: Int32?
     var text: String
+    var type: String    // text, image, video, audio, file, location, richtext, invalid
     var localAccount: String
     var remoteAccount: String
     var conversationId: String
@@ -35,6 +36,7 @@ struct Message {
         let uid = (UserCenter.center.passport?.uid).value
         
         text = imMesg.text
+        type = imMesg.type
         if imMesg.conversationType == .single {
             localAccount = imMesg.isOutgoing ? imMesg.fromUid : imMesg.toUid
             remoteAccount = imMesg.isOutgoing ? imMesg.toUid : imMesg.fromUid
@@ -73,9 +75,10 @@ struct Message {
         isOutgoing = imMesg.isOutgoing
     }
     
-    init(id: Int32, text: String, local: String, remote: String, conversationId: String, localId: Int32, serverId: String, status: Int, timestamp: TimeInterval, conversationType: Int, isOutgoing: Bool) {
+    init(id: Int32, text: String, local: String, remote: String, conversationId: String, localId: Int32, serverId: String, status: Int, timestamp: TimeInterval, conversationType: Int, isOutgoing: Bool, type: String = "text") {
         self.id = id
         self.text = text
+        self.type = type
         self.localAccount = local
         self.remoteAccount = remote
         self.conversationId = conversationId

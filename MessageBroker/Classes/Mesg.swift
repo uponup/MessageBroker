@@ -23,7 +23,7 @@ public struct Mesg {
     public var isOutgoing: Bool
 
     public var text: String
-    public var type: String
+    public var type: String     // text, image, video, audio, file, location, richtext, invalid
     public var localId: String?
     public var serverId: String
     public var status: Int
@@ -44,10 +44,30 @@ public struct Mesg {
             conversationType = .single
         }
         serverId = topicModel.serverId
-        text = topicModel.text
         status = topicModel.status
         timestamp = topicModel.timestamp
         localId = topicModel.localId
-        type = topicModel.type
+        
+        var content = topicModel.text
+        if topicModel.isNeedDecrypt, let originText = EncryptUtils.decrypt(topicModel.text) {
+            content = originText
+        }
+        
+        let multiMedia = parseMediaMesg(content: content)
+        type = multiMedia.type.rawValue
+        if multiMedia.type == .location {
+            guard let locationMedia = multiMedia as? LocationMedia else {
+                text = multiMedia.content
+                return
+            }
+            text = "latitude=\(locationMedia.latitude)&longitude=\(locationMedia.longitude)"
+        }else {
+            
+            guard let normalMedia = multiMedia as? NormalMedia else {
+                text = multiMedia.content
+                return
+            }
+            text = normalMedia.mesg
+        }
     }
 }

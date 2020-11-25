@@ -372,7 +372,7 @@ extension ChatViewController: UITableViewDataSource, UITableViewDelegate {
         let message = messages[indexPath.row]
         if message.isOutgoing {
             let cell = tableView.dequeueReusableCell(withIdentifier: "rightMessageCell", for: indexPath) as! ChatRightMessageCell
-            cell.contentLabel.text = messages[indexPath.row].content
+            cell.contentLabel.text = "\(message.type) | \(message.content)"
             cell.avatarImageView.image = #imageLiteral(resourceName: "iv_chat_local")
             if message.status == .sending {
                 cell.labelStatus.text = "Sending..."

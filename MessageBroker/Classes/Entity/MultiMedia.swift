@@ -54,34 +54,3 @@ public struct LocationMedia: MultiMedia {
         self.longitude = longitude
     }
 }
-
-// MARK: - 解析消息
-/**
-    返回元祖（多媒体消息类型，消息内容）
- */
-func parseMediaMesg(content: String) -> MultiMedia {
-    guard let type = content.components(separatedBy: "://").first, let schema = MediaType(rawValue: type) else {
-        return NormalMedia(type: .invalid, mesg: content)
-    }
-    
-    if schema == .location {
-        
-    }else {
-        
-    }
-//
-//    guard let url = URL(string: content), let scheme = url.scheme else {
-//        return (MediaType.invalid.rawValue, content)
-//    }
-//    guard let type = MediaType(rawValue: scheme) else {
-//        return (MediaType.invalid.rawValue, content)
-//    }
-//
-//    if type == .location {
-//        let msg = url.query.value
-//        return (type.rawValue, msg)
-//    }else {
-//        let msg = url.host.value.URLDecoding() ?? ""
-//        return (type.rawValue, msg)
-//    }
-}

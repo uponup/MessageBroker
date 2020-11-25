@@ -19,7 +19,6 @@ protocol TopicModelProtocol {
     var from: String { get set }
     var to: String { get set }
     var text: String { get set }
-    var type: String { get set }
     
     var localId: String { get set }
     var serverId: String { get set }
@@ -60,7 +59,6 @@ struct SendTopicModel: TopicModelProtocol {
     var from: String
     var to: String
     var text: String
-    var type: String
     var localId: String
     var serverId: String
     var status: Int
@@ -75,18 +73,11 @@ struct SendTopicModel: TopicModelProtocol {
         operation = op
         from = passport.uid
         to = segments[3]
+        text = mesgText
         localId = segments[2]
         serverId = ""
         status = 0
         timestamp = Date().timeIntervalSince1970
-        
-        if let tuple = parseMediaMesg(content: mesgText) {
-            type = tuple.0
-            text = tuple.1
-        }else {
-            text = mesgText
-            type = "text"
-        }
     }
 }
 
@@ -101,8 +92,6 @@ struct ReceivedTopicModel: TopicModelProtocol {
     var from: String
     var to: String
     var text: String
-    var type: String
-    
     var localId: String
     var serverId: String
     var status: Int = 2
@@ -116,16 +105,10 @@ struct ReceivedTopicModel: TopicModelProtocol {
         operation = op
         from = segments[5]
         to = segments[3]
+        text = mesgText
         localId = segments[2]
         serverId = segments[4]
         timestamp = (TimeInterval(segments[4]) ?? 0) / 1000.0
-        if let tuple = parseMediaMesg(content: mesgText) {
-            type = tuple.0
-            text = tuple.1
-        }else {
-            text = mesgText
-            type = "text"
-        }
     }
 }
 
@@ -140,8 +123,6 @@ struct HistoryTopicModel: TopicModelProtocol {
     var from: String
     var to: String
     var text: String
-    var type: String
-
     var localId: String
     var serverId: String
     var status: Int
@@ -163,13 +144,7 @@ struct HistoryTopicModel: TopicModelProtocol {
         serverId = segments[3]
         status = Int(segments[4]) ?? 2
         timestamp = TimeInterval(segments[5]) ?? 0
-        if let tuple = parseMediaMesg(content: segments[6]) {
-            type = tuple.0
-            text = tuple.1
-        }else {
-            text = segments[6]
-            type = "text"
-        }
+        text = segments[6]
     }
 }
 
