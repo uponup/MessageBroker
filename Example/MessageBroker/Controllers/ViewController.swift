@@ -190,18 +190,31 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         
         let sessionModel = sessions[indexPath.row]
         
-        guard let chatVc = storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
-        chatVc.hidesBottomBarWhenPushed = true
-        //TODO: 1、add Circle    2、传给chatVc的参数可能会画有问题
-        chatVc.chatTo = sessionModel.isGroup ?  .toGroup : .toContact
-        chatVc.chatToId = sessionModel.toId
-        navigationController?.pushViewController(chatVc, animated: true)
+        if #available(iOS 13.0, *) {
+            guard let chatVc = storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
+            chatVc.hidesBottomBarWhenPushed = true
+            //TODO: 1、add Circle    2、传给chatVc的参数可能会画有问题
+            chatVc.chatTo = sessionModel.isGroup ?  .toGroup : .toContact
+            chatVc.chatToId = sessionModel.toId
+            navigationController?.pushViewController(chatVc, animated: true)
+            
+        } else {
+            // Fallback on earlier versions
+            guard let chatVc = storyboard?.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController else { return }
+            chatVc.hidesBottomBarWhenPushed = true
+            //TODO: 1、add Circle    2、传给chatVc的参数可能会画有问题
+            chatVc.chatTo = sessionModel.isGroup ?  .toGroup : .toContact
+            chatVc.chatToId = sessionModel.toId
+            navigationController?.pushViewController(chatVc, animated: true)
+        }
+        
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
+    @available(iOS 11.0, *)
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let session = sessions[indexPath.row]
         

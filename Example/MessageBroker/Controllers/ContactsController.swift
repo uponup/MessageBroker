@@ -95,16 +95,27 @@ class ContactsController: UITableViewController {
         alert.addAction(actionJoinGroup)
         
         let actionCreateGroup = UIAlertAction(title: "Create a group chat", style: .default) { _ in
-            guard let friendListVc = self.storyboard?.instantiateViewController(identifier: "FriendListController") as? FriendListController else { return }
-            
-            self.present(friendListVc, animated: true, completion: nil)
+            if #available(iOS 13.0, *) {
+                guard let friendListVc = self.storyboard?.instantiateViewController(identifier: "FriendListController") as? FriendListController else { return }
+                self.present(friendListVc, animated: true, completion: nil)
+
+            } else {
+                guard let friendListVc = self.storyboard?.instantiateViewController(withIdentifier: "FriendListController") as? FriendListController else { return }
+                self.present(friendListVc, animated: true, completion: nil)
+            }
         }
         alert.addAction(actionCreateGroup)
         
         let actionCreateCircle = UIAlertAction(title: "Create a circle chat", style: .default) { _ in
-            guard let friendListVc = self.storyboard?.instantiateViewController(identifier: "FriendListController") as? FriendListController else { return }
-            friendListVc.type = .forCircle
-            self.present(friendListVc, animated: true, completion: nil)
+            if #available(iOS 13.0, *) {
+                guard let friendListVc = self.storyboard?.instantiateViewController(identifier: "FriendListController") as? FriendListController else { return }
+                friendListVc.type = .forCircle
+                self.present(friendListVc, animated: true, completion: nil)
+            }else {
+                guard let friendListVc = self.storyboard?.instantiateViewController(withIdentifier: "FriendListController") as? FriendListController else { return }
+                friendListVc.type = .forCircle
+                self.present(friendListVc, animated: true, completion: nil)
+            }
         }
         alert.addAction(actionCreateCircle)
         
@@ -277,6 +288,7 @@ extension ContactsController {
         return 1.0
     }
     
+    @available(iOS 11.0, *)
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let cellModel = self.dataArr[indexPath.section][indexPath.row]
             
@@ -314,25 +326,46 @@ extension ContactsController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cellModel = self.dataArr[indexPath.section][indexPath.row]
-                
-        guard let chatVc = self.storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
-        chatVc.hidesBottomBarWhenPushed = true
-        if let gid = cellModel.groupId {
-            chatVc.chatTo = .toGroup
-            chatVc.chatToId = gid
-        }else if let circleId = cellModel.circleId {
-            chatVc.chatTo = .toCircle
-            chatVc.chatToId = circleId
-        }else if let contactId = cellModel.imAccount {
-            chatVc.chatTo = .toContact
-            chatVc.chatToId = contactId
+              
+        if #available(iOS 13.0, *) {
+            guard let chatVc = self.storyboard?.instantiateViewController(identifier: "ChatViewController") as? ChatViewController else { return }
+            chatVc.hidesBottomBarWhenPushed = true
+            if let gid = cellModel.groupId {
+                chatVc.chatTo = .toGroup
+                chatVc.chatToId = gid
+            }else if let circleId = cellModel.circleId {
+                chatVc.chatTo = .toCircle
+                chatVc.chatToId = circleId
+            }else if let contactId = cellModel.imAccount {
+                chatVc.chatTo = .toContact
+                chatVc.chatToId = contactId
+            }
+            
+            if isMe(cellModel.imAccount)  {
+                showHudInfo(title: "Tips:", msg: "Sending yourself a message is not expected")
+                return
+            }
+            self.navigationController?.pushViewController(chatVc, animated: true )
+        }else {
+            guard let chatVc = self.storyboard?.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController else { return }
+            chatVc.hidesBottomBarWhenPushed = true
+            if let gid = cellModel.groupId {
+                chatVc.chatTo = .toGroup
+                chatVc.chatToId = gid
+            }else if let circleId = cellModel.circleId {
+                chatVc.chatTo = .toCircle
+                chatVc.chatToId = circleId
+            }else if let contactId = cellModel.imAccount {
+                chatVc.chatTo = .toContact
+                chatVc.chatToId = contactId
+            }
+            
+            if isMe(cellModel.imAccount)  {
+                showHudInfo(title: "Tips:", msg: "Sending yourself a message is not expected")
+                return
+            }
+            self.navigationController?.pushViewController(chatVc, animated: true )
         }
-        
-        if isMe(cellModel.imAccount)  {
-            showHudInfo(title: "Tips:", msg: "Sending yourself a message is not expected")
-            return
-        }
-        self.navigationController?.pushViewController(chatVc, animated: true )
     }
 }
 
