@@ -44,7 +44,7 @@ class ViewController: UIViewController {
             }else {
                 navigationItem.title = "Offline"
                 tfUserName.text = ""
-                tfPassword.text = "xxxxxx"
+                tfPassword.text = "123456"
                 loginView.isHidden = false
                 
                 UserCenter.center.logout()
