@@ -15,7 +15,7 @@ struct EncryptUtils {
             let chr1 = ivKey[offset].value
             let sum = UInt16(chr1)%256 + UInt16(element)
             print("chr1: \(chr1)    chr2: \(element)    sum: \(sum)")
-            return UInt8(sum%256)
+            return UInt8(sum & 255)
         }
 
         return Data(cipherBytes).base64EncodedString()
