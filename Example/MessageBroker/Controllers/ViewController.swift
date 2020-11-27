@@ -159,12 +159,12 @@ extension ViewController: MavlMessageStatusDelegate {
 
 extension ViewController: StatusQueueDelegate {
     func statusQueue(didOnline user: String) {
-        print("\(user) 上线了！！！")
+        print("------\(user) 上线了！！！")
         NotificationCenter.default.post(name: .userStatusDidChanged, object: nil)
     }
     
     func statusQueue(didOfflineUsers: [String]) {
-        print("这些人下线了:\(didOfflineUsers)")
+        print("------这些人下线了:\(didOfflineUsers)")
         NotificationCenter.default.post(name: .userStatusDidChanged, object: nil)
     }
 }

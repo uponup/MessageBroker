@@ -762,7 +762,7 @@
                                         </connections>
                                     </button>
                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="MLo-tU-xBj">
-                                        <rect key="frame" x="52" y="9" width="296" height="32"/>
+                                        <rect key="frame" x="48" y="9" width="300" height="32"/>
                                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="32" id="5ZY-Fq-LDq"/>
@@ -771,9 +771,10 @@
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XDw-JX-UBJ">
-                                        <rect key="frame" x="8" y="8" width="34" height="34"/>
+                                        <rect key="frame" x="8" y="10" width="30" height="30"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="XDw-JX-UBJ" secondAttribute="height" multiplier="1:1" id="RUC-6n-Yjx"/>
+                                            <constraint firstAttribute="width" constant="30" id="bQb-Cx-Bl6"/>
                                         </constraints>
                                         <state key="normal" title="Button" image="ic_input_more"/>
                                         <connections>
@@ -786,7 +787,6 @@
                                     <constraint firstAttribute="trailing" secondItem="Xbx-ng-frh" secondAttribute="trailing" constant="20" id="3r6-AV-M8b"/>
                                     <constraint firstItem="Xbx-ng-frh" firstAttribute="top" secondItem="MLo-tU-xBj" secondAttribute="top" id="BZZ-0i-ioi"/>
                                     <constraint firstItem="MLo-tU-xBj" firstAttribute="top" secondItem="YFS-ie-1K4" secondAttribute="top" constant="9" id="Lpe-wY-OcV"/>
-                                    <constraint firstItem="XDw-JX-UBJ" firstAttribute="top" secondItem="YFS-ie-1K4" secondAttribute="topMargin" id="Nr9-qm-pvV"/>
                                     <constraint firstItem="Xbx-ng-frh" firstAttribute="leading" secondItem="MLo-tU-xBj" secondAttribute="trailing" constant="10" id="TaH-4e-uQP"/>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="50" id="VT0-Gl-AC8"/>
                                     <constraint firstItem="Xbx-ng-frh" firstAttribute="bottom" secondItem="MLo-tU-xBj" secondAttribute="bottom" id="YaJ-gh-6uV"/>
