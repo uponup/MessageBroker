@@ -14,12 +14,12 @@ enum GlobalConfig {
 //    static let xnAppKey = "c90265a583aaea81"
 //    static let xnMsgKey = "Emoji_JingNCK567"
     
-    //test for amessageTest
+    // for amessageTest
 //    static let xnAppId = "59"
 //    static let xnAppKey = "368913ccfa35c450"
 //    static let xnMsgKey = "Emoji_JingNCK567"
     
-    //test for amessage
+    // for amessage
     static let xnAppId = "65"
     static let xnAppKey = "c33d0f3ed100ca3a"
     static let xnMsgKey = "Emoji_JingNCK567"
