@@ -81,6 +81,7 @@
 		397D44372518B676005CB2D3 /* ChatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatSession.swift; sourceTree = "<group>"; };
 		3998D286251B409C00818904 /* UserCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCenter.swift; sourceTree = "<group>"; };
 		3998D28A251B8B0D00818904 /* UIScreenExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScreenExtension.swift; sourceTree = "<group>"; };
+		39C5DA542574991300BD3F77 /* 小牛Mesg.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "小牛Mesg.entitlements"; sourceTree = "<group>"; };
 		C2C566991AC8E9868E25050C /* Pods-MessageBroker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MessageBroker.debug.xcconfig"; path = "Target Support Files/Pods-MessageBroker/Pods-MessageBroker.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -168,6 +169,7 @@
 		397D440425187ED1005CB2D3 /* MessageBroker */ = {
 			isa = PBXGroup;
 			children = (
+				39C5DA542574991300BD3F77 /* 小牛Mesg.entitlements */,
 				3968BA55255297D5005B3ED7 /* Entity */,
 				390A8E02254FA2E600D242B2 /* Library */,
 				39250468254D649300B8C6F2 /* DAO */,
@@ -561,6 +563,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "MessageBroker/小牛Mesg.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = DCAS2QQQ9F;
@@ -585,6 +588,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "MessageBroker/小牛Mesg.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = DCAS2QQQ9F;

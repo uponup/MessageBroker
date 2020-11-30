@@ -40,14 +40,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.window?.rootViewController = tabbar
         }
         
+        UIApplication.shared.registerForRemoteNotifications()
         return true
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let pushToken = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        print(pushToken)
         
         MavlMessage.setDeviceToken(tokenString: pushToken)
+    }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Notification 注册失败：\(error.localizedDescription)")
     }
 
 }

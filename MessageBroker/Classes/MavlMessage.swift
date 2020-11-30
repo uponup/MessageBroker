@@ -269,7 +269,7 @@ extension MavlMessage: MavlMessageClient {
     
     private func getCipherText(text: String, operation: Operation) -> String? {
         // 发送的是文本消息, 需要加密
-        guard let cipherText = EncryptUtils.encrypt(text), operation.isNeedCipher else {
+        guard operation.isNeedCipher, let cipherText = EncryptUtils.encrypt(text) else {
             return text
         }
         return cipherText
@@ -283,9 +283,7 @@ extension MavlMessage: MavlMessageClientConfig {
             return
         }
         
-        let topic = "\(appid)/300/0/"
-        
-        mqtt?.publish(topic, withString: deviceToken)
+        _send(text: deviceToken, operation: .uploadToken)
     }
 }
 
