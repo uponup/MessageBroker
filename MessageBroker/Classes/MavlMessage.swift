@@ -102,6 +102,19 @@ public class MavlMessage {
         return config.msgKey
     }
     
+    private var env: String {
+        guard let config = config else {
+            return ""
+        }
+        return config.env.description
+    }
+    
+    private var platform: String {
+        guard let config = config else {
+            return ""
+        }
+        return config.platform.description
+    }
     
     public weak var delegateLogin: MavlMessageDelegate?
     public weak var delegateMsg: MavlMessageStatusDelegate?
@@ -283,7 +296,8 @@ extension MavlMessage: MavlMessageClientConfig {
             return
         }
         
-        _send(text: deviceToken, operation: .uploadToken)
+        let uploadToken = ["deviceToken": deviceToken, "env": env, "platform": platform]
+        _send(text: uploadToken.toJson, operation: .uploadToken)
     }
 }
 
