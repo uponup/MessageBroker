@@ -156,17 +156,24 @@ public class MavlMessage {
         mqtt.enableSSL = true
         mqtt.allowUntrustCACertificate = true
         
-        NotificationCenter.default.addObserver(self, selector: #selector(connectTimeoutAction), name: .connectTimeout, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(connectTimeoutAction(_:)), name: .connectTimeout, object: nil)
     }
     
-    @objc func connectTimeoutAction() {
+    @objc func connectTimeoutAction(_ noti: Notification) {
         // 清空发送队列
         _sendingMessages.removeAll()
         if qos.rawValue > 0 {
             // TODO: 清空mqtt的inflight队列(如果qos > 0)，否则inflight不会释放
         }
         
-        let err = NSError(domain: "", code: 0, userInfo: ["errmsg": "connect timeout"]) as Error
+        guard let obj = noti.object as? [String: Any],
+              let code = obj["code"] as? Int else {
+            let err = NSError(domain: "", code: 0, userInfo: ["errmsg": "connect timeout"]) as Error
+            delegateLogin?.logout(withError: err)
+            return
+        }
+        
+        let err = NSError(domain: "", code: code, userInfo: obj) as Error
         delegateLogin?.logout(withError: err)
     }
     
@@ -397,7 +404,7 @@ extension MavlMessage: CocoaMQTTDelegate {
                     return Mesg(topicModel: received)
                 }
                 delegateMsg?.mavl(didRevceived: msgs, isLoadMore: true)
-            }else {
+            }else if topicModel.isNeedDecrypt {
                 guard let received = ReceivedTopicModel(topic, message.string.value) else {
                     // TODO: 错误信息
                     return
@@ -407,6 +414,8 @@ extension MavlMessage: CocoaMQTTDelegate {
                 
                 // 从发送队列中移除
                 _sendingMessages.removeValue(forKey: topicModel.localId)
+            }else {
+                TRACE("收到无效信息:\(topic)")
             }
         }else {
             // TODO: 非法Topic，返回错误状态

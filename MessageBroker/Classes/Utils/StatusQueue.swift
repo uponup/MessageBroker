@@ -43,11 +43,7 @@ public class StatusQueue {
         }
         
         // 数组发生变化的时候，需要通知给业务层
-        if statusEnum == .offline {
-            guard queue.keys.contains(account) else { return }
-            queue.removeValue(forKey: account)
-            delegate?.statusQueue(didOfflineUsers: [account])
-        }else {
+        if statusEnum == .online {
             let newUserStatus = UserStatus(imAccount: account, status: statusEnum)
             
             if queue.keys.contains(account) {
@@ -57,6 +53,17 @@ public class StatusQueue {
             }
             queue[account] = newUserStatus
             delegate?.statusQueue(didOnline: account)
+        }else if statusEnum == .replaced {
+            // 自己是replaced的时候
+            guard let passport = MavlMessage.shared.passport, passport.uid == account else {
+                return
+            }
+            connectTimeout(reason: .replaced)
+        }else {
+            // offline、other
+            guard queue.keys.contains(account) else { return }
+            queue.removeValue(forKey: account)
+            delegate?.statusQueue(didOfflineUsers: [account])
         }
         
         // 队列中元素个数变化，需要更新定时器触发时机
@@ -102,7 +109,7 @@ public class StatusQueue {
             return
         }
         guard isOnlineStatus(withImAccount:passport.uid) else {
-            connectTimeout()
+            connectTimeout(reason: .timeout)
             return
         }
         
@@ -142,7 +149,7 @@ public class StatusQueue {
         timer.fireDate = queue.count == 0 ? Date.distantFuture : Date.distantPast
     }
     
-    private func connectTimeout() {
+    private func connectTimeout(reason: ConnectError = .disconnect) {
         
         let offlineUsers = queue.map { $0.value.imAccount }
         delegate?.statusQueue(didOfflineUsers: offlineUsers)
@@ -153,8 +160,8 @@ public class StatusQueue {
         // 在线的话，发一个通知给SDK MavlMessage
         guard MavlMessage.shared.isLogin else { return }
 
-        // 离线后发一个全局通知
-        NotificationCenter.default.post(name: .connectTimeout, object: nil)
+        // 离线后发一个全局通知，需要带参数：reason
+        NotificationCenter.default.post(name: .connectTimeout, object: ["code": reason.errCode, "msg": reason.errMsg])
     }
     
     deinit {
@@ -173,6 +180,37 @@ extension StatusQueue: OnlineStatus {
 private enum Status: String {
     case online = "online"
     case offline = "offline"
+    case replaced = "replaced"
+    case other = "other"
+}
+
+private enum ConnectError {
+    case disconnect
+    case timeout
+    case replaced
+    
+    var errCode: Int {
+        switch self {
+        case .disconnect:
+            return -1000
+        case .timeout:
+            return -1001
+        case .replaced:
+            return -1002
+        }
+    }
+    
+    var errMsg: String {
+        switch self {
+        case .disconnect:
+            return "client disconnect to server"
+        case .timeout:
+            return "client connect timeout"
+        case .replaced:
+            return "user will be signed in another device"
+        }
+    }
+    
 }
 
 private struct UserStatus {
