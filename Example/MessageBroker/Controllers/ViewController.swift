@@ -117,11 +117,16 @@ extension ViewController: MavlMessageDelegate {
         isLogin = false
         
         NotificationCenter.default.post(name: .logoutSuccess, object: nil)
-        guard let err = withError else {
+        guard let err = withError as NSError? else {
             return
         }
+        
+        var errMesg = err.debugDescription
+        if err.code == -1002 {
+            errMesg = "Login another device"
+        }
         // 如果有err，说明是异常断开连接
-        let alert = UIAlertController(title: "Warning", message: err.localizedDescription, preferredStyle: .alert)
+        let alert = UIAlertController(title: "Warning", message: errMesg, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "ok", style: .default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
