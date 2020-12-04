@@ -37,19 +37,56 @@ enum MBDomainConfig {
     static let localHost = "192.168.1.186"
     
     static let port: UInt16 = 443
+    static let portForDebug: UInt16 = 9883
 }
 
 // MARK: - SDK初始化配置
+
+public enum Environment: CustomStringConvertible {
+    case sandbox
+    case product
+    
+    public var description: String {
+        switch self {
+        case .sandbox:
+            return "SANDBOX"
+        default:
+            return "PRODUCT"
+        }
+    }
+}
+ 
+public enum Platform: CustomStringConvertible {
+    case ios
+    case android
+    
+    public var description: String {
+        switch self {
+        case .android:
+            return "Android"
+        default:
+            return "iOS"
+        }
+    }
+}
+
 public struct MavlMessageConfiguration {
     var appId: String
     var appKey: String
     var msgKey: String
     var host: String = MBDomainConfig.awsLB
     var port: UInt16 = MBDomainConfig.port
-       
-    public init(appid id: String, appkey key: String, msgKey mkey: String) {
+    var env: Environment
+    var platform: Platform
+    
+    public init(appid id: String, appkey key: String, msgKey mkey: String, isDebug: Bool = false, env: Environment = .product, platform: Platform = .ios) {
         appId = id
         appKey = key
         msgKey = mkey
+        
+        host = isDebug ? MBDomainConfig.awsHost1 : MBDomainConfig.awsLB
+        port = isDebug ? MBDomainConfig.portForDebug : MBDomainConfig.port
+        self.env = env
+        self.platform = platform
     }
 }
