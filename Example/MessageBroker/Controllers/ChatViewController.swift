@@ -167,9 +167,7 @@ class ChatViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(true, animated: animated)
         super.viewWillAppear(animated)
-        
-        scrollToBottom(false)
-        
+                
         changeMesgStateToRead()
     }
     
@@ -275,18 +273,15 @@ class ChatViewController: UIViewController {
         let object = notification.object as! [String: Any]
         let isLoadMore = object["isLoadMore"] as! Bool
         
-        if isLoadMore {
-            tableView.es.stopPullToRefresh()
-        }
+        // 在当前会话框，收到消息的话及时设置为已读
+        changeMesgStateToRead()
         
         if isLoadMore {
+            tableView.es.stopPullToRefresh()
             scrollToTop()
         }else {
             scrollToBottom()
         }
-        
-        // 在当前会话框，收到消息的话及时设置为已读
-        changeMesgStateToRead()
     }
     
     @objc func receivedMessageStateDidChanged(noti: Notification) {

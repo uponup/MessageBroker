@@ -278,6 +278,10 @@ extension MavlMessage: MavlMessageClient {
         _send(text: ReceiptState.read.rawValue, operation: .msgReceipt(msgFrom, msgTo, msgServerId))
     }
     
+    func receivedMessage(msgFrom: String, msgTo: String, msgServerId: String) {
+        _send(text: ReceiptState.received.rawValue, operation: .msgReceipt(msgFrom, msgTo, msgServerId))
+    }
+    
     public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
         let operation = Operation.fetchMsgs(from, type, msgId, offset)
         _send(text: "", operation: operation)
@@ -425,18 +429,20 @@ extension MavlMessage: CocoaMQTTDelegate {
                 }
                 
                 let msg = Mesg(topicModel: received)
-                delegateMsg?.mavl(didRevceived: [msg], isLoadMore: false)
                 
                 if _sendingMessages.keys.contains(topicModel.localId) {
                     // 是自己发出去的消息
                     // 表明发送成功，从发送队列中移除
                     _sendingMessages.removeValue(forKey: topicModel.localId)
                     // 反馈给业务层消息状态
-                    delegateMsg?.mavl(mesgReceiptDidChanged: MesgServerReceipt(state: .sent, from: msg.fromUid, msgLocalId: msg.localId.value))
+                    delegateMsg?.mavl(mesgReceiptDidChanged: MesgServerReceipt(state: .sent, from: msg.toUid, msgLocalId: msg.localId.value))
                 }else {
-                    // 收到别人的消息，需要上报已接收的状态
-                    _send(text: ReceiptState.received.rawValue, operation: .msgReceipt(msg.fromUid, msg.toUid, msg.serverId))
+                    // 1、收到别人的消息，需要上报已接收的状态
+                    receivedMessage(msgFrom: msg.fromUid, msgTo: msg.toUid, msgServerId: msg.serverId)
                 }
+                
+                // 执行完1步骤后，再回调代理（先上报收到消息了，然后再处理信息逻辑）
+                delegateMsg?.mavl(didRevceived: [msg], isLoadMore: false)
             }else {
                 TRACE("收到无效信息:\(topic)")
             }

@@ -12,8 +12,8 @@ enum SendingStatus: Int {
     case sending = -1   // 发送中
     case sendFail = 0   // 发送失败
     case send = 1       // 已发出
-    case received       // 已送达
-    case read           // 已读
+    case received = 2   // 已送达
+    case read = 3       // 已读
 }
 
 class ChatMessage {

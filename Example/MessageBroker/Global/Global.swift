@@ -52,3 +52,8 @@ func isMe(_ imAccount: String?) -> Bool {
     }
     return imAccount == passport.uid
 }
+
+func delay(_ timeInterval: TimeInterval, _ block: @escaping () -> Void) {
+    let dispatchTime = DispatchTime.now() + Double(Int64(timeInterval * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+    DispatchQueue.main.asyncAfter(deadline: dispatchTime, execute: block)
+}

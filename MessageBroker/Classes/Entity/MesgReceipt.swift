@@ -26,7 +26,7 @@ public enum ReceiptState: String {
 
 public protocol MesgReceipt {
     var state: ReceiptState { get set } // 消息回执状态
-    var from: String { get set }        // 来自谁的回执
+    var from: String { get set }        // 来自谁的回执(topic中的toPerson)
 }
 
 public struct MesgServerReceipt: MesgReceipt {
