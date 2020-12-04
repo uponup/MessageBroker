@@ -10,14 +10,14 @@ import Foundation
 @_exported import MessageBroker
 
 enum GlobalConfig {
-//    static let xnAppId = "56"
-//    static let xnAppKey = "c90265a583aaea81"
-//    static let xnMsgKey = "Emoji_JingNCK567"
+    static let xnAppId = "56"
+    static let xnAppKey = "c90265a583aaea81"
+    static let xnMsgKey = "Emoji_JingNCK567"
     
     //test for amessageTest
-    static let xnAppId = "59"
-    static let xnAppKey = "368913ccfa35c450"
-    static let xnMsgKey = "Emoji_JingNCK567"
+//    static let xnAppId = "59"
+//    static let xnAppKey = "368913ccfa35c450"
+//    static let xnMsgKey = "Emoji_JingNCK567"
 }
 
 extension Notification.Name {
