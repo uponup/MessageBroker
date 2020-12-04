@@ -20,9 +20,14 @@ enum GlobalConfig {
 //    static let xnMsgKey = "Emoji_JingNCK567"
     
     // for amessage
-    static let xnAppId = "65"
-    static let xnAppKey = "c33d0f3ed100ca3a"
-    static let xnMsgKey = "Emoji_JingNCK567"
+//    static let xnAppId = "65"
+//    static let xnAppKey = "c33d0f3ed100ca3a"
+//    static let xnMsgKey = "Emoji_JingNCK567"
+    
+    // for iFinder
+    static let xnAppId = "68"
+    static let xnAppKey = "d8aeb68682dd3c81"
+    static let xnMsgKey = "bafb369a23955e52"    
 }
 
 extension Notification.Name {
@@ -32,10 +37,9 @@ extension Notification.Name {
     static let selectedContactsForCircles = Notification.Name("selectedContactsForCircles")
     static let didReceiveMesg = Notification.Name(rawValue: "didReceiveMesg")
     static let willSendMesg = Notification.Name("willSendMesg")
-    static let didSendMesg = Notification.Name("didSendMesg")
-    static let didSendMesgFailed = Notification.Name("didSendMesgFailed")
     static let quitGroupSuccess = Notification.Name("quitGroupSuccess")
     static let userStatusDidChanged = Notification.Name("userStatusDidChanged")
+    static let mesgStateDidChanged = Notification.Name("mesgStateDidChanged")
 }
 
 func showHud(_ msg: String) {

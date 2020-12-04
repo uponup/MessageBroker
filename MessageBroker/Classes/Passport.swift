@@ -37,6 +37,7 @@ enum MBDomainConfig {
     static let localHost = "192.168.1.186"
     
     static let port: UInt16 = 443
+    static let portForDebug: UInt16 = 9883
 }
 
 // MARK: - SDK初始化配置
@@ -84,6 +85,7 @@ public struct MavlMessageConfiguration {
         msgKey = mkey
         
         host = isDebug ? MBDomainConfig.awsHost1 : MBDomainConfig.awsLB
+        port = isDebug ? MBDomainConfig.portForDebug : MBDomainConfig.port
         self.env = env
         self.platform = platform
     }

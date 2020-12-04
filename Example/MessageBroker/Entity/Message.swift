@@ -23,7 +23,7 @@ struct Message {
     var conversationId: String
     var localId: Int32
     var serverId: String
-    var status: Int
+    var status: Int     // 0失败，1已发送，2已送达，3已读，
     var timestamp: TimeInterval
     var isOutgoing: Bool
     var conversationType: ConversationType

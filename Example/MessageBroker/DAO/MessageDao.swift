@@ -87,6 +87,18 @@ extension MessageDao {
         }
     }
     
+    static func updateMessage(msgServerId: String, status: Int) {
+        guard db.open() else { return }
+        
+        let sql = "UPDATE t_msgs SET status = ? WHERE serverId = ?"
+        let res = db.executeUpdate(sql, withArgumentsIn: [status, msgServerId])
+        if res {
+            print("更新成功")
+        }else {
+            print("更新失败")
+        }
+    }
+    
     /**
      查找所有最近的信息
      */
@@ -186,4 +198,33 @@ extension MessageDao {
         }
         return 0
     }
+    
+    static func fetchUnreadMesgs(fromGroup conversationId: String) -> [Message] {
+        guard db.open() else { return [] }
+        
+        let sql = "SELECT *FROM t_msgs WHERE conversationId = ? AND status = 2 AND isOut = ?;"
+        guard let res = try? db.executeQuery(sql, values: [conversationId, false]) else { return [] }
+        
+        var messages: [Message] = []
+        while res.next() {
+            let id = res.int(forColumn: "id")
+            let text = res.string(forColumn: "text").value
+            let type = res.string(forColumn: "type") ?? "text"
+            let localAccount = res.string(forColumn: "local").value
+            let remoteAccount = res.string(forColumn: "remote").value
+            let conversationId = res.string(forColumn: "conversationId").value
+            let localId = res.int(forColumn: "localId")
+            let serverId = res.string(forColumn: "serverId").value
+            let status = Int(res.int(forColumn: "status"))
+            let timestamp = res.date(forColumn: "timestamp")?.timeIntervalSince1970 ?? 0
+            let isOut = res.bool(forColumn: "isOut")
+            let conversationType = Int(res.int(forColumn: "conversationType"))
+            
+            let msg = Message(id: id, text: text, local: localAccount, remote: remoteAccount, conversationId: conversationId, localId: localId, serverId: serverId, status: status, timestamp: timestamp, conversationType: conversationType, isOutgoing: isOut, type: type)
+            messages.append(msg)
+        }
+
+        return messages
+    }
+    
 }

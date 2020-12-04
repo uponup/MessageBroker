@@ -13,6 +13,7 @@ public enum ConversationType: Int {
     case group
     case vmuc
 }
+
 /**
     接收到的信息数据模型
  */

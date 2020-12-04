@@ -8,11 +8,12 @@
 
 import Foundation
 
-enum SendingStatus {
-    case sending
-    case send           // 已发出
-    case sendfail
-    case sendSuccess    // 发送成功
+enum SendingStatus: Int {
+    case sending = -1   // 发送中
+    case sendFail = 0   // 发送失败
+    case send = 1       // 已发出
+    case received       // 已送达
+    case read           // 已读
 }
 
 class ChatMessage {
@@ -42,6 +43,10 @@ class ChatMessage {
     
     var timestamp: TimeInterval {
         mesg.timestamp
+    }
+    
+    var serverId: String {
+        mesg.serverId
     }
     
     init(status: SendingStatus = .send, mesg: Message) {

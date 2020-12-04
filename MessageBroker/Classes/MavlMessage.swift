@@ -22,11 +22,12 @@ public protocol MavlMessageClient {
     func quitGroup(withGroupId gid: String)
     
     func addFriend(withUserName: String)
+    
     func send(mediaMessage msg: MultiMedia, toFriend fid: String, localId: String)
     func send(mediaMessage msg: MultiMedia, toGroup gid: String, localId: String, withFriends fids: Set<String>)
-    
     func send(message msg: String, toFriend fid: String, localId: String)
     func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: Set<String>)
+    func readMessage(msgFrom: String, msgTo: String, msgServerId: String)
     func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int)
 }
 /**
@@ -65,12 +66,15 @@ public protocol MavlMessageStatusDelegate: class {
     func mavl(willSend: Mesg)
     func mavl(willResend: Mesg)
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool)
+    func mavl(mesgReceiptDidChanged receipt: MesgReceipt)
 }
 
 public extension MavlMessageStatusDelegate {
     func mavl(willSend: Mesg) {}
     func mavl(willResend: Mesg) {}
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {}
+    
+    func mavl(mesgReceiptDidChanged receipt: MesgReceipt) {}
 }
 
 
@@ -270,6 +274,10 @@ extension MavlMessage: MavlMessageClient {
         send(mediaMessage: textMedia, toGroup: gid, localId: localId, withFriends: fids)
     }
     
+    public func readMessage(msgFrom: String, msgTo: String, msgServerId: String) {
+        _send(text: ReceiptState.read.rawValue, operation: .msgReceipt(msgFrom, msgTo, msgServerId))
+    }
+    
     public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
         let operation = Operation.fetchMsgs(from, type, msgId, offset)
         _send(text: "", operation: operation)
@@ -385,6 +393,12 @@ extension MavlMessage: CocoaMQTTDelegate {
         if let topicModel = UserStatusTopicModel(topic) {
             // 用户状态交付StatusQueue队列维护
             StatusQueue.shared.updateUserStatus(imAccount: topicModel.friendId, status: message.string.value)
+        }else if let topicModel = MesgReceiptTopicModel(topic, mesgText: message.string.value) {
+            // 收到消息回执
+            guard let state = ReceiptState(rawValue: topicModel.text) else { return }
+            
+            let recepit = MesgRemoteReceipt(state: state, from: topicModel.toPersonalUid, msgServerId: topicModel.serverId)
+            delegateMsg?.mavl(mesgReceiptDidChanged: recepit)
         }else if let topicModel = ReceivedTopicModel(topic, message.string.value) {
             if topicModel.operation == 0 {
                 // create a group
@@ -409,11 +423,20 @@ extension MavlMessage: CocoaMQTTDelegate {
                     // TODO: 错误信息
                     return
                 }
+                
                 let msg = Mesg(topicModel: received)
                 delegateMsg?.mavl(didRevceived: [msg], isLoadMore: false)
                 
-                // 从发送队列中移除
-                _sendingMessages.removeValue(forKey: topicModel.localId)
+                if _sendingMessages.keys.contains(topicModel.localId) {
+                    // 是自己发出去的消息
+                    // 表明发送成功，从发送队列中移除
+                    _sendingMessages.removeValue(forKey: topicModel.localId)
+                    // 反馈给业务层消息状态
+                    delegateMsg?.mavl(mesgReceiptDidChanged: MesgServerReceipt(state: .sent, from: msg.fromUid, msgLocalId: msg.localId.value))
+                }else {
+                    // 收到别人的消息，需要上报已接收的状态
+                    _send(text: ReceiptState.received.rawValue, operation: .msgReceipt(msg.fromUid, msg.toUid, msg.serverId))
+                }
             }else {
                 TRACE("收到无效信息:\(topic)")
             }

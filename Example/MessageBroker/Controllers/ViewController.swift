@@ -129,18 +129,11 @@ extension ViewController: MavlMessageDelegate {
 
 extension ViewController: MavlMessageStatusDelegate {
     func mavl(willSend: Mesg) {
-        let message = Message(willSend)
+        var message = Message(willSend)
+        message.status = -1     //发送中的消息
         MessageDao.addMesg(msg: message)
         
         NotificationCenter.default.post(name: .willSendMesg, object: ["msg": willSend])
-    }
-    
-    func mavl(didSend: Mesg, error: Error?) {
-        if let err = error {
-            NotificationCenter.default.post(name: .didSendMesgFailed, object: ["msg": didSend, "err": err])
-        }else {
-            NotificationCenter.default.post(name: .didSendMesg, object: ["msg": didSend])
-        }
     }
     
     func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {
@@ -154,6 +147,20 @@ extension ViewController: MavlMessageStatusDelegate {
         refreshData()
         
         NotificationCenter.default.post(name: .didReceiveMesg, object: ["msg": messages, "isLoadMore": isLoadMore])
+    }
+    
+    func mavl(mesgReceiptDidChanged receipt: MesgReceipt) {
+        print("消息\(receipt.from)的状态是\(receipt.state.rawValue)")
+
+        if let remoteReceipt = receipt as? MesgRemoteReceipt {
+            MessageDao.updateMessage(msgServerId: remoteReceipt.msgServerId, status: receipt.state.value)
+        }
+        
+        if let serverReceipt = receipt as? MesgServerReceipt {
+            MessageDao.updateMessage(msgServerId: serverReceipt.msgLocalId, status: receipt.state.value)
+        }
+        
+        NotificationCenter.default.post(name: .mesgStateDidChanged, object: nil)
     }
 }
 

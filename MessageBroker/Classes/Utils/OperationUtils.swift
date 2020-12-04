@@ -33,6 +33,7 @@ enum Operation {
     case uploadToken
     
     case fetchMsgs(_ from: String, _ type: FetchMessagesType, _ cursor: String, _ offset: Int)
+    case msgReceipt(_ from: String, _ toId: String, _ serverId: String)
     
     var value: Int {
         switch self {
@@ -47,6 +48,7 @@ enum Operation {
         case .uploadToken:  return 300
             
         case .fetchMsgs:    return 401
+        case .msgReceipt:   return 500
         }
     }
     
@@ -71,12 +73,14 @@ enum Operation {
             return "\(topicPrefix)/_"
         case .fetchMsgs(let from, let type, let cursor, let offset):
             return "\(topicPrefix)/\(from)/\(type.value)/\(cursor)/\(offset)"
+        case .msgReceipt(let from, let to, let serverId):
+            return "\(topicPrefix)/\(to)/\(serverId)/\(from)"
         }
     }
     
     var localId: String {
         switch self {
-        case .createGroup, .joinGroup, .quitGroup, .uploadToken, .fetchMsgs:
+        case .createGroup, .joinGroup, .quitGroup, .uploadToken, .fetchMsgs, .msgReceipt:
             return "0"
         case .oneToOne(let localId, _):
             return "\(localId)"

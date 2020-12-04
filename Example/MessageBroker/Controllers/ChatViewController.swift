@@ -31,7 +31,9 @@ class ChatViewController: UIViewController {
                 }
                 
                 if chatTo == .toContact {
-                    _messages = MessageDao.fetchAllMesgs(local: passport.uid, remote: chatToId).map { ChatMessage(status: .send, mesg: $0)}
+                    _messages = MessageDao.fetchAllMesgs(local: passport.uid, remote: chatToId).map {
+                        ChatMessage(status: SendingStatus(rawValue: $0.status)!, mesg: $0)
+                    }
                 }else {
                     _messages = MessageDao.fetchAllMesgs(fromGroup: chatToId).map { ChatMessage(status: .send, mesg: $0) }
                 }
@@ -139,9 +141,8 @@ class ChatViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(receivedMessage(notification:)), name: .didReceiveMesg, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardChanged(notification:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receivedWillSendMessage(notification:)), name: .willSendMesg, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(receiveDidSendMessageFailed(notification:)), name: .didSendMesgFailed, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(receiveDidSendMessage(notification:)), name: .didSendMesg, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receiveDidChangedUserStatus), name: .userStatusDidChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(receivedMessageStateDidChanged(noti:)), name: .mesgStateDidChanged, object: nil)
         
         if chatTo == .toContact {
             isOnline = StatusQueue.shared.isOnline(withImAccount: chatToId)
@@ -168,6 +169,8 @@ class ChatViewController: UIViewController {
         super.viewWillAppear(animated)
         
         scrollToBottom(false)
+        
+        changeMesgStateToRead()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -268,52 +271,27 @@ class ChatViewController: UIViewController {
         print("将要发送:\(msg.text)")
     }
     
-    @objc func receiveDidSendMessage(notification: NSNotification) {
-        guard let object = notification.object as? [String: Mesg],
-            let msg = object["msg"] else { return }
-        messages = messages.map {
-            if $0.localId == msg.localId.value {
-//                return ChatMessage(status: .send, mesg: msg)
-                return $0
-            }else {
-                return $0
-            }
-        }
-        
-        tableView.reloadData()
-        print("发送成功:\(msg.text)")
-    }
-    
-    @objc func receiveDidSendMessageFailed(notification: NSNotification) {
-        guard let object = notification.object as? [String: Any],
-            let _ = object["err"] as? Error,
-            let msg = object["msg"] as? Mesg else { return }
-        
-        messages = messages.map {
-            if $0.localId == msg.localId.value {
-                return ChatMessage(status: .sendfail, mesg: Message(msg))
-            }else {
-                return $0
-            }
-        }
-    }
-    
     @objc func receivedMessage(notification: NSNotification) {
         let object = notification.object as! [String: Any]
-        let _ = object["msg"] as? [Mesg]
         let isLoadMore = object["isLoadMore"] as! Bool
         
         if isLoadMore {
             tableView.es.stopPullToRefresh()
         }
         
-        _messages = nil
-        tableView.reloadData()
         if isLoadMore {
             scrollToTop()
         }else {
             scrollToBottom()
         }
+        
+        // 在当前会话框，收到消息的话及时设置为已读
+        changeMesgStateToRead()
+    }
+    
+    @objc func receivedMessageStateDidChanged(noti: Notification) {
+        _messages = nil
+        tableView.reloadData()
     }
     
     func numOfElements(arr: Array<ChatMessage>, localId: String) -> Int {
@@ -346,6 +324,17 @@ class ChatViewController: UIViewController {
         let indexPath = IndexPath(row: 0, section: 0)
         tableView.scrollToRow(at: indexPath, at: .top, animated: true)
     }
+    
+    private func changeMesgStateToRead() {
+        let allUnreadMesgs = MessageDao.fetchUnreadMesgs(fromGroup: chatToId)
+        for message in allUnreadMesgs {
+            MessageDao.updateMessage(msgServerId: message.serverId, status: SendingStatus.read.rawValue)
+            MavlMessage.shared.readMessage(msgFrom: message.remoteAccount, msgTo: message.localAccount, msgServerId: message.serverId)
+        }
+        
+        _messages = nil
+        tableView.reloadData()
+    }
 }
 
 
@@ -377,16 +366,19 @@ extension ChatViewController: UITableViewDataSource, UITableViewDelegate {
             if message.status == .sending {
                 cell.labelStatus.text = "Sending..."
                 cell.labelStatus.textColor = UIColor.gray
-            }else if message.status == .sendfail {
-                cell.labelStatus.text = "Send fail"
+            }else if message.status == .sendFail {
+                cell.labelStatus.text = "Fail"
                 cell.labelStatus.textColor = UIColor.red
-            }else if message.status == .sendSuccess {
-                cell.labelStatus.text = "Send success"
-                cell.labelStatus.textColor = UIColor.blue
             }else if message.status == .send {
-                cell.labelStatus.text = "Send"
+                cell.labelStatus.text = "Sent"
+                cell.labelStatus.textColor = UIColor.blue
+            }else if message.status == .received {
+                cell.labelStatus.text = "Delivered"
                 cell.labelStatus.textColor = UIColor.black
-            }else {
+            }else if message.status == .read {
+                cell.labelStatus.text = "Read"
+                cell.labelStatus.textColor = UIColor.gray
+            } else {
                 cell.labelStatus.isHidden = true
             }
             return cell

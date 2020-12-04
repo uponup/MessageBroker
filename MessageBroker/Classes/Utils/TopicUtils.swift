@@ -112,9 +112,44 @@ struct ReceivedTopicModel: TopicModelProtocol {
     }
 }
 
+// MARK: - Mesg Receipt
+/**
+    消息回执
+    appid/operation/localid/touid/serverid/fromuid/topersonaluid
+ */
+struct MesgReceiptTopicModel: TopicModelProtocol {
+    var appid: String
+    var operation: Int
+    var from: String
+    var to: String
+    var text: String
+    
+    var localId: String
+    var serverId: String
+    var status: Int = 2
+    var timestamp: TimeInterval = Date().timeIntervalSinceNow
+    
+    var toPersonalUid: String
+    
+    
+    init?(_ topic: String, mesgText: String) {
+        let segments = topic.components(separatedBy: "/")
+        guard segments.count >= 7, let op = Int(segments[1]), op == 500 else { return nil }
+        
+        appid = segments[0]
+        operation = op
+        localId = segments[2]
+        to = segments[3]        //serverId对应消息本身的to
+        serverId = segments[4]
+        from = segments[5]      //serverId对应消息本身的from
+        toPersonalUid = segments[6]     //发出回执的人
+        text = mesgText
+    }
+}
+
 // MARK: - History
 /**
-    历史信息Topic模型
+    历史信息Topic模型（伪topic，其实是payload中的数据）
     from/to/gid/serverId/status/timestamp/msg
  */
 struct HistoryTopicModel: TopicModelProtocol {
