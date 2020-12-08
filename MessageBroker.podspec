@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'MessageBroker'
-  s.version          = '0.1.4'
+  s.version          = '0.1.5-beta'
   s.summary          = 'A short description of MessageBroker.'
 
 # This description is used to generate tags and improve search results.

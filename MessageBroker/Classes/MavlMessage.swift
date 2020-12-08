@@ -165,21 +165,21 @@ public class MavlMessage {
     }
     
     @objc func connectTimeoutAction(_ noti: Notification) {
-        // 清空发送队列
-        _sendingMessages.removeAll()
-        if qos.rawValue > 0 {
-            // TODO: 清空mqtt的inflight队列(如果qos > 0)，否则inflight不会释放
+        if let mqtt = mqtt, !mqtt.autoReconnect {
+            // 如果没有自动重连逻辑的话，需要将发送队列清空
+            // 清空发送队列
+            _sendingMessages.removeAll()
+            if qos.rawValue > 0 {
+                // TODO: 清空mqtt的inflight队列(如果qos > 0)，否则inflight不会释放
+            }
         }
         
-        guard let obj = noti.object as? [String: Any],
-              let code = obj["code"] as? Int else {
-            let err = NSError(domain: "", code: 0, userInfo: ["errmsg": "connect timeout"]) as Error
-            delegateLogin?.logout(withError: err)
+        guard let obj = noti.object as? [String: ConnectError], let err = obj["err"] else {
+            let otherErr = ConnectError.other("StatusQueue connect timeout")
+            _logout(withError: otherErr)
             return
         }
-        
-        let err = NSError(domain: "", code: code, userInfo: obj) as Error
-        delegateLogin?.logout(withError: err)
+        _logout(withError: err)
     }
     
     func checkStatus(withUserName username: String) {
@@ -307,6 +307,14 @@ extension MavlMessage: MavlMessageClient {
         }
         return cipherText
     }
+    
+    private func _logout(withError err: ConnectError) {
+        delegateLogin?.logout(withError: err.asError())
+    }
+    
+    private func _logoutWithoutError() {
+        delegateLogin?.logout(withError: nil)
+    }
 }
 
 extension MavlMessage: MavlMessageClientConfig {
@@ -345,12 +353,19 @@ extension MavlMessage: CocoaMQTTDelegate {
     }
     
     public func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: Error?) {
-        TRACE("\(err?.localizedDescription ?? "")")
+        if let err = err, let nserr = err as NSError? {
+            TRACE("\(nserr.code)-----\(err.localizedDescription)-----\(err)")
+        }
+        
         _isLogin = false
-
         // 先将_isLogin 设置为false，然后再去通知StatusQueue和delegate
         StatusQueue.shared.logout()
-        delegateLogin?.logout(withError: err)
+        
+        if let err = err {
+            _logout(withError: ConnectError.other(err.localizedDescription))
+        }else {
+            _logoutWithoutError()
+        }
     }
     
     public func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {

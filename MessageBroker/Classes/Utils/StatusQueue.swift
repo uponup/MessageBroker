@@ -161,7 +161,7 @@ public class StatusQueue {
         guard MavlMessage.shared.isLogin else { return }
 
         // 离线后发一个全局通知，需要带参数：reason
-        NotificationCenter.default.post(name: .connectTimeout, object: ["code": reason.errCode, "msg": reason.errMsg])
+        NotificationCenter.default.post(name: .connectTimeout, object: ["err": reason])
     }
     
     deinit {
@@ -182,35 +182,6 @@ private enum Status: String {
     case offline = "offline"
     case replaced = "replaced"
     case other = "other"
-}
-
-private enum ConnectError {
-    case disconnect
-    case timeout
-    case replaced
-    
-    var errCode: Int {
-        switch self {
-        case .disconnect:
-            return -1000
-        case .timeout:
-            return -1001
-        case .replaced:
-            return -1002
-        }
-    }
-    
-    var errMsg: String {
-        switch self {
-        case .disconnect:
-            return "client disconnect to server"
-        case .timeout:
-            return "client connect timeout"
-        case .replaced:
-            return "user will be signed in another device"
-        }
-    }
-    
 }
 
 private struct UserStatus {
