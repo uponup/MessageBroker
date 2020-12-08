@@ -40,6 +40,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             self.window?.rootViewController = tabbar
         }
         
+        
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+        center.requestAuthorization(options: .alert) { (ret, err) in
+            
+        }
         UIApplication.shared.registerForRemoteNotifications()
         return true
     }
@@ -54,4 +60,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("Notification 注册失败：\(error.localizedDescription)")
     }
 
+}
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        print(">>>>>: 收到通知")
+        
+        if #available(iOS 14.0, *) {
+            completionHandler(.banner)
+        } else {
+            completionHandler(.alert)
+        }
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+    }
 }

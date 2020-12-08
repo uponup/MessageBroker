@@ -159,6 +159,7 @@ public class MavlMessage {
         mqtt.delegate = self
         mqtt.enableSSL = true
         mqtt.allowUntrustCACertificate = true
+        mqtt.autoReconnect = true
         
         NotificationCenter.default.addObserver(self, selector: #selector(connectTimeoutAction(_:)), name: .connectTimeout, object: nil)
     }
