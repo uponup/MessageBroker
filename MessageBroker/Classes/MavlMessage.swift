@@ -447,7 +447,7 @@ extension MavlMessage: CocoaMQTTDelegate {
                 let msg = Mesg(topicModel: received)
                 
                 if _sendingMessages.keys.contains(topicModel.localId) {
-                    // 是自己发出去的消息
+                    // 是自己发出去的消息，不需要做received的回执，服务器离线消息仅针对别人发给你的消息
                     // 表明发送成功，从发送队列中移除
                     _sendingMessages.removeValue(forKey: topicModel.localId)
                     // 反馈给业务层消息状态
