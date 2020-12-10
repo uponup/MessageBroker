@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         CirclesDao.createTable()
         MessageDao.createTable()
         
-        let config = MavlMessageConfiguration(appid: GlobalConfig.xnAppId, appkey: GlobalConfig.xnAppKey, msgKey: GlobalConfig.xnMsgKey, isDebug: true, env: .sandbox, platform: .ios)
+        let config = MavlMessageConfiguration(appid: GlobalConfig.xnAppId, appkey: GlobalConfig.xnAppKey, msgKey: GlobalConfig.xnMsgKey, isDebug: true, env: .product, platform: .ios)
         MavlMessage.shared.initializeSDK(config: config)
         
         Thread.sleep(forTimeInterval: 1)
