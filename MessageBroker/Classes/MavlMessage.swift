@@ -179,6 +179,10 @@ public class MavlMessage {
             _logout(withError: otherErr)
             return
         }
+        if err == .replaced {
+            // 如果是被踢下线的话，主动断开连接，防止进入被踢下线的死循环
+            mqtt?.disconnect()
+        }
         _logout(withError: err)
     }
     

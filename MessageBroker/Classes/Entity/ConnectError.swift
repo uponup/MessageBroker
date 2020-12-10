@@ -44,3 +44,13 @@ enum ConnectError {
         return err
     }
 }
+
+extension ConnectError: Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        if lhs.errCode == rhs.errCode {
+            return true
+        }else {
+            return false
+        }
+    }
+}
