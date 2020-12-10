@@ -34,7 +34,7 @@ public protocol MavlMessageClient {
     Config相关功能的协议
  */
 public protocol MavlMessageClientConfig {
-    func uploadToken()
+    func uploadToken(deliverMesgOnPush isOn: Bool)
 }
 
 /**
@@ -318,13 +318,15 @@ extension MavlMessage: MavlMessageClient {
 }
 
 extension MavlMessage: MavlMessageClientConfig {
-    public func uploadToken() {
+    public func uploadToken(deliverMesgOnPush isOn: Bool = true) {
         guard let deviceToken = getDeviceToken() else {
             TRACE("上传token失败，无法获取token")
             return
         }
         
-        let uploadToken = ["deviceToken": deviceToken, "env": env, "platform": platform]
+        let pushStrategy = isOn ? "1" : "2"
+        let uploadToken = ["deviceToken": deviceToken, "env": env, "platform": platform, "deliverOnPush": pushStrategy]
+        
         _send(text: uploadToken.toJson, operation: .uploadToken)
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "MessageBroker",
-  "version": "0.1.5-beta",
+  "version": "0.1.5-beta-2",
   "summary": "A short description of MessageBroker.",
   "description": "TODO: Add long description of the pod here.",
   "homepage": "https://github.com/uponup/MessageBroker",
@@ -13,7 +13,7 @@
   },
   "source": {
     "git": "https://github.com/uponup/MessageBroker.git",
-    "tag": "0.1.5-beta"
+    "tag": "0.1.5-beta-2"
   },
   "platforms": {
     "ios": "9.0"

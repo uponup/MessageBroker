@@ -44,6 +44,7 @@ class SettingController: UIViewController {
         labelAccount.text = "\(passport.uid.capitalized)（Last login）"
         btnLogout.isEnabled = false
         
+        MavlMessage.shared.uploadToken(deliverMesgOnPush: false)
         MavlMessage.shared.logout()
     }
 }

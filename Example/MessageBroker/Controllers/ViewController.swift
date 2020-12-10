@@ -79,6 +79,9 @@ class ViewController: UIViewController {
     }
 
     @IBAction func loginAction(_ sender: Any) {
+        //For TEST 
+//        tfUserName.text = "4400947365fe1d1b30438c68baf796f2"
+//        tfPassword.text = "440094"
         guard let username = tfUserName.text,
             let password = tfPassword.text else { return }
         MavlMessage.shared.delegateMsg = self
