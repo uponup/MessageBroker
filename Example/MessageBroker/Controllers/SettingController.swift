@@ -43,7 +43,7 @@ class SettingController: UIViewController {
         ivAvatar.image = #imageLiteral(resourceName: "avatar_default")
         labelAccount.text = "\(passport.uid.capitalized)（Last login）"
         btnLogout.isEnabled = false
-        
+
         MavlMessage.shared.uploadToken(deliverMesgOnPush: false)
         MavlMessage.shared.logout()
     }

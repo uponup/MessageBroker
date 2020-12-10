@@ -213,7 +213,10 @@ extension MavlMessage: MavlMessageClient {
     public func logout() {
         guard let mqtt = mqtt else { return }
             
-        mqtt.disconnect()
+        let dispatchTime = DispatchTime.now()
+        DispatchQueue.main.asyncAfter(deadline: dispatchTime) {
+            mqtt.disconnect()
+        }
     }
     
     public func createAGroup(withUsers users: Set<String>) {
