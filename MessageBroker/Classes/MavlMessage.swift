@@ -226,22 +226,18 @@ extension MavlMessage: MavlMessageClient {
     public func createAGroup(withUsers users: Set<String>) {
         guard let passport = passport else { return }
         // set中不包含自己的话，需要加进去
-        var frinedsList = users
-        frinedsList.insert(passport.uid)
+        var friendList = users
+        friendList.insert(passport.uid)
         
-        let payload = users.map{ "\($0.lowercased())" }.joined(separator: ",")
-        let operation = Operation.createGroup
-        _send(text: payload, operation: operation)
+        _send(operation: .createGroup(friendList))
     }
     
     public func joinGroup(withGroupId gid: String) {
-        let operation = Operation.joinGroup(gid)
-        _send(text: "", operation: operation)
+        _send(operation: .joinGroup(gid))
     }
  
     public func quitGroup(withGroupId gid: String) {
-        let operation = Operation.quitGroup(gid)
-        _send(text: "", operation: operation)
+        _send(operation: .quitGroup(gid))
     }
     
     public func addFriend(withUserName: String) {
@@ -249,72 +245,62 @@ extension MavlMessage: MavlMessageClient {
         delegateGroup?.addFriendSuccess(friendName: withUserName)
     }
     
+    // 发送多媒体消息给个人
     public func send(mediaMessage msg: MultiMedia, toFriend fid: String, localId: String) {
-        let operation = Operation.oneToOne(localId, fid)
-        _send(text: msg.content, operation: operation)
+        let op = Operation.oneToOne(localId, fid, msg.content)
+        _send(operation: op)
     }
     
+    // 发送多媒体消息给群组/vmuc
     public func send(mediaMessage msg: MultiMedia, toGroup gid: String, localId: String, withFriends fids: Set<String>) {
         guard let passport = passport else { return }
-        var operation: Operation
-
-        var allMembers = fids
+        var op: Operation
         
         if fids.count > 0 {
             // vmuc
+            var allMembers = fids
             allMembers.insert(passport.uid)
-            operation = .vitualGroup(localId, gid)
+            op = .vitualGroup(localId, gid, allMembers, msg.content)
         }else {
             // group
-            operation = .oneToMany(localId, gid)
+            op = .oneToMany(localId, gid, msg.content)
         }
-        _send(text: msg.content, operation: operation, fids: allMembers)
+        _send(operation: op)
     }
     
+    // 发送文本消息给个人
     public func send(message msg: String, toFriend fid: String, localId: String) {
         let textMedia = NormalMedia(type: .text, mesg: msg)
         
         send(mediaMessage: textMedia, toFriend: fid, localId: localId)
     }
     
+    // 发送文本消息给群组/vmuc
     public func send(message msg: String, toGroup gid: String, localId: String, withFriends fids: Set<String> = []) {
         let textMedia = NormalMedia(type: .text, mesg: msg)
         send(mediaMessage: textMedia, toGroup: gid, localId: localId, withFriends: fids)
     }
     
     public func readMessage(msgFrom: String, msgTo: String, msgServerId: String) {
-        _send(text: ReceiptState.read.rawValue, operation: .msgReceipt(msgFrom, msgTo, msgServerId))
+        let op = Operation.msgReceipt(msgFrom, msgTo, msgServerId, .read)
+        _send(operation: op)
     }
     
     func receivedMessage(msgFrom: String, msgTo: String, msgServerId: String) {
-        _send(text: ReceiptState.received.rawValue, operation: .msgReceipt(msgFrom, msgTo, msgServerId))
+        let op = Operation.msgReceipt(msgFrom, msgTo, msgServerId, .received)
+        _send(operation: op)
     }
     
     public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
-        let operation = Operation.fetchMsgs(from, type, msgId, offset)
-        _send(text: "", operation: operation)
+        let op = Operation.fetchMsgs(from, type, msgId, offset)
+        _send(operation: op)
     }
     
-    private func _send(text: String, operation: Operation, fids: Set<String> = []) {
-        guard var cipherText = getCipherText(text: text, operation: operation) else {
-            // TODO: 消息发送失败
-            return
-        }
-        if fids.count > 0 {
-            cipherText = "\(fids.joined(separator: ","))#\(cipherText)"
-        }
-        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: cipherText, qos: qos)
+    private func _send(operation: Operation) {
+        let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: operation.payload, qos: qos)
         mqtt?.publish(mqttMsg)
     }
-    
-    private func getCipherText(text: String, operation: Operation) -> String? {
-        // 发送的是文本消息, 需要加密
-        guard operation.isNeedCipher, let cipherText = EncryptUtils.encrypt(text) else {
-            return text
-        }
-        return cipherText
-    }
-    
+
     private func _logout(withError err: ConnectError) {
         delegateLogin?.logout(withError: err.asError())
     }
@@ -330,11 +316,7 @@ extension MavlMessage: MavlMessageClientConfig {
             TRACE("上传token失败，无法获取token")
             return
         }
-        
-        let pushStrategy = isOn ? "1" : "2"
-        let uploadToken = ["deviceToken": deviceToken, "env": env, "platform": platform, "deliverOnPush": pushStrategy]
-        
-        _send(text: uploadToken.toJson, operation: .uploadToken)
+        _send(operation: .uploadToken(deviceToken, env, platform, isOn))
     }
 }
 

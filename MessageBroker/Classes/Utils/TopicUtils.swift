@@ -6,12 +6,14 @@
 //  Copyright © 2020 Paul Gao. All rights reserved.
 //
 
+
 import Foundation
 
 /**
- TopicModle的作用：隔离Mesg和topicStr
+ TopicMode来的作用：隔离Mesg和topicStr
     在协议中，我们自定义了多种topic字符串，来实现不同的功能
-    如果我们构造Mesg的时候，直接传入topic字符串，那么就会导致Mesg的构造方法过于复杂，所以我们设计了TopicModel，对Mesg进行解耦。
+    如果我们构造Mesg的时候，直接传入topic字符串，那么就会导致Mesg的构造方法过于复杂，所以我们设计了TopicModel层，对Mesg进行解耦。
+    即：topicStr -> topicModel -> Mesg
  */
 protocol TopicModelProtocol {
     var appid: String { get set }

@@ -7,33 +7,25 @@
 
 import Foundation
 
-public enum FetchMessagesType {
-    case one
-    case more
-    
-    var value: Int {
-        switch self {
-        case .one:
-            return 1
-        case .more:
-            return 2
-        }
-    }
-}
-
+/**
+ Opeartion的作用：对协议规则进行抽象，屏蔽了具体操作的参数和MQTT交互细节
+    - 在构造Operation的时候，专注于构造参数
+    - 在使用MQTT的时候，直接获取topic和payload即可
+ */
 enum Operation {
-    case createGroup
-    case oneToOne(_ localId: String, _ toUid: String)
-    case oneToMany(_ localId: String, _ toGid: String)
-    case vitualGroup(_ localId: String, _ toGid: String)
+    case createGroup(_ users: Set<String>)
+    case oneToOne(_ localId: String, _ toUid: String, _ msg: String)
+    case oneToMany(_ localId: String, _ toGid: String, _ msg: String)
+    case vitualGroup(_ localId: String, _ toGid: String, _ users: Set<String>, _ msg: String)
     
     case joinGroup(_ toGid: String)
     case quitGroup(_ toGid: String)
     
-    case uploadToken
+    case uploadToken(_ deviceToken: String, _ env: String, _ platform: String, _ deliverOnPush: Bool)
     
     case fetchMsgs(_ from: String, _ type: FetchMessagesType, _ cursor: String, _ offset: Int)
-    case msgReceipt(_ from: String, _ toId: String, _ serverId: String)
+    case msgReceipt(_ from: String, _ toId: String, _ serverId: String, _ state: ReceiptState)
+    case msgTransparent(_ from: String, _ toId: String, _ action: String, _ ext: String)
     
     var value: Int {
         switch self {
@@ -49,9 +41,9 @@ enum Operation {
             
         case .fetchMsgs:    return 401
         case .msgReceipt:   return 500
+        case .msgTransparent: return 501
         }
     }
-    
     
     var topic: String {
         let topicPrefix = "\(MavlMessage.shared.appid)/\(value)/\(localId)"
@@ -59,11 +51,11 @@ enum Operation {
         switch self {
         case .createGroup:
             return "\(topicPrefix)/_"
-        case .oneToOne(_, let uid):
+        case .oneToOne(_, let uid, _):
             return "\(topicPrefix)/\(uid)"
-        case .oneToMany(_, let gid):
+        case .oneToMany(_, let gid, _):
             return "\(topicPrefix)/\(gid)"
-        case .vitualGroup(_, let gid):
+        case .vitualGroup(_, let gid, _, _):
             return "\(topicPrefix)/\(gid)"
         case .joinGroup(let gid):
             return "\(topicPrefix)/\(gid)"
@@ -73,20 +65,56 @@ enum Operation {
             return "\(topicPrefix)/_"
         case .fetchMsgs(let from, let type, let cursor, let offset):
             return "\(topicPrefix)/\(from)/\(type.value)/\(cursor)/\(offset)"
-        case .msgReceipt(let from, let to, let serverId):
+        case .msgReceipt(let from, let to, let serverId, _):
             return "\(topicPrefix)/\(to)/\(serverId)/\(from)"
+        case .msgTransparent(let from, let to, _, _):
+            return "\(topicPrefix)/\(to)/0\(from)"
+        }
+    }
+    
+    var payload: String {
+        switch self {
+        case .joinGroup, .quitGroup, .fetchMsgs:
+            return ""
+            
+        case .createGroup(let users):
+            let allUsers = users.map{ "\($0.lowercased())" }.joined(separator: ",")
+            return allUsers
+            
+        case .oneToOne(_, _, let msg):
+            return getCipherText(text: msg)
+            
+        case .oneToMany(_, _, let msg):
+            return getCipherText(text: msg)
+            
+        case .vitualGroup(_, _, let users, let msg):
+            let allUsers = users.map{ "\($0.lowercased())" }.joined(separator: ",")
+            let cipherText = getCipherText(text: msg)
+            return "\(allUsers)#\(cipherText)"
+            
+        case .msgReceipt(_, _, _, let state):
+            return state.rawValue
+            
+        case .uploadToken(let deviceToken, let env, let platform, let isOn):
+            let pushStrategy = isOn ? "1" : "2"
+            let uploadToken = ["deviceToken": deviceToken, "env": env, "platform": platform, "deliverOnPush": pushStrategy]
+            return uploadToken.toJson
+            
+        case .msgTransparent(_, _, let action, let ext):
+            let payloadDict = ["action": action, "ext": ext]
+            return payloadDict.toJson
         }
     }
     
     var localId: String {
         switch self {
-        case .createGroup, .joinGroup, .quitGroup, .uploadToken, .fetchMsgs, .msgReceipt:
+        case .createGroup, .joinGroup, .quitGroup, .uploadToken, .fetchMsgs, .msgReceipt, .msgTransparent:
             return "0"
-        case .oneToOne(let localId, _):
+        case .oneToOne(let localId, _, _):
             return "\(localId)"
-        case .oneToMany(let localId, _):
+        case .oneToMany(let localId, _, _):
             return "\(localId)"
-        case .vitualGroup(let localId, _):
+        case .vitualGroup(let localId, _, _, _):
             return "\(localId)"
         }
     }
@@ -97,6 +125,28 @@ enum Operation {
             return true
         default:
             return false
+        }
+    }
+    
+    private func getCipherText(text: String) -> String {
+        // 发送的是文本消息, 需要加密
+        guard isNeedCipher, let cipherText = EncryptUtils.encrypt(text) else {
+            return text
+        }
+        return cipherText
+    }
+}
+
+public enum FetchMessagesType {
+    case one
+    case more
+    
+    var value: Int {
+        switch self {
+        case .one:
+            return 1
+        case .more:
+            return 2
         }
     }
 }
