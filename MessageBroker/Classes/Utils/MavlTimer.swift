@@ -14,11 +14,11 @@ private enum State {
     case canceled
 }
 
-class MavlTimer {
+public class MavlTimer {
     let timeInterval: TimeInterval
     let startDelay: TimeInterval
     
-    var eventHandler: (() -> Void)?
+    public var eventHandler: (() -> Void)?
     
     private var state: State = .suspended
     private lazy var _timer: DispatchSourceTimer = {
@@ -30,7 +30,7 @@ class MavlTimer {
         return t
     }()
     
-    init(delay: TimeInterval? = nil, timeInterval: TimeInterval) {
+    public init(delay: TimeInterval? = nil, timeInterval: TimeInterval) {
         self.timeInterval = timeInterval
         if let delay = delay {
             self.startDelay = delay
@@ -46,7 +46,7 @@ class MavlTimer {
         eventHandler = nil
     }
     
-    func resume() {
+    public func resume() {
         if state == .resumed {
             return
         }
@@ -54,7 +54,7 @@ class MavlTimer {
         _timer.resume()
     }
     
-    func suspend() {
+    public func suspend() {
         if state == .suspended {
             return
         }
@@ -62,23 +62,25 @@ class MavlTimer {
         _timer.suspend()
     }
     
-    func cancel() {
+    public func cancel() {
         if state == .canceled {
             return
         }
         state = .canceled
         _timer.cancel()
     }
-    
-    // MARK: - class method
-    class func every(_ interval: TimeInterval, _ block: @escaping () -> Void) -> MavlTimer {
+}
+
+// MARK: - class method
+extension MavlTimer {
+    public class func every(_ interval: TimeInterval, _ block: @escaping () -> Void) -> MavlTimer {
         let timer = MavlTimer(timeInterval: interval)
         timer.eventHandler = block
         timer.resume()
         return timer
     }
     
-    class func after(_ interval: TimeInterval, _ block: @escaping () -> Void) -> MavlTimer {
+    public class func after(_ interval: TimeInterval, _ block: @escaping () -> Void) -> MavlTimer {
         var timer: MavlTimer? = MavlTimer(delay: interval, timeInterval: 0)
         timer?.eventHandler = {
             block()

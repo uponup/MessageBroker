@@ -25,7 +25,7 @@ enum Operation {
     
     case fetchMsgs(_ from: String, _ type: FetchMessagesType, _ cursor: String, _ offset: Int)
     case msgReceipt(_ from: String, _ toId: String, _ serverId: String, _ state: ReceiptState)
-    case msgTransparent(_ from: String, _ toId: String, _ action: String, _ ext: [String: Any])
+    case msgTransparent(_ toId: String, _ action: String, _ ext: [String: Any])
     
     var value: Int {
         switch self {
@@ -67,8 +67,8 @@ enum Operation {
             return "\(topicPrefix)/\(from)/\(type.value)/\(cursor)/\(offset)"
         case .msgReceipt(let from, let to, let serverId, _):
             return "\(topicPrefix)/\(to)/\(serverId)/\(from)"
-        case .msgTransparent(let from, let to, _, _):
-            return "\(topicPrefix)/\(to)/0\(from)"
+        case .msgTransparent(let to, _, _):
+            return "\(topicPrefix)/\(to)"
         }
     }
     
@@ -100,7 +100,7 @@ enum Operation {
             let uploadToken = ["deviceToken": deviceToken, "env": env, "platform": platform, "deliverOnPush": pushStrategy]
             return uploadToken.toJson
             
-        case .msgTransparent(_, _, let action, let ext):
+        case .msgTransparent(_, let action, let ext):
             let payloadDict: [String: Any] = ["action": action, "ext": ext]
             return payloadDict.toJson
         }

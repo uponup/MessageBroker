@@ -40,6 +40,7 @@ extension Notification.Name {
     static let quitGroupSuccess = Notification.Name("quitGroupSuccess")
     static let userStatusDidChanged = Notification.Name("userStatusDidChanged")
     static let mesgStateDidChanged = Notification.Name("mesgStateDidChanged")
+    static let didReceiveTransparentMesg = Notification.Name("didReceiveTransparentMesg")
 }
 
 // 业务层自定义透传消息类型
@@ -61,4 +62,15 @@ func isMe(_ imAccount: String?) -> Bool {
 func delay(_ timeInterval: TimeInterval, _ block: @escaping () -> Void) {
     let dispatchTime = DispatchTime.now() + Double(Int64(timeInterval * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
     DispatchQueue.main.asyncAfter(deadline: dispatchTime, execute: block)
+}
+
+class MyTimer {
+    var timer: MavlTimer?
+    
+    func resetDelay(_ interval: TimeInterval, _ block: @escaping () -> Void) {
+        if let t = timer {
+            t.suspend()
+        }
+        timer = MavlTimer.after(interval, block)
+    }
 }

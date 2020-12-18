@@ -30,7 +30,7 @@ public protocol MavlMessageClient {
     func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int)
 
     func readMessage(msgFrom: String, msgTo: String, msgServerId: String)
-    func sendTransparentMessage(msgFrom: String, msgTo: String, action: String, ext: [String: Any]) -> Error?
+    func sendTransparentMessage(msgTo: String, action: String, ext: [String: Any]) -> Error?
 }
 
 /**
@@ -291,12 +291,12 @@ extension MavlMessage: MavlMessageClient {
         _send(operation: op)
     }
     
-    public func sendTransparentMessage(msgFrom: String, msgTo: String, action: String, ext: [String : Any] = [:]) -> Error? {
+    public func sendTransparentMessage(msgTo: String, action: String, ext: [String : Any] = [:]) -> Error? {
         guard JSONSerialization.isValidJSONObject(ext) else {
             TRACE("ext 不是json格式")
             return SendError.transparentMesgInvalidExtension.asError()
         }
-        let op = Operation.msgTransparent(msgFrom, msgTo, action, ext)
+        let op = Operation.msgTransparent(msgTo, action, ext)
         _send(operation: op)
         return nil
     }         

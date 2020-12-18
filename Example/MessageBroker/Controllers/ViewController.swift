@@ -174,6 +174,7 @@ extension ViewController: MavlMessageStatusDelegate {
     func mavl(didReceivedTransparentMessageWithAction action: String, fromId from: String, ext extension: [String : Any]) {
         if action == TransparentMesg.inputing {
             print("\(from) is inputing")
+            NotificationCenter.default.post(name: .didReceiveTransparentMesg, object: ["from": from])
         }
     }
 }

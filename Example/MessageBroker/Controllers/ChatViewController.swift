@@ -21,6 +21,9 @@ class ChatViewController: UIViewController {
     var chatTo: ChatToType = .toContact
     var chatToId: String = ""
     
+    private var _myTimer = MyTimer()
+    private var _currentTime = Date().timeIntervalSince1970
+    
     private var _messages: [ChatMessage]?
     var messages: [ChatMessage] {
         get {
@@ -143,6 +146,7 @@ class ChatViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(receivedWillSendMessage(notification:)), name: .willSendMesg, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receiveDidChangedUserStatus), name: .userStatusDidChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(receivedMessageStateDidChanged(noti:)), name: .mesgStateDidChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(receivedTransparentMesg(noti:)), name: .didReceiveTransparentMesg, object: nil)
         
         if chatTo == .toContact {
             isOnline = StatusQueue.shared.isOnline(withImAccount: chatToId)
@@ -306,6 +310,20 @@ class ChatViewController: UIViewController {
         }
     }
     
+    @objc func receivedTransparentMesg(noti: Notification) {
+        guard let object = noti.object as? [String: String],
+            let from = object["from"] else {
+            return
+        }
+        
+        sloganLabel.text = "\(from.capitalized) is typing..."
+        _myTimer.resetDelay(2) { [weak self] in
+            DispatchQueue.main.async {
+                self?.sloganLabel.text = self?.slogan
+            }
+        }
+    }
+    
     func scrollToBottom(_ animated: Bool = true) {
         guard messages.count > 3 else { return }
         
@@ -344,6 +362,14 @@ extension ChatViewController: UITextViewDelegate {
         }
         
         sendMessageButton.isEnabled = textView.text.count > 0
+        
+        guard chatTo == .toContact else { return }
+        
+        if Date().timeIntervalSince1970 - _currentTime > 2 {
+            if let err = MavlMessage.shared.sendTransparentMessage(msgTo: chatToId, action: TransparentMesg.inputing) {
+                print("透传消息发送失败:\(err.localizedDescription)")
+            }
+        }
     }
 }
 
