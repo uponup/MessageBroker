@@ -448,7 +448,8 @@ extension MavlMessage: CocoaMQTTDelegate {
             
             }else if topicModel.operation == 501 {
                 guard let data = topicModel.text.data(using: .utf8),
-                      let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] else {
+                      let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers),
+                      let dict = json as? [String: Any] else {
                     return
                 }
                 
