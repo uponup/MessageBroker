@@ -42,6 +42,11 @@ extension Notification.Name {
     static let mesgStateDidChanged = Notification.Name("mesgStateDidChanged")
 }
 
+// 业务层自定义透传消息类型
+enum TransparentMesg {
+    static let inputing = "Inputing"
+}
+
 func showHud(_ msg: String) {
     print(msg)
 }

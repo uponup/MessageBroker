@@ -68,15 +68,17 @@ public protocol MavlMessageGroupDelegate: class {
 public protocol MavlMessageStatusDelegate: class {
     func mavl(willSend: Mesg)
     func mavl(willResend: Mesg)
-    func mavl(didRevceived messages: [Mesg], isLoadMore: Bool)
+    func mavl(didReceived messages: [Mesg], isLoadMore: Bool)
+    func mavl(didReceivedTransparentMessageWithAction action: String, fromId from: String, ext extension: [String: Any])
     func mavl(mesgReceiptDidChanged receipt: MesgReceipt)
 }
 
 public extension MavlMessageStatusDelegate {
     func mavl(willSend: Mesg) {}
     func mavl(willResend: Mesg) {}
-    func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {}
-    
+    func mavl(didReceived messages: [Mesg], isLoadMore: Bool) {}
+    func mavl(didReceivedTransparentMessageWithAction action: String, fromId from: String, ext extension: [String: Any]) {}
+
     func mavl(mesgReceiptDidChanged receipt: MesgReceipt) {}
 }
 
@@ -289,7 +291,7 @@ extension MavlMessage: MavlMessageClient {
         _send(operation: op)
     }
     
-    public func sendTransparentMessage(msgFrom: String, msgTo: String, action: String, ext: [String : Any]) -> Error? {
+    public func sendTransparentMessage(msgFrom: String, msgTo: String, action: String, ext: [String : Any] = [:]) -> Error? {
         guard JSONSerialization.isValidJSONObject(ext) else {
             TRACE("ext 不是json格式")
             return SendError.transparentMesgInvalidExtension.asError()
@@ -442,7 +444,20 @@ extension MavlMessage: CocoaMQTTDelegate {
                     }
                     return Mesg(topicModel: received)
                 }
-                delegateMsg?.mavl(didRevceived: msgs, isLoadMore: true)
+                delegateMsg?.mavl(didReceived: msgs, isLoadMore: true)
+            
+            }else if topicModel.operation == 501 {
+                guard let data = topicModel.text.data(using: .utf8),
+                      let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] else {
+                    return
+                }
+                
+                guard let action = dict["action"] as? String,
+                      let ext = dict["ext"] as? [String: Any] else {
+                    return
+                }
+                delegateMsg?.mavl(didReceivedTransparentMessageWithAction: action, fromId: topicModel.from, ext: ext)
+            
             }else if topicModel.isNeedDecrypt {
                 guard let received = ReceivedTopicModel(topic, message.string.value) else {
                     // TODO: 错误信息
@@ -463,7 +478,7 @@ extension MavlMessage: CocoaMQTTDelegate {
                 }
                 
                 // 执行完1步骤后，再回调代理（先上报收到消息了，然后再处理信息逻辑）
-                delegateMsg?.mavl(didRevceived: [msg], isLoadMore: false)
+                delegateMsg?.mavl(didReceived: [msg], isLoadMore: false)
             }else {
                 TRACE("收到无效信息:\(topic)")
             }

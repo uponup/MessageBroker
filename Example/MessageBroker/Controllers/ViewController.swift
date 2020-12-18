@@ -144,7 +144,7 @@ extension ViewController: MavlMessageStatusDelegate {
         NotificationCenter.default.post(name: .willSendMesg, object: ["msg": willSend])
     }
     
-    func mavl(didRevceived messages: [Mesg], isLoadMore: Bool) {
+    func mavl(didReceived messages: [Mesg], isLoadMore: Bool) {
         for mesg in messages.map({ Message($0) }) {
             if mesg.isOutgoing {
                 MessageDao.updateMessage(msg: mesg)
@@ -169,6 +169,12 @@ extension ViewController: MavlMessageStatusDelegate {
         }
         
         NotificationCenter.default.post(name: .mesgStateDidChanged, object: nil)
+    }
+    
+    func mavl(didReceivedTransparentMessageWithAction action: String, fromId from: String, ext extension: [String : Any]) {
+        if action == TransparentMesg.inputing {
+            print("\(from) is inputing")
+        }
     }
 }
 
