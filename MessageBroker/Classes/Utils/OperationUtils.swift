@@ -25,7 +25,7 @@ enum Operation {
     
     case fetchMsgs(_ from: String, _ type: FetchMessagesType, _ cursor: String, _ offset: Int)
     case msgReceipt(_ from: String, _ toId: String, _ serverId: String, _ state: ReceiptState)
-    case msgTransparent(_ from: String, _ toId: String, _ action: String, _ ext: String)
+    case msgTransparent(_ from: String, _ toId: String, _ action: String, _ ext: [String: Any])
     
     var value: Int {
         switch self {
@@ -101,7 +101,7 @@ enum Operation {
             return uploadToken.toJson
             
         case .msgTransparent(_, _, let action, let ext):
-            let payloadDict = ["action": action, "ext": ext]
+            let payloadDict: [String: Any] = ["action": action, "ext": ext]
             return payloadDict.toJson
         }
     }

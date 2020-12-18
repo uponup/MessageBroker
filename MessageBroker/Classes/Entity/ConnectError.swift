@@ -7,6 +7,29 @@
 
 import Foundation
 
+enum SendError {
+    case transparentMesgInvalidExtension
+    
+    var errCode: Int {
+        switch self {
+        case .transparentMesgInvalidExtension:
+            return -2001
+        }
+    }
+    
+    var errMsg: String {
+        switch self {
+        case .transparentMesgInvalidExtension:
+            return "The extended extension for sending the transparent message is not a valid json format"
+        }
+    }
+    
+    func asError() -> Error {
+        let err = NSError(domain: "", code: errCode, userInfo: ["errorMsg": errMsg]) as Error
+        return err
+    }
+}
+
 enum ConnectError {
     case disconnect
     case timeout
