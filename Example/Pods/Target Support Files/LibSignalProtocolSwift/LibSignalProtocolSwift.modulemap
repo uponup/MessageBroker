@@ -1,0 +1,6 @@
+framework module SignalProtocol {
+  umbrella header "LibSignalProtocolSwift-umbrella.h"
+
+  export *
+  module * { export * }
+}

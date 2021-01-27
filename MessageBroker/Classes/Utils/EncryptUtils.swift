@@ -7,6 +7,7 @@
 
 import Foundation
 
+//MARK: - 普通加密
 struct EncryptUtils {
     static func encrypt(_ data: String) -> String? {
         let ivKey = generateIvKey(len: data.bytes.count)
@@ -52,7 +53,7 @@ struct EncryptUtils {
 
     private static func generateIvKey(len: Int) -> String {
         let key = MavlMessage.shared.msgKey.md5()
-        let iv = (0..<len).enumerated().map({ (offset, element) -> String in
+        let iv = (0..<len).enumerated().map({ (offset, _) -> String in
             let count = offset % key.count
             return key[count]
             }).joined()
@@ -60,6 +61,7 @@ struct EncryptUtils {
     }
 }
 
+//MARK: - 扩展
 extension String {
     var value: UInt8 {
         var num: UInt8 = 0

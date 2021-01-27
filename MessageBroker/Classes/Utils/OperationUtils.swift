@@ -27,6 +27,11 @@ enum Operation {
     case msgReceipt(_ from: String, _ toId: String, _ serverId: String, _ state: ReceiptState)
     case msgTransparent(_ toId: String, _ action: String, _ ext: [String: Any])
     
+    // Signal
+    case uploadPublicKey(_ keyBundle: [String: Any])
+    case fetchPublicKeyBundle(_ toUid: String)
+    case signalMessage(_ localId: String, _ toUid: String, _ msg: String)
+    
     var value: Int {
         switch self {
         case .createGroup:  return 0
@@ -39,9 +44,13 @@ enum Operation {
             
         case .uploadToken:  return 300
             
-        case .fetchMsgs:    return 401
-        case .msgReceipt:   return 500
-        case .msgTransparent: return 501
+        case .fetchMsgs:        return 401
+        case .msgReceipt:       return 500
+        case .msgTransparent:   return 501
+            
+        case .uploadPublicKey:      return 600
+        case .fetchPublicKeyBundle: return 601
+        case .signalMessage:        return 602
         }
     }
     
@@ -69,12 +78,18 @@ enum Operation {
             return "\(topicPrefix)/\(to)/\(serverId)/\(from)"
         case .msgTransparent(let to, _, _):
             return "\(topicPrefix)/\(to)"
+        case .uploadPublicKey:
+            return "\(MavlMessage.shared.appid)/\(value)"
+        case .fetchPublicKeyBundle(let toUid):
+            return "\(MavlMessage.shared.appid)/\(value)/\(toUid)"
+        case .signalMessage(_, let toUid, _):
+            return "\(topicPrefix)/\(toUid)"
         }
     }
     
     var payload: String {
         switch self {
-        case .joinGroup, .quitGroup, .fetchMsgs:
+        case .joinGroup, .quitGroup, .fetchMsgs, .fetchPublicKeyBundle:
             return ""
             
         case .createGroup(let users):
@@ -103,23 +118,47 @@ enum Operation {
         case .msgTransparent(_, let action, let ext):
             let payloadDict: [String: Any] = ["action": action, "ext": ext]
             return payloadDict.toJson
+        case .uploadPublicKey(let keyBundle):
+            return keyBundle.toJson
+        case .signalMessage(_, let toUid, let msg):
+            return getCipherText(text: msg, to: toUid)
         }
     }
     
     var localId: String {
         switch self {
-        case .createGroup, .joinGroup, .quitGroup, .uploadToken, .fetchMsgs, .msgReceipt, .msgTransparent:
+        case .createGroup, .joinGroup, .quitGroup, .uploadToken, .fetchMsgs, .msgReceipt, .msgTransparent, .uploadPublicKey, .fetchPublicKeyBundle:
             return "0"
         case .oneToOne(let localId, _, _):
-            return "\(localId)"
+            return localId
         case .oneToMany(let localId, _, _):
-            return "\(localId)"
+            return localId
         case .vitualGroup(let localId, _, _, _):
-            return "\(localId)"
+            return localId
+        case .signalMessage(let localId, _, _):
+            return localId
         }
     }
     
-    var isNeedCipher: Bool {
+    /**
+        生成加密消息
+        1、普通加密
+        2、Signal端到端加密
+     */
+    private func getCipherText(text: String, to: String = "") -> String {
+        // 普通文本消息, 需要加密
+        guard isNeedCipher, let cipherText = EncryptUtils.encrypt(text) else {
+            return text
+        }
+        
+        // 是否是Signal加密的消息
+        guard isSignalCipher, to.count > 0, let signalText = SignalUtils.default.encrypt(text, to) else {
+            return cipherText
+        }
+        return signalText
+    }
+    
+    private var isNeedCipher: Bool {
         switch self {
         case .oneToOne, .oneToMany, .vitualGroup, .fetchMsgs:
             return true
@@ -128,12 +167,13 @@ enum Operation {
         }
     }
     
-    private func getCipherText(text: String) -> String {
-        // 发送的是文本消息, 需要加密
-        guard isNeedCipher, let cipherText = EncryptUtils.encrypt(text) else {
-            return text
+    private var isSignalCipher: Bool {
+        switch self {
+        case .signalMessage:
+            return true
+        default:
+            return false
         }
-        return cipherText
     }
 }
 

@@ -1,18 +1,28 @@
 PODS:
+  - CCurve25519 (1.0.1)
   - CocoaAsyncSocket (7.6.4)
   - CocoaMQTT (1.2.5):
     - CocoaAsyncSocket (~> 7.6.3)
+  - CommonCryptoModule (1.0.2)
+  - Curve25519 (2.0.0):
+    - CCurve25519
   - ESPullToRefresh (2.9.3)
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
+  - LibSignalProtocolSwift (1.3):
+    - CommonCryptoModule
+    - Curve25519
+    - SwiftProtobuf
   - MarqueeLabel (4.0.2)
   - MessageBroker (0.1.5):
     - CocoaMQTT (~> 1.2.5)
+    - LibSignalProtocolSwift (~> 1.3)
   - NotificationBannerSwift (3.0.2):
     - MarqueeLabel (~> 4.0.0)
     - SnapKit (~> 5.0.0)
   - SnapKit (5.0.1)
+  - SwiftProtobuf (1.13.0)
 
 DEPENDENCIES:
   - ESPullToRefresh
@@ -22,10 +32,15 @@ DEPENDENCIES:
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
+    - CCurve25519
     - CocoaAsyncSocket
     - CocoaMQTT
+    - CommonCryptoModule
+    - Curve25519
     - ESPullToRefresh
     - FMDB
+    - LibSignalProtocolSwift
+    - SwiftProtobuf
   trunk:
     - MarqueeLabel
     - NotificationBannerSwift
@@ -36,15 +51,20 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
+  CCurve25519: 70dc9f84124779f020e417d2fc4ba9e58919f074
   CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
   CocoaMQTT: a61490ed3b328011c5d75169a77781983e2bb221
+  CommonCryptoModule: 63a68b57abed79655b3a01011419bf037a05b0a0
+  Curve25519: 5f33887c1eeb0308d1e7c4c6721d9907b56e56a3
   ESPullToRefresh: 0d68daa602b343c81753a1b95e09fd0bfcddfd40
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
+  LibSignalProtocolSwift: 50b57ba2dd7a279ad8629982997aa11edd8eaed6
   MarqueeLabel: f762aa681ae201f66c1d511858b171f75d83013a
-  MessageBroker: d307d388b0f6eece292464b4472d4cedd92907af
+  MessageBroker: a1fd7a01210cc77f7948752df9f7a91576a2811c
   NotificationBannerSwift: 713e20f21b6105f4a36a00e5d9fa414a930d3d8e
   SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
+  SwiftProtobuf: fd4693388a96c8c2df35d3b063272b0e7c499d00
 
 PODFILE CHECKSUM: c16f7380f032c786fcc5d5b7bcf0cea9a9fcebf3
 
-COCOAPODS: 1.10.0
+COCOAPODS: 1.10.1

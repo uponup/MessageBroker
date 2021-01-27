@@ -54,6 +54,14 @@ public struct Mesg {
             content = originText
         }
         
+        if topicModel.isNeedSignalDecrypt {
+            let remoteId = isOutgoing ? toUid : fromUid
+            
+            if let originText = SignalUtils.default.decrypt(topicModel.text, remoteId) {
+                content = originText
+            }
+        }
+        
         let multiMedia = parseMediaMesg(content: content)
         type = multiMedia.type.rawValue
         if multiMedia.type == .location {

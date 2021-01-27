@@ -23,6 +23,9 @@
   "dependencies": {
     "CocoaMQTT": [
       "~> 1.2.5"
+    ],
+    "LibSignalProtocolSwift": [
+      "~> 1.3"
     ]
   },
   "pod_target_xcconfig": {

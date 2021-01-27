@@ -39,14 +39,12 @@ extension TopicModelProtocol {
         }
     }
     
+    var isNeedSignalDecrypt: Bool {
+        operation == 602
+    }
+    
     var isMesg: Bool {
-        if operation == 1
-        || operation == 2
-        || operation == 3 {
-            return true
-        }else {
-            return false
-        }
+        isNeedSignalDecrypt || isNeedDecrypt
     }
 }
 

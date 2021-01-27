@@ -82,9 +82,6 @@ public extension MavlMessageStatusDelegate {
     func mavl(mesgReceiptDidChanged receipt: MesgReceipt) {}
 }
 
-
-
-
 /**
  MessageBroker主类
  */
@@ -336,6 +333,34 @@ extension MavlMessage: MavlMessageClientConfig {
     }
 }
 
+//MARK:- Signal
+extension MavlMessage {
+    func uploadPublicKey() {
+        guard let bundle = try? SignalUtils.default.generatePublicBundle() else {
+            return
+        }
+        
+        _send(operation: .uploadPublicKey(bundle))
+    }
+    
+    /**
+        建立一个Signal加密通道
+        1、首先需要去下载对方的公钥bundle
+     */
+    func createSingalCipherChannel(toUid: String) {
+        _send(operation: .fetchPublicKeyBundle(toUid))
+    }
+    
+    /**
+        2、获取到bundle以后，解析，传给SignalUtils处理
+     */
+    private func processBundle(bundleStr: String, to: String) {
+        // 建立session
+        SignalUtils.default.createSignalSession(bundleStr: bundleStr, to: to)
+    }
+}
+
+//MARK:- MQTT
 extension MavlMessage: CocoaMQTTDelegate {
     public func mqtt(_ mqtt: CocoaMQTT, didReceive trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
        TRACE("trust: \(trust)")
@@ -384,6 +409,7 @@ extension MavlMessage: CocoaMQTTDelegate {
             _isLogin = true
             // 成功建立连接，上传token
             uploadToken()
+            uploadPublicKey()
             // 通知StatusQUeue
             StatusQueue.shared.login()
         }
@@ -459,13 +485,10 @@ extension MavlMessage: CocoaMQTTDelegate {
                 }
                 delegateMsg?.mavl(didReceivedTransparentMessageWithAction: action, fromId: topicModel.from, ext: ext)
             
-            }else if topicModel.isNeedDecrypt {
-                guard let received = ReceivedTopicModel(topic, message.string.value) else {
-                    // TODO: 错误信息
-                    return
-                }
-                
-                let msg = Mesg(topicModel: received)
+            }else if topicModel.operation == 601 {
+                processBundle(bundleStr: topicModel.text, to: topicModel.to)
+            } else if topicModel.isMesg {
+                let msg = Mesg(topicModel: topicModel)
                 
                 if _sendingMessages.keys.contains(topicModel.localId) {
                     // 是自己发出去的消息，不需要做received的回执，服务器离线消息仅针对别人发给你的消息
@@ -481,7 +504,7 @@ extension MavlMessage: CocoaMQTTDelegate {
                 // 执行完1步骤后，再回调代理（先上报收到消息了，然后再处理信息逻辑）
                 delegateMsg?.mavl(didReceived: [msg], isLoadMore: false)
             }else {
-                TRACE("收到无效信息:\(topic)")
+                TRACE("收到无效信息:\(topic), \(message.string.value)")
             }
         }else {
             // TODO: 非法Topic，返回错误状态

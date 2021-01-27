@@ -39,6 +39,7 @@ TODO: Add long description of the pod here.
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   s.dependency 'CocoaMQTT', '~> 1.2.5'
+  s.dependency 'LibSignalProtocolSwift', '~> 1.3'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   
 end

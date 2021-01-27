@@ -1,9 +1,14 @@
 ${PODS_ROOT}/Target Support Files/Pods-MessageBroker/Pods-MessageBroker-frameworks.sh
+${BUILT_PRODUCTS_DIR}/CCurve25519/CCurve25519.framework
 ${BUILT_PRODUCTS_DIR}/CocoaAsyncSocket/CocoaAsyncSocket.framework
 ${BUILT_PRODUCTS_DIR}/CocoaMQTT/CocoaMQTT.framework
+${BUILT_PRODUCTS_DIR}/CommonCryptoModule/CommonCryptoModule.framework
+${BUILT_PRODUCTS_DIR}/Curve25519/Curve25519.framework
 ${BUILT_PRODUCTS_DIR}/ESPullToRefresh/ESPullToRefresh.framework
 ${BUILT_PRODUCTS_DIR}/FMDB/FMDB.framework
+${BUILT_PRODUCTS_DIR}/LibSignalProtocolSwift/SignalProtocol.framework
 ${BUILT_PRODUCTS_DIR}/MarqueeLabel/MarqueeLabel.framework
 ${BUILT_PRODUCTS_DIR}/MessageBroker/MessageBroker.framework
 ${BUILT_PRODUCTS_DIR}/NotificationBannerSwift/NotificationBannerSwift.framework
 ${BUILT_PRODUCTS_DIR}/SnapKit/SnapKit.framework
+${BUILT_PRODUCTS_DIR}/SwiftProtobuf/SwiftProtobuf.framework
