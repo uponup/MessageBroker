@@ -86,6 +86,8 @@ public extension MavlMessageStatusDelegate {
  MessageBroker主类
  */
 public class MavlMessage {
+    public typealias SignalCreateCompletion = (Bool) -> Void
+
     public static let shared = MavlMessage()
     public var passport: Passport? {
         return _passport
@@ -134,6 +136,9 @@ public class MavlMessage {
     private var _localMsgId: UInt16 = 0
     private var _sendingMessages: [String: TopicModelProtocol] = [:]
     private let qos: CocoaMQTTQOS = .qos0
+    
+    private var signalCompletionDict: [String: SignalCreateCompletion] = [:]
+    
     public func initializeSDK(config: MavlMessageConfiguration) {
         self.config = config
     }
@@ -164,6 +169,7 @@ public class MavlMessage {
         mqtt.autoReconnect = true
         
         NotificationCenter.default.addObserver(self, selector: #selector(connectTimeoutAction(_:)), name: .connectTimeout, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(signalLoadAction(_:)), name: .signalLoad, object: nil)
     }
     
     @objc func connectTimeoutAction(_ noti: Notification) {
@@ -186,6 +192,14 @@ public class MavlMessage {
             mqtt?.disconnect()
         }
         _logout(withError: err)
+    }
+    
+    // signal通道建立结果（发送方）
+    @objc func signalLoadAction(_ noti: Notification) {
+        guard let dict = noti.object as? [String: Any],
+            let to = dict["to"] as? String, let ret = dict["ret"] as? Bool else { return }
+        guard let completion = signalCompletionDict.removeValue(forKey: to) else { return }
+        completion(ret)
     }
     
     func checkStatus(withUserName username: String) {
@@ -347,8 +361,14 @@ extension MavlMessage {
         建立一个Signal加密通道
         1、首先需要去下载对方的公钥bundle
      */
-    func createSingalCipherChannel(toUid: String) {
-        _send(operation: .fetchPublicKeyBundle(toUid))
+    func createSingalCipherChannel(toUid: String, completion:@escaping SignalCreateCompletion) {
+        // 如果本地存在，那么不需要调用MQTT
+        if SignalUtils.default.isExistSession(to: toUid) {
+            completion(true)
+        }else {
+            _send(operation: .fetchPublicKeyBundle(toUid))
+            signalCompletionDict[toUid] = completion
+        }
     }
     
     /**
@@ -357,6 +377,22 @@ extension MavlMessage {
     private func processBundle(bundleStr: String, to: String) {
         // 建立session
         SignalUtils.default.createSignalSession(bundleStr: bundleStr, to: to)
+    }
+    
+    /**
+        发送Signal加密消息
+     */
+    public func sendSignal(message msg: String, toFriend fid: String, localId: String) {
+        let textMedia = NormalMedia(type: .text, mesg: msg)
+        sendSignal(mediaMessage: textMedia, toFriend: fid, localId: localId)
+    }
+    
+    /**
+        发送Signal加密多媒体消息
+     */
+    public func sendSignal(mediaMessage msg: MultiMedia, toFriend fid: String, localId: String) {
+        let op = Operation.signalMessage(localId, fid, msg.content)
+        _send(operation: op)
     }
 }
 

@@ -24,16 +24,39 @@ struct SignalUtils {
         }
     }
     
+    func isExistSession(to: String) -> Bool {
+        let address = MavlAddress(identifier: to)
+        guard let _ = try?aliceStore.identityKeyStore.identity(for: address) else {
+            return false
+        }
+        return true
+    }
+    
     func createSignalSession(bundleStr: String, to: String) {
         let address = MavlAddress(identifier: to)
         
         guard let data = bundleStr.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers),
-              let dict = json as? [String: Any] else {
+              let encodeBundleDict = json as? [String: String] else {
             return
         }
         
+        let decodeBundleDict: [String: Data] = encodeBundleDict.mapValues {
+            Data(base64Encoded: $0) ?? Data()
+        }
         
+        let session = SessionCipher(store: aliceStore, remoteAddress: address)
+        do {
+            let sessionPrekeyBundle = try SessionPreKeyBundle(preKey: decodeBundleDict["prekey"]!, signedPreKey: decodeBundleDict["signedPrekey"]!, identityKey: decodeBundleDict["identityKey"]!)
+            try session.process(preKeyBundle: sessionPrekeyBundle)
+            
+            // 校验成功，可以发送加密消息
+            NotificationCenter.default.post(name: .signalLoad, object: ["to": to, "ret": true])
+        } catch let e {
+            print("对方公钥校验失败: \(e.localizedDescription)")
+            // 校验失败
+            NotificationCenter.default.post(name: .signalLoad, object: ["to": to, "ret": false])
+        }
     }
     
     func generatePublicBundle() throws -> [String: Any] {
@@ -49,23 +72,51 @@ struct SignalUtils {
             ]            
             return uploadDict
         } catch  {
-            throw NSError(domain: "com.mavl.signal", code: 0, userInfo: ["msg": "初始化公钥失败"])
+            throw NSError(domain: "com.mavl.signal", code: -2000, userInfo: ["msg": "初始化公钥失败"])
         }
     }
     
     // 将Signal加密后密文的protoData采用base64编码后返回
-    func encrypt(_ data: String, _ to: String) -> String? {
+    func encrypt(_ data: String, _ to: String) throws -> String {
         let address = MavlAddress(identifier: to)
         guard let _ = try? aliceStore.identityKeyStore.identity(for: address) else {
-            downloadPublicKeyBundle()
-            return nil
+            throw NSError(domain: "com.mavl.signal", code: -2001, userInfo: ["msg": "缺少必要session，无法加密"])
         }
-        return nil
+        
+        guard let messageData = data.data(using: .utf8) else {
+            throw NSError(domain: "com.mavl.signal", code: -2003, userInfo: ["msg": "初始消息有问题，无法转成Data"])
+        }
+        
+        do {
+            let session = SessionCipher(store: aliceStore, remoteAddress: address)
+            return try session.encrypt(messageData).protoData().base64EncodedString()
+        } catch let err {
+            throw err
+        }
     }
     
     // 先用base64解码，获取得到protoData，然后构造CipherTextMessage用来解密
-    func decrypt(_ data: String, _ from: String) -> String? {
-        return nil
+    func decrypt(_ data: String, _ from: String) throws -> String {
+        let address = MavlAddress(identifier: from)
+        guard let _ = try? aliceStore.identityKeyStore.identity(for: address) else {
+            throw NSError(domain: "com.mavl.signal", code: -2002, userInfo: ["msg": "缺少必要session，无法解密"])
+        }
+        
+        guard let messageData = Data(base64Encoded: data) else {
+            throw NSError(domain: "com.mavl.signal", code: -2004, userInfo: ["msg": "base64解码失败"])
+        }
+        do {
+            let session = SessionCipher(store: aliceStore, remoteAddress: address)
+            let cipher = try CipherTextMessage(from: messageData)
+            let decryptedMessageData = try session.decrypt(cipher)
+            
+            guard let originText = String(data: decryptedMessageData, encoding: .utf8) else {
+                throw NSError(domain: "com.mavl.signal", code: -2005, userInfo: ["msg": "解密后，生成字符串出问题"])
+            }
+            return originText
+        } catch let err {
+            throw err
+        }
     }
     
     
@@ -87,4 +138,9 @@ fileprivate extension UserDefaults {
             return false
         }
     }
+}
+
+//MARK: - Notification Extension
+extension NSNotification.Name {
+    static let signalLoad = Notification.Name("signalLoad")
 }

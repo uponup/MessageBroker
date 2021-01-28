@@ -152,7 +152,7 @@ enum Operation {
         }
         
         // 是否是Signal加密的消息
-        guard isSignalCipher, to.count > 0, let signalText = SignalUtils.default.encrypt(text, to) else {
+        guard isSignalCipher, to.count > 0, let signalText = try? SignalUtils.default.encrypt(text, to) else {
             return cipherText
         }
         return signalText
