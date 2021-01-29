@@ -11,21 +11,21 @@ import  SignalProtocol
 class MavlSessionStore: SessionStore {
     typealias Address = MavlAddress
     
-    private var sessions = [Address: Data]()
-    
-    func loadSession(for address: MavlAddress) throws -> Data? {
+    private var sessions = [Address : Data]()
+
+    func loadSession(for address: Address) -> Data? {
         return sessions[address]
     }
     
-    func store(session: Data, for address: MavlAddress) throws {
+    func store(session: Data, for address: Address) throws {
         sessions[address] = session
     }
     
-    func containsSession(for address: MavlAddress) -> Bool {
+    func containsSession(for address: Address) -> Bool {
         return sessions[address] != nil
     }
     
-    func deleteSession(for address: MavlAddress) throws {
+    func deleteSession(for address: Address) throws {
         sessions[address] = nil
     }
 }

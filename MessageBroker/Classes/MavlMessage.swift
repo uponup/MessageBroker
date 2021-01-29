@@ -350,18 +350,19 @@ extension MavlMessage: MavlMessageClientConfig {
 //MARK:- Signal
 extension MavlMessage {
     func uploadPublicKey() {
-        guard let bundle = try? SignalUtils.default.generatePublicBundle() else {
-            return
+        do {
+            let bundle = try SignalUtils.default.generatePublicBundle()
+            _send(operation: .uploadPublicKey(bundle))
+        } catch let e {
+            print(e)
         }
-        
-        _send(operation: .uploadPublicKey(bundle))
     }
     
     /**
         建立一个Signal加密通道
         1、首先需要去下载对方的公钥bundle
      */
-    func createSingalCipherChannel(toUid: String, completion:@escaping SignalCreateCompletion) {
+    public func createSingalCipherChannel(toUid: String, completion:@escaping SignalCreateCompletion) {
         // 如果本地存在，那么不需要调用MQTT
         if SignalUtils.default.isExistSession(to: toUid) {
             completion(true)
@@ -488,7 +489,10 @@ extension MavlMessage: CocoaMQTTDelegate {
             
             let recepit = MesgRemoteReceipt(state: state, from: topicModel.toPersonalUid, msgServerId: topicModel.serverId)
             delegateMsg?.mavl(mesgReceiptDidChanged: recepit)
-        }else if let topicModel = ReceivedTopicModel(topic, message.string.value) {
+        }else if let topicModel = SignalKeyBundleTopicModel(topic, message.string.value) {
+            // 创建Signal加密通道
+            processBundle(bundleStr: topicModel.text, to: topicModel.to)
+        } else if let topicModel = ReceivedTopicModel(topic, message.string.value) {
             if topicModel.operation == 0 {
                 // create a group
                 guard let passport = passport else { return }
@@ -521,9 +525,7 @@ extension MavlMessage: CocoaMQTTDelegate {
                 }
                 delegateMsg?.mavl(didReceivedTransparentMessageWithAction: action, fromId: topicModel.from, ext: ext)
             
-            }else if topicModel.operation == 601 {
-                processBundle(bundleStr: topicModel.text, to: topicModel.to)
-            } else if topicModel.isMesg {
+            }else if topicModel.isMesg {
                 let msg = Mesg(topicModel: topicModel)
                 
                 if _sendingMessages.keys.contains(topicModel.localId) {

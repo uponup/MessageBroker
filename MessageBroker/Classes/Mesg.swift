@@ -55,10 +55,10 @@ public struct Mesg {
         }
         
         if topicModel.isNeedSignalDecrypt {
-            let remoteId = isOutgoing ? toUid : fromUid
-            
-            if let originText = try? SignalUtils.default.decrypt(topicModel.text, remoteId) {
-                content = originText
+            do {
+                content = try SignalUtils.default.decrypt(topicModel.text, fromUid)
+            } catch let err {
+                print("解密失败：｜\(err)")
             }
         }
         

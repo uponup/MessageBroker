@@ -75,7 +75,6 @@ public struct SignalMessage {
                         receiverIdentityKey: PublicKey,
                         macKey: Data,
                         message: Data) throws -> Data {
-
         let bytes = senderIdentityKey.data + receiverIdentityKey.data
         let longMac = try SignalCrypto.hmacSHA256(for: bytes +  message, with: macKey)
 

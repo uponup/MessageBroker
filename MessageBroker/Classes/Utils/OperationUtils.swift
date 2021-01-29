@@ -147,15 +147,22 @@ enum Operation {
      */
     private func getCipherText(text: String, to: String = "") -> String {
         // 普通文本消息, 需要加密
-        guard isNeedCipher, let cipherText = EncryptUtils.encrypt(text) else {
-            return text
+        if isNeedCipher, let cipherText = EncryptUtils.encrypt(text) {
+            return cipherText
         }
         
         // 是否是Signal加密的消息
-        guard isSignalCipher, to.count > 0, let signalText = try? SignalUtils.default.encrypt(text, to) else {
-            return cipherText
+        guard isSignalCipher, to.count > 0 else {
+            return text
         }
-        return signalText
+        
+        do {
+            let signalText = try SignalUtils.default.encrypt(text, to)
+            return signalText
+        } catch let err {
+            print("加密失败：｜\(err)")
+        }
+        return text
     }
     
     private var isNeedCipher: Bool {

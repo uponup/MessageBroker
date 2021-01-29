@@ -166,6 +166,22 @@ class ChatViewController: UIViewController {
                 inputBaseView.isHidden = true
             }
         }
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tapAction))
+        tap.numberOfTapsRequired = 2
+        tableView.addGestureRecognizer(tap)
+    }
+    
+    @objc func tapAction() {
+        MavlMessage.shared.createSingalCipherChannel(toUid: chatToId) { ret in
+            if ret {
+                print("Signal准备好了")
+            }else {
+                print("Signal建立失败")
+            }
+        }
+        print("双击")
+        self.tableView.backgroundColor = UIColor.darkGray
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -235,7 +251,8 @@ class ChatViewController: UIViewController {
            let friends = Set(CirclesDao.fetchAllMembers(fromCircle: chatToId))
            MavlMessage.shared.send(message: message, toGroup: chatToId, localId: localId, withFriends: friends)
         }else {
-           MavlMessage.shared.send(message: message, toFriend: chatToId, localId: localId)
+//           MavlMessage.shared.send(message: message, toFriend: chatToId, localId: localId)
+            MavlMessage.shared.sendSignal(message: message, toFriend: chatToId, localId: localId)
         }
         messageTextView.text = ""
         sendMessageButton.isEnabled = false
