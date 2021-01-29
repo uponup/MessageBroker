@@ -15,4 +15,8 @@ extension Dictionary {
         let jsonStr = String(data: data, encoding: .utf8)
         return jsonStr.value
     }
+    
+    var archivedData: Data {
+        NSKeyedArchiver.archivedData(withRootObject: self)
+    }
 }

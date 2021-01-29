@@ -129,19 +129,6 @@ struct SignalUtils {
     }
 }
 
-
-fileprivate extension UserDefaults {
-    class func executeOnce(withKey key: String, execute: () -> Void) -> Bool {
-        if UserDefaults.standard.object(forKey: key) == nil {
-            UserDefaults.standard.set(key, forKey: key)
-            execute()
-            return true
-        }else {
-            return false
-        }
-    }
-}
-
 //MARK: - Notification Extension
 extension NSNotification.Name {
     static let signalLoad = Notification.Name("signalLoad")

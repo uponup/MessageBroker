@@ -15,17 +15,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        MyTimer().resetDelay(5) {
-            print("A")
-        }
-        
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-//            print("pre B")
-//            MyTimer().resetDelay(5) {
-//                print("B")
-//            }
-//        }
-        
         let _ = UserDefaults.executeOnce(withKey: "UpdateDB_8") {
             MessageDao.dropTable()
         }

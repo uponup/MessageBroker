@@ -9,13 +9,15 @@ import Foundation
 import SignalProtocol
 
 class MavlIdentityStore: IdentityKeyStore {
+    typealias Address = MavlAddress
+    
+    private var identityKey: Data!
+    private var identities = [MavlAddress: Data]()
+    private let MavlIdentityStoreKey = "MavlIdentityStoreKey"
+    
     required init(with keyPair: Data) {
         self.identityKey = keyPair
     }
-    
-    typealias Address = MavlAddress
-    private var identityKey: Data!
-    private var identities = [MavlAddress: Data]()
     
     func getIdentityKeyData() throws -> Data {
         if identityKey == nil {
@@ -24,17 +26,18 @@ class MavlIdentityStore: IdentityKeyStore {
         return identityKey
     }
     
-    func store(identityKeyData: Data) {
-        identityKey = identityKeyData
-    }
-    
     func identity(for address: MavlAddress) throws -> Data? {
+        guard let ids = MavlKeyStore.store(forKey: MavlIdentityStoreKey, dictKeyType: MavlAddress.self) else {
+            throw SignalError(.storageError, "No identity key for address \(address)")
+        }
+        identities = ids
         return identities[address]
     }
     
     // 存储已经被信任的id
     func store(identity: Data?, for address: MavlAddress) throws {
         identities[address] = identity
+        MavlKeyStore.setStore(store: identities, forKey: MavlIdentityStoreKey)
     }
     
     init() {

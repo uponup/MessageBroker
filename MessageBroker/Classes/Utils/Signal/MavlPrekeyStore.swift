@@ -12,8 +12,14 @@ class MavlPrekeyStore: PreKeyStore {
     var lastId: UInt32 = 0
     
     private var prekeys = [UInt32: Data]()
+    private let MavlPrekeyStoreKey = "PreKeyStoreKey"
     
     func preKey(for id: UInt32) throws -> Data {
+        guard let prekeysDict = MavlKeyStore.store(forKey: MavlPrekeyStoreKey, dictKeyType: UInt32.self) else {
+            throw SignalError(.storageError, "No pre key for id \(id)")
+        }
+        prekeys = prekeysDict
+        
         guard let key = prekeys[id] else {
             throw SignalError(.storageError, "No pre key for id \(id)")
         }
@@ -23,14 +29,18 @@ class MavlPrekeyStore: PreKeyStore {
     func store(preKey: Data, for id: UInt32) throws {
         prekeys[id] = preKey
         lastId = id
+        MavlKeyStore.setStore(store: prekeys, forKey: MavlPrekeyStoreKey)
     }
     
     func containsPreKey(for id: UInt32) -> Bool {
+        guard let prekeysDict = MavlKeyStore.store(forKey: MavlPrekeyStoreKey, dictKeyType: UInt32.self) else {
+            return false }
+        prekeys = prekeysDict
         return prekeys[id] != nil
     }
     
     func removePreKey(for id: UInt32) throws {
         prekeys[id] = nil
+        MavlKeyStore.setStore(store: prekeys, forKey: MavlPrekeyStoreKey)
     }
-    
 }
