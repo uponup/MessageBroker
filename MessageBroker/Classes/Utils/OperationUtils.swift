@@ -81,7 +81,7 @@ enum Operation {
         case .uploadPublicKey:
             return "\(MavlMessage.shared.appid)/\(value)"
         case .fetchPublicKeyBundle(let toUid):
-            return "\(MavlMessage.shared.appid)/\(value)/\(toUid)"
+            return "\(topicPrefix)/\(toUid)"
         case .signalMessage(_, let toUid, _):
             return "\(topicPrefix)/\(toUid)"
         }

@@ -67,7 +67,7 @@ struct SignalUtils {
     func generatePublicBundle() throws -> [String: Any] {
         do {
             let identityKey: Data = try aliceStore.identityKeyStore.getIdentityKeyPublicData()
-            let prekeys: [Data] = try aliceStore.createPreKeys(count: 1)
+            let prekeys: [Data] = try aliceStore.createPreKeys(count: 10)
             let signedPrekey: Data = try aliceStore.updateSignedPrekey()
             
             let uploadDict: [String: Any] = [

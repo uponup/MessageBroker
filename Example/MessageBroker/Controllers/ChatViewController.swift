@@ -9,6 +9,7 @@
 import UIKit
 import CocoaMQTT
 import ESPullToRefresh
+import NotificationBannerSwift
 
 enum ChatToType {
     case toGroup
@@ -86,10 +87,29 @@ class ChatViewController: UIViewController {
         return lastestMessage.uuid
     }
     
+    private var signal: Bool = false {
+        didSet {
+            if signal {
+                showSignalHud(tips: "End-to-end Encryption Mode", isSecret: true)
+                tableView.backgroundColor = .darkGray
+                headerView.backgroundColor = UIColor(hex: 0x393939)
+                inputBaseView.backgroundColor = UIColor(hex: 0x393939)
+                view.backgroundColor = UIColor(hex: 0x393939)
+            }else {
+                showSignalHud(tips: "Normal Secret Mode", isSecret: false)
+                tableView.backgroundColor = .white
+                headerView.backgroundColor = UIColor(hex: 0xEFEFF4)
+                inputBaseView.backgroundColor = .groupTableViewBackground
+                view.backgroundColor = UIColor(hex: 0xEFEFF4)
+            }
+        }
+    }
+    
     private var localId: String {
         "\(MessageDao.fetchLastOne() + 1)"
     }
     
+    @IBOutlet weak var headerView: UIView!
     @IBOutlet weak var statusLabel: UILabel!
     @IBOutlet weak var statusView: UIView!
     @IBOutlet weak var tableView: UITableView!
@@ -173,15 +193,23 @@ class ChatViewController: UIViewController {
     }
     
     @objc func tapAction() {
-        MavlMessage.shared.createSingalCipherChannel(toUid: chatToId) { ret in
+        // 单聊开通一对一聊天
+        guard chatTo == .toContact else { return }
+        
+        // 当前为Signal消息的时候，双击屏幕改为普通消息
+        // 当前为普通消息的时候，双击屏幕切为Signal消息
+        guard signal == false else {
+            signal = false
+            return
+        }
+        
+        MavlMessage.shared.createSingalCipherChannel(toUid: chatToId) { [weak self] ret in
             if ret {
-                print("Signal准备好了")
+                self?.signal = true
             }else {
-                print("Signal建立失败")
+                self?.signal = false
             }
         }
-        print("双击")
-        self.tableView.backgroundColor = UIColor.darkGray
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -251,8 +279,11 @@ class ChatViewController: UIViewController {
            let friends = Set(CirclesDao.fetchAllMembers(fromCircle: chatToId))
            MavlMessage.shared.send(message: message, toGroup: chatToId, localId: localId, withFriends: friends)
         }else {
-//           MavlMessage.shared.send(message: message, toFriend: chatToId, localId: localId)
-            MavlMessage.shared.sendSignal(message: message, toFriend: chatToId, localId: localId)
+            if signal {
+                MavlMessage.shared.sendSignal(message: message, toFriend: chatToId, localId: localId)
+            }else {
+                MavlMessage.shared.send(message: message, toFriend: chatToId, localId: localId)
+            }
         }
         messageTextView.text = ""
         sendMessageButton.isEnabled = false
@@ -483,6 +514,27 @@ extension ChatViewController {
         }else {
             let friends = Set(CirclesDao.fetchAllMembers(fromCircle: chatToId))
             MavlMessage.shared.send(mediaMessage: media, toGroup: chatToId, localId: localId, withFriends: friends)
+        }
+    }
+}
+
+extension ChatViewController {
+    func showSignalHud(tips: String, isSecret: Bool) {
+        let style: BannerStyle = isSecret ? .success : .info
+        let banner = NotificationBanner(title: "Signal Tips", subtitle: tips, leftView: nil, rightView: nil, style: style, colors: self)
+        banner.duration = 1.8
+        banner.show()
+    }
+}
+
+extension ChatViewController: BannerColorsProtocol {
+    public func color(for style: BannerStyle) -> UIColor {
+        switch style {
+        case .danger: return UIColor(hex: 0xCC1100)
+        case .info: return UIColor(hex: 0x878787)
+        case .customView:  return UIColor(hex: 0x4F4F4F)
+        case .success: return UIColor(hex: 0x01C5BB)
+        case .warning: return UIColor(hex: 0xDD7500)
         }
     }
 }

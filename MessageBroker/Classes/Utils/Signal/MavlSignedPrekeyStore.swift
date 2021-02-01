@@ -15,7 +15,7 @@ class MavlSignedPrekeyStore: SignedPreKeyStore {
     private let MavlSignedPrekeyStoreKey = "MavlSignedPrekeyStoreKey"
     
     func signedPreKey(for id: UInt32) throws -> Data {
-        guard let keys = MavlKeyStore.store(forKey: MavlSignedPrekeyStoreKey, dictKeyType: UInt32.self) else {
+        guard let keys = PersistenceProvider.store(forKey: MavlSignedPrekeyStoreKey, dictKeyType: UInt32.self) else {
             throw SignalError(.invalidId, "No signed pre key for id \(id)")
         }
         signedKeys = keys
@@ -30,11 +30,11 @@ class MavlSignedPrekeyStore: SignedPreKeyStore {
         signedKeys[id] = signedPreKey
         lastId = id
         
-        MavlKeyStore.setStore(store: signedKeys, forKey: MavlSignedPrekeyStoreKey)
+        PersistenceProvider.setStore(store: signedKeys, forKey: MavlSignedPrekeyStoreKey)
     }
     
     func containsSignedPreKey(for id: UInt32) -> Bool {
-        guard let keys = MavlKeyStore.store(forKey: MavlSignedPrekeyStoreKey, dictKeyType: UInt32.self) else {
+        guard let keys = PersistenceProvider.store(forKey: MavlSignedPrekeyStoreKey, dictKeyType: UInt32.self) else {
             return false
         }
         signedKeys = keys
@@ -43,11 +43,11 @@ class MavlSignedPrekeyStore: SignedPreKeyStore {
     
     func removeSignedPreKey(for id: UInt32) throws {
         signedKeys[id] = nil
-        MavlKeyStore.setStore(store: signedKeys, forKey: MavlSignedPrekeyStoreKey)
+        PersistenceProvider.setStore(store: signedKeys, forKey: MavlSignedPrekeyStoreKey)
     }
     
     func allIds() -> [UInt32] {
-        guard let keys = MavlKeyStore.store(forKey: MavlSignedPrekeyStoreKey, dictKeyType: UInt32.self) else {
+        guard let keys = PersistenceProvider.store(forKey: MavlSignedPrekeyStoreKey, dictKeyType: UInt32.self) else {
             return []
         }
         signedKeys = keys

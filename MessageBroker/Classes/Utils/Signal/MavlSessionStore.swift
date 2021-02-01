@@ -15,7 +15,7 @@ class MavlSessionStore: SessionStore {
     private let MavlSessionStoreKey = "MavlSessionStoreKey"
 
     func loadSession(for address: Address) -> Data? {
-        guard let sessionsDict = MavlKeyStore.store(forKey: MavlSessionStoreKey, dictKeyType: Address.self) else { return nil }
+        guard let sessionsDict = PersistenceProvider.store(forKey: MavlSessionStoreKey, dictKeyType: Address.self) else { return nil }
         
         sessions = sessionsDict
         return sessions[address]
@@ -23,7 +23,7 @@ class MavlSessionStore: SessionStore {
     
     func store(session: Data, for address: Address) throws {
         sessions[address] = session
-        MavlKeyStore.setStore(store: sessions, forKey: MavlSessionStoreKey)
+        PersistenceProvider.setStore(store: sessions, forKey: MavlSessionStoreKey)
     }
     
     func containsSession(for address: Address) -> Bool {
@@ -32,6 +32,6 @@ class MavlSessionStore: SessionStore {
     
     func deleteSession(for address: Address) throws {
         sessions[address] = nil
-        MavlKeyStore.setStore(store: sessions, forKey: MavlSessionStoreKey)
+        PersistenceProvider.setStore(store: sessions, forKey: MavlSessionStoreKey)
     }
 }

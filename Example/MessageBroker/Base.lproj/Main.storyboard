@@ -817,6 +817,7 @@
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="animalAvatarImageView" destination="AZM-a0-qqu" id="Ux0-QR-8Uo"/>
+                        <outlet property="headerView" destination="mEk-Za-b90" id="dNY-QV-qRy"/>
                         <outlet property="inputBaseView" destination="YFS-ie-1K4" id="Emn-pT-1B7"/>
                         <outlet property="inputViewBottomConstraint" destination="is0-6M-XFq" id="W5x-aT-oSI"/>
                         <outlet property="messageTextView" destination="MLo-tU-xBj" id="GgL-bg-ix1"/>
