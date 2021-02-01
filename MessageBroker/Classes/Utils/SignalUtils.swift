@@ -10,6 +10,7 @@ import SignalProtocol
 
 struct SignalUtils {
     static let `default` = SignalUtils()
+    private let maxPrekeysCount = 16
     private let aliceStore = MavlKeyStore()
     
     init() {
@@ -65,9 +66,14 @@ struct SignalUtils {
     }
     
     func generatePublicBundle() throws -> [String: Any] {
+        // 小于某个阈值才上传
+        guard let prekeyStore = aliceStore.preKeyStore as? MavlPrekeyStore, prekeyStore.allLocalPrekeysCount() < maxPrekeysCount/2 else {
+            throw NSError(domain: "com.mavl.signal", code: -2004, userInfo: ["msg": "prekeys足够用，不需要上传"])
+        }
+        
         do {
             let identityKey: Data = try aliceStore.identityKeyStore.getIdentityKeyPublicData()
-            let prekeys: [Data] = try aliceStore.createPreKeys(count: 10)
+            let prekeys: [Data] = try aliceStore.createPreKeys(count: maxPrekeysCount/2)
             let signedPrekey: Data = try aliceStore.updateSignedPrekey()
             
             let uploadDict: [String: Any] = [

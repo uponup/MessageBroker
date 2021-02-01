@@ -43,4 +43,11 @@ class MavlPrekeyStore: PreKeyStore {
         prekeys[id] = nil
         PersistenceProvider.setStore(store: prekeys, forKey: MavlPrekeyStoreKey)
     }
+    
+    func allLocalPrekeysCount() -> Int {
+        guard let prekeysDict = PersistenceProvider.store(forKey: MavlPrekeyStoreKey, dictKeyType: UInt32.self) else {
+            return 0 }
+        prekeys = prekeysDict
+        return prekeys.count
+    }
 }
