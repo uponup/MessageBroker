@@ -183,33 +183,6 @@ struct HistoryTopicModel: TopicModelProtocol {
     }
 }
 
-/**
-    Signal中下载KeyBundle
- */
-struct SignalKeyBundleTopicModel {
-    let appid: String
-    let operation: Int
-    let localId: String
-    let to: String
-    let text: String
-    
-    init?(_ topic: String, _ mesgText: String) {
-        let segments = topic.components(separatedBy: "/")
-        guard segments.count >= 4 else { return nil }
-        
-        appid = segments[0]
-        operation = Int(segments[1]) ?? 0
-        localId = segments[2]
-        to = segments[3]
-        text = mesgText
-        
-        if operation != 601 {
-            return nil
-        }
-    }
-}
-
-
 // MARK: - User Status
 /**
     用户状态Topic模型

@@ -68,6 +68,7 @@ public protocol MavlMessageGroupDelegate: class {
 public protocol MavlMessageStatusDelegate: class {
     func mavl(willSend: Mesg)
     func mavl(willResend: Mesg)
+    func mavl(didSent localId: String, serverId: String)
     func mavl(didReceived messages: [Mesg], isLoadMore: Bool)
     func mavl(didReceivedTransparentMessageWithAction action: String, fromId from: String, ext extension: [String: Any])
     func mavl(mesgReceiptDidChanged receipt: MesgReceipt)
@@ -76,7 +77,6 @@ public protocol MavlMessageStatusDelegate: class {
 public extension MavlMessageStatusDelegate {
     func mavl(willSend: Mesg) {}
     func mavl(willResend: Mesg) {}
-    func mavl(didReceived messages: [Mesg], isLoadMore: Bool) {}
     func mavl(didReceivedTransparentMessageWithAction action: String, fromId from: String, ext extension: [String: Any]) {}
 
     func mavl(mesgReceiptDidChanged receipt: MesgReceipt) {}
@@ -489,10 +489,7 @@ extension MavlMessage: CocoaMQTTDelegate {
             
             let recepit = MesgRemoteReceipt(state: state, from: topicModel.toPersonalUid, msgServerId: topicModel.serverId)
             delegateMsg?.mavl(mesgReceiptDidChanged: recepit)
-        }else if let topicModel = SignalKeyBundleTopicModel(topic, message.string.value) {
-            // 创建Signal加密通道
-            processBundle(bundleStr: topicModel.text, to: topicModel.to)
-        } else if let topicModel = ReceivedTopicModel(topic, message.string.value) {
+        }else if let topicModel = ReceivedTopicModel(topic, message.string.value) {
             if topicModel.operation == 0 {
                 // create a group
                 guard let passport = passport else { return }
@@ -525,7 +522,10 @@ extension MavlMessage: CocoaMQTTDelegate {
                 }
                 delegateMsg?.mavl(didReceivedTransparentMessageWithAction: action, fromId: topicModel.from, ext: ext)
             
-            }else if topicModel.isMesg {
+            }else if topicModel.operation == 601 {
+                // 创建Signal加密通道
+                processBundle(bundleStr: topicModel.text, to: topicModel.to)
+            } else if topicModel.isMesg {
                 let msg = Mesg(topicModel: topicModel)
                 
                 if _sendingMessages.keys.contains(topicModel.localId) {
@@ -533,14 +533,14 @@ extension MavlMessage: CocoaMQTTDelegate {
                     // 表明发送成功，从发送队列中移除
                     _sendingMessages.removeValue(forKey: topicModel.localId)
                     // 反馈给业务层消息状态
+                    delegateMsg?.mavl(didSent: msg.localId.value, serverId: msg.serverId)
                     delegateMsg?.mavl(mesgReceiptDidChanged: MesgServerReceipt(state: .sent, from: msg.toUid, msgLocalId: msg.localId.value))
                 }else {
                     // 1、收到别人的消息，需要上报已接收的状态
                     receivedMessage(msgFrom: msg.fromUid, msgTo: msg.toUid, msgServerId: msg.serverId)
+                    // 执行完1步骤后，再回调代理（先上报收到消息了，然后再处理信息逻辑）
+                    delegateMsg?.mavl(didReceived: [msg], isLoadMore: false)
                 }
-                
-                // 执行完1步骤后，再回调代理（先上报收到消息了，然后再处理信息逻辑）
-                delegateMsg?.mavl(didReceived: [msg], isLoadMore: false)
             }else {
                 TRACE("收到无效信息:\(topic), \(message.string.value)")
             }

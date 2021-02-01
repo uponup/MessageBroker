@@ -99,6 +99,18 @@ extension MessageDao {
         }
     }
     
+    static func updateMessage(localId: String, serverId: String) {
+        guard db.open() else { return }
+        
+        let sql = "UPDATE t_msgs SET serverId = ? WHERE localId = ?"
+        let res = db.executeUpdate(sql, withArgumentsIn: [serverId, localId])
+        if res {
+            print("更新成功")
+        }else {
+            print("更新失败")
+        }
+    }
+    
     /**
      查找所有最近的信息
      */

@@ -144,31 +144,32 @@ extension ViewController: MavlMessageStatusDelegate {
         NotificationCenter.default.post(name: .willSendMesg, object: ["msg": willSend])
     }
     
+    func mavl(didSent localId: String, serverId: String) {
+        MessageDao.updateMessage(localId: localId, serverId: serverId)
+        NotificationCenter.default.post(name: .mesgStateDidChanged, object: nil)
+    }
+
     func mavl(didReceived messages: [Mesg], isLoadMore: Bool) {
         for mesg in messages.map({ Message($0) }) {
-            if mesg.isOutgoing {
-                MessageDao.updateMessage(msg: mesg)
-            }else {
-                MessageDao.addMesg(msg: mesg)
-            }
+            MessageDao.addMesg(msg: mesg)
         }
+
         refreshData()
-        
         NotificationCenter.default.post(name: .didReceiveMesg, object: ["msg": messages, "isLoadMore": isLoadMore])
     }
     
     func mavl(mesgReceiptDidChanged receipt: MesgReceipt) {
         print("消息\(receipt.from)的状态是\(receipt.state.rawValue)")
 
-        if let remoteReceipt = receipt as? MesgRemoteReceipt {
-            MessageDao.updateMessage(msgServerId: remoteReceipt.msgServerId, status: receipt.state.value)
-        }
-        
-        if let serverReceipt = receipt as? MesgServerReceipt {
-            MessageDao.updateMessage(msgServerId: serverReceipt.msgLocalId, status: receipt.state.value)
-        }
-        
-        NotificationCenter.default.post(name: .mesgStateDidChanged, object: nil)
+//        if let remoteReceipt = receipt as? MesgRemoteReceipt {
+//            MessageDao.updateMessage(msgServerId: remoteReceipt.msgServerId, status: receipt.state.value)
+//        }
+//
+//        if let serverReceipt = receipt as? MesgServerReceipt {
+//            MessageDao.updateMessage(msgServerId: serverReceipt.msgLocalId, status: receipt.state.value)
+//        }
+//
+//        NotificationCenter.default.post(name: .mesgStateDidChanged, object: nil)
     }
     
     func mavl(didReceivedTransparentMessageWithAction action: String, fromId from: String, ext extension: [String : Any]) {
