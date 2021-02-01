@@ -453,7 +453,7 @@ extension ChatViewController: UITableViewDataSource, UITableViewDelegate {
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "leftMessageCell", for: indexPath) as! ChatLeftMessageCell
-            cell.contentLabel.text = "\(message.type) | \(message.content)"
+            cell.contentLabel.text = message.content
             cell.avatarImageView.image = #imageLiteral(resourceName: "iv_chat_remote")
             return cell
         }
