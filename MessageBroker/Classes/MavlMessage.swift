@@ -326,6 +326,19 @@ extension MavlMessage: MavlMessageClient {
     private func _send(operation: Operation) {
         let mqttMsg = CocoaMQTTMessage(topic: operation.topic, string: operation.payload, qos: qos)
         mqtt?.publish(mqttMsg)
+        
+        guard let originText = operation.originText else { return }
+        guard let topicModel = SendTopicModel(operation.topic, originText) else { return }
+        
+        if _sendingMessages.keys.contains(topicModel.localId) {
+            // 说明已经在重试队列中了，告诉业务层，这是重试(qos > 0的时候)
+            delegateMsg?.mavl(willResend: Mesg(topicModel: topicModel))
+        }else {
+            // 发送消息出去的同时，将消息缓存到发送队列中，成功和失败后再移除
+            _sendingMessages[topicModel.localId] = topicModel
+        }
+        // 给业务层的回调，将要发送信息
+        delegateMsg?.mavl(willSend: Mesg(topicModel: topicModel))
     }
 
     private func _logout(withError err: ConnectError) {
@@ -454,21 +467,6 @@ extension MavlMessage: CocoaMQTTDelegate {
     
     public func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
         TRACE("message pub | topic: \(message.topic), message: \(message.string.value), id: \(id)")
-        
-        guard let tempTopicModel = SendTopicModel(message.topic, message.string.value) else { return }
-        
-        guard tempTopicModel.isMesg else { return }
-        guard let topicModel = SendTopicModel(message.topic, tempTopicModel.text) else { return }
-        
-        if _sendingMessages.keys.contains(topicModel.localId) {
-            // 说明已经在重试队列中了，告诉业务层，这是重试(qos > 0的时候)
-            delegateMsg?.mavl(willResend: Mesg(topicModel: topicModel))
-        }else {
-            // 发送消息出去的同时，将消息缓存到发送队列中，成功和失败后再移除
-            _sendingMessages[topicModel.localId] = topicModel
-        }
-        // 给业务层的回调，将要发送信息
-        delegateMsg?.mavl(willSend: Mesg(topicModel: topicModel))
     }
     
     public func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {

@@ -20,5 +20,6 @@ class ChatLeftMessageCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         selectionStyle = UITableViewCell.SelectionStyle.none
+        backgroundColor = .clear
     }
 }

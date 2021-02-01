@@ -654,6 +654,7 @@
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6rq-7s-QQQ">
                                                     <rect key="frame" x="20" y="11" width="50" height="50"/>
+                                                    <color key="backgroundColor" red="0.57414853570000002" green="0.57416242360000003" blue="0.57415497299999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="50" id="T8c-pg-vV0"/>
                                                         <constraint firstAttribute="width" constant="50" id="V1L-DY-Ee9"/>

@@ -87,6 +87,21 @@ enum Operation {
         }
     }
     
+    var originText: String? {
+        switch self {
+        case .oneToOne(_, _, let msg):
+            return msg
+        case .oneToMany(_, _, let msg):
+            return msg
+        case .vitualGroup(_, _, _, let msg):
+            return msg
+        case .signalMessage(_, _, let msg):
+            return msg
+        default:
+            return nil
+        }
+    }
+    
     var payload: String {
         switch self {
         case .joinGroup, .quitGroup, .fetchMsgs, .fetchPublicKeyBundle:
