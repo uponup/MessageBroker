@@ -503,7 +503,9 @@ extension MavlMessage: CocoaMQTTDelegate {
             delegateMsg?.mavl(mesgReceiptDidChanged: recepit)
             
             // 如果是解密失败的回执，那么需要重新获取对方的prekeybundle()
-            recreateSignalCipherChannel(toUid: topicModel.to)
+            if state == .decryptFail {
+                recreateSignalCipherChannel(toUid: topicModel.to)
+            }
         }else {
             guard let topicModel = ReceivedTopicModel(topic, message.string.value) else {
                 // TODO: 非法Topic，返回错误状态
