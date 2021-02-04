@@ -659,6 +659,12 @@
                                                         <constraint firstAttribute="height" constant="50" id="T8c-pg-vV0"/>
                                                         <constraint firstAttribute="width" constant="50" id="V1L-DY-Ee9"/>
                                                     </constraints>
+                                                    <userDefinedRuntimeAttributes>
+                                                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                            <integer key="value" value="5"/>
+                                                        </userDefinedRuntimeAttribute>
+                                                        <userDefinedRuntimeAttribute type="boolean" keyPath="clipsToBounds" value="YES"/>
+                                                    </userDefinedRuntimeAttributes>
                                                 </imageView>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xgs-B8-MG5" userLabel="Content Button">
                                                     <rect key="frame" x="75" y="11" width="64.5" height="55"/>
@@ -708,6 +714,12 @@
                                                         <constraint firstAttribute="width" constant="50" id="e4n-Bz-E9g"/>
                                                         <constraint firstAttribute="height" constant="50" id="xWy-uX-uga"/>
                                                     </constraints>
+                                                    <userDefinedRuntimeAttributes>
+                                                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                            <integer key="value" value="5"/>
+                                                        </userDefinedRuntimeAttribute>
+                                                        <userDefinedRuntimeAttribute type="boolean" keyPath="clipsToBounds" value="YES"/>
+                                                    </userDefinedRuntimeAttributes>
                                                 </imageView>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AFG-6d-AuJ" userLabel="Content Button">
                                                     <rect key="frame" x="274.5" y="11" width="64.5" height="55"/>

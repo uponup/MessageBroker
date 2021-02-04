@@ -36,14 +36,14 @@ struct SignalUtils {
         return true
     }
     
-    func createSignalSession(bundleStr: String, to: String) {
+    func createSignalSession(bundleStr: String, to: String) throws -> Bool {
         let address = MavlAddress(identifier: to)
         resetAliceStore(forAddress: address)
         
         guard let data = bundleStr.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers),
               let encodeBundleDict = json as? [String: String] else {
-            return
+            throw MavlSignalError(type: .initialFailed)
         }
         
         let decodeBundleDict: [String: Data] = encodeBundleDict.mapValues {
@@ -52,12 +52,12 @@ struct SignalUtils {
         
         guard let prekey = decodeBundleDict["prekey"] else {
             print("没有获取到prekey")
-            return
+            throw MavlSignalError(type: .initialFailed)
         }
         
         guard let alice = aliceStore else {
-            NotificationCenter.default.post(name: .signalLoad, object: ["to": to, "ret": false])
-            return
+            print("alice没有初始化")
+            throw MavlSignalError(type: .initialFailed)
         }
         
         let session = SessionCipher(store: alice, remoteAddress: address)
@@ -65,12 +65,11 @@ struct SignalUtils {
             let sessionPrekeyBundle = try SessionPreKeyBundle(preKey: prekey, signedPreKey: decodeBundleDict["signedPrekey"]!, identityKey: decodeBundleDict["identityKey"]!)
             try session.process(preKeyBundle: sessionPrekeyBundle)
             
-            // 校验成功，可以发送加密消息
-            NotificationCenter.default.post(name: .signalLoad, object: ["to": to, "ret": true])
+            return true
         } catch let e {
             print("对方公钥校验失败: \(e.localizedDescription)")
             // 校验失败
-            NotificationCenter.default.post(name: .signalLoad, object: ["to": to, "ret": false])
+            throw MavlSignalError(type: .initialFailed)
         }
     }
     
@@ -164,9 +163,4 @@ struct SignalUtils {
         alice.sessionStore.deleteSession(for: address)
         alice.identityKeyStore.store(identity: nil, for: address)
     }
-}
-
-//MARK: - Notification Extension
-extension NSNotification.Name {
-    static let signalLoad = Notification.Name("signalLoad")
 }

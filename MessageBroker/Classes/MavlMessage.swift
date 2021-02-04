@@ -169,7 +169,6 @@ public class MavlMessage {
         mqtt.autoReconnect = true
         
         NotificationCenter.default.addObserver(self, selector: #selector(connectTimeoutAction(_:)), name: .connectTimeout, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(signalLoadAction(_:)), name: .signalLoad, object: nil)
     }
     
     @objc func connectTimeoutAction(_ noti: Notification) {
@@ -192,14 +191,6 @@ public class MavlMessage {
             mqtt?.disconnect()
         }
         _logout(withError: err)
-    }
-    
-    // signal通道建立结果（发送方）
-    @objc func signalLoadAction(_ noti: Notification) {
-        guard let dict = noti.object as? [String: Any],
-            let to = dict["to"] as? String, let ret = dict["ret"] as? Bool else { return }
-        guard let completion = signalCompletionDict.removeValue(forKey: to) else { return }
-        completion(ret)
     }
     
     func checkStatus(withUserName username: String) {
@@ -395,7 +386,18 @@ extension MavlMessage {
      */
     private func processBundle(bundleStr: String, to: String) {
         // 建立session
-        SignalUtils.default.createSignalSession(bundleStr: bundleStr, to: to)
+        guard let completion = signalCompletionDict.removeValue(forKey: to) else { return }
+
+        do {
+            let ret = try SignalUtils.default.createSignalSession(bundleStr: bundleStr, to: to)
+            if ret {
+                completion(true)
+            }
+        } catch let err {
+            TRACE(err.localizedDescription)
+            // 初始化Signal失败
+            completion(false)
+        }
     }
     
     /**
