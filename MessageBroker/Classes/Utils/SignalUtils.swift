@@ -83,7 +83,7 @@ struct SignalUtils {
         }
         do {
             let identityKey: Data = try alice.identityKeyStore.getIdentityKeyPublicData()
-            let prekeys: [Data] = try alice.createPreKeys(count: maxPrekeysCount/2)
+            let prekeys: [Data] = try alice.createPreKeys(count: maxPrekeysCount)
             let signedPrekey: Data = try alice.updateSignedPrekey()
             
             let uploadDict: [String: Any] = [

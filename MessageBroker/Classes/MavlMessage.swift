@@ -386,22 +386,21 @@ extension MavlMessage {
      */
     private func processBundle(bundleStr: String, to: String) {
         // 建立session
-        guard let completion = signalCompletionDict.removeValue(forKey: to) else { return }
-
         do {
             let ret = try SignalUtils.default.createSignalSession(bundleStr: bundleStr, to: to)
-            if ret {
-                completion(true)
-            }
+            
+            guard let completion = signalCompletionDict.removeValue(forKey: to) else { return }
+            completion(ret)
         } catch let err {
             TRACE(err.localizedDescription)
             // 初始化Signal失败
+            guard let completion = signalCompletionDict.removeValue(forKey: to) else { return }
             completion(false)
         }
     }
     
     /**
-        必要的时候，需要重新获取toUid的公钥
+        必要的时候，需要重新获取toUid的公钥  -> 执行2
      */
     private func recreateSignalCipherChannel(toUid: String) {
         _send(operation: .fetchPublicKeyBundle(toUid))
