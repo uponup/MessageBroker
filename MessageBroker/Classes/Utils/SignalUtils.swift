@@ -11,23 +11,26 @@ import SignalProtocol
 struct SignalUtils {
     static let `default` = SignalUtils()
     private let maxPrekeysCount = 16
-    private let aliceStore = MavlKeyStore()
+    private var aliceStore: MavlKeyStore?
     
     init() {
         // 公钥仅生成一次
         let _ = UserDefaults.executeOnce(withKey: "install_signal") {
             do {
                 let data = try SignalCrypto.generateIdentityKeyPair()
-                print(Array(data))
+                PersistenceProvider.storeKeyPair(with: data)
             } catch let e {
                 print(e)
             }
         }
+        
+        guard let data = PersistenceProvider.getKeyPair() else { return }
+        aliceStore = MavlKeyStore(with: data)
     }
     
     func isExistSession(to: String) -> Bool {
         let address = MavlAddress(identifier: to)
-        guard let _ = try?aliceStore.identityKeyStore.identity(for: address) else {
+        guard let _ = aliceStore?.identityKeyStore.identity(for: address) else {
             return false
         }
         return true
@@ -51,7 +54,12 @@ struct SignalUtils {
             return
         }
         
-        let session = SessionCipher(store: aliceStore, remoteAddress: address)
+        guard let alice = aliceStore else {
+            NotificationCenter.default.post(name: .signalLoad, object: ["to": to, "ret": false])
+            return
+        }
+        
+        let session = SessionCipher(store: alice, remoteAddress: address)
         do {
             let sessionPrekeyBundle = try SessionPreKeyBundle(preKey: prekey, signedPreKey: decodeBundleDict["signedPrekey"]!, identityKey: decodeBundleDict["identityKey"]!)
             try session.process(preKeyBundle: sessionPrekeyBundle)
@@ -66,14 +74,17 @@ struct SignalUtils {
     }
     
     func generatePublicBundle() throws -> [String: Any] {
+        guard let alice = aliceStore else {
+            throw MavlSignalError(type: .initialFailed)
+        }
         // 小于某个阈值才上传
-        guard let prekeyStore = aliceStore.preKeyStore as? MavlPrekeyStore, prekeyStore.allLocalPrekeysCount() < maxPrekeysCount/2 else {
-            throw NSError(domain: "com.mavl.signal", code: -2004, userInfo: ["msg": "prekeys足够用，不需要上传"])
+        guard let prekeyStore = alice.preKeyStore as? MavlPrekeyStore, prekeyStore.allLocalPrekeysCount() < maxPrekeysCount/2 else {
+            throw MavlSignalError(type: .prekeysExists)
         }
         do {
-            let identityKey: Data = try aliceStore.identityKeyStore.getIdentityKeyPublicData()
-            let prekeys: [Data] = try aliceStore.createPreKeys(count: maxPrekeysCount/2)
-            let signedPrekey: Data = try aliceStore.updateSignedPrekey()
+            let identityKey: Data = try alice.identityKeyStore.getIdentityKeyPublicData()
+            let prekeys: [Data] = try alice.createPreKeys(count: maxPrekeysCount/2)
+            let signedPrekey: Data = try alice.updateSignedPrekey()
             
             let uploadDict: [String: Any] = [
                 "identityKey": identityKey.base64EncodedString(),
@@ -82,23 +93,27 @@ struct SignalUtils {
             ]
             return uploadDict
         } catch  {
-            throw NSError(domain: "com.mavl.signal", code: -2000, userInfo: ["msg": "初始化公钥失败"])
+            throw MavlSignalError(type: .initialFailed)
         }
     }
     
     // 将Signal加密后密文的protoData采用base64编码后返回
     func encrypt(_ data: String, _ to: String) throws -> String {
+        guard let alice = aliceStore else {
+            throw MavlSignalError(type: .initialFailed)
+        }
+        
         let address = MavlAddress(identifier: to)
-        guard let _ = try? aliceStore.identityKeyStore.identity(for: address) else {
-            throw NSError(domain: "com.mavl.signal", code: -2001, userInfo: ["msg": "缺少必要session，无法加密"])
+        guard let _ = alice.identityKeyStore.identity(for: address) else {
+            throw MavlSignalError(type: .untrustIdentityKey)
         }
         
         guard let messageData = data.data(using: .utf8) else {
-            throw NSError(domain: "com.mavl.signal", code: -2003, userInfo: ["msg": "初始消息有问题，无法转成Data"])
+            throw MavlSignalError(type: .invalidUtf8)
         }
         
         do {
-            let session = SessionCipher(store: aliceStore, remoteAddress: address)
+            let session = SessionCipher(store: alice, remoteAddress: address)
             let protoData = try session.encrypt(messageData).protoData()
             return protoData.base64EncodedString()
         } catch let err {
@@ -108,29 +123,45 @@ struct SignalUtils {
     
     // 先用base64解码，获取得到protoData，然后构造CipherTextMessage用来解密
     func decrypt(_ data: String, _ from: String) throws -> String {
+        guard let alice = aliceStore else {
+            throw MavlSignalError(type: .initialFailed)
+        }
+        
         let address = MavlAddress(identifier: from)
         
         guard let messageData = Data(base64Encoded: data) else {
-            throw NSError(domain: "com.mavl.signal", code: -2004, userInfo: ["msg": "base64解码失败"])
+            throw MavlSignalError(type: .invalidBase64)
         }
         do {
-            let session = SessionCipher(store: aliceStore, remoteAddress: address)
+            let session = SessionCipher(store: alice, remoteAddress: address)
             let cipher = try CipherTextMessage(from: messageData)
             let decryptedMessageData = try session.decrypt(cipher)
             
             guard let originText = String(data: decryptedMessageData, encoding: .utf8) else {
-                throw NSError(domain: "com.mavl.signal", code: -2005, userInfo: ["msg": "解密后，生成字符串出问题"])
+                throw MavlSignalError(type: .invalidUtf8)
             }
             return originText
-        } catch let err {
-            throw err
+        } catch let signalErr as SignalError {
+            if signalErr.type == .untrustedIdentity {
+                // 不受信任的公钥，本地公钥和对方公钥不一致，需要删除本地signal缓存
+                resetAliceStore(forAddress: address)
+                
+                throw MavlSignalError(type: .untrustIdentityKey)
+            }else if signalErr.type == .invalidMessage {
+                // 主要是mac校验有问题
+                resetAliceStore(forAddress: address)
+                
+                throw MavlSignalError(type: .invalidMessage)
+            }
+            throw MavlSignalError(type: .other)
         }
     }
     
-    private func getSession(to: String) -> SessionCipher<MavlKeyStore> {
-        let addressBob = MavlAddress(identifier: to)
-        let session = SessionCipher(store: aliceStore, remoteAddress: addressBob)
-        return session
+    private func resetAliceStore(forAddress address: MavlAddress) {
+        guard let alice = aliceStore else { return }
+
+        alice.sessionStore.deleteSession(for: address)
+        alice.identityKeyStore.store(identity: nil, for: address)
     }
 }
 

@@ -9,11 +9,14 @@ import Foundation
 
 enum SendError {
     case transparentMesgInvalidExtension
+    case decryptFailed
     
     var errCode: Int {
         switch self {
         case .transparentMesgInvalidExtension:
             return -2001
+        case .decryptFailed:
+            return -2002
         }
     }
     
@@ -21,11 +24,13 @@ enum SendError {
         switch self {
         case .transparentMesgInvalidExtension:
             return "The extended extension for sending the transparent message is not a valid json format"
+        case .decryptFailed:
+            return "Failed to decrypt End-To-End message"
         }
     }
     
     func asError() -> Error {
-        let err = NSError(domain: "", code: errCode, userInfo: ["errorMsg": errMsg]) as Error
+        let err = NSError(domain: "com.mavl.messagebroker", code: errCode, userInfo: ["errorMsg": errMsg]) as Error
         return err
     }
 }

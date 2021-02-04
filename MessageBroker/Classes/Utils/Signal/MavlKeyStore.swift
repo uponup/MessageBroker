@@ -22,8 +22,4 @@ class MavlKeyStore: KeyStore {
     init(with keyPair: Data) {
         self.identityKeyStore = MavlIdentityStore(with: keyPair)
     }
-    
-    init() {
-        self.identityKeyStore = MavlIdentityStore()
-    }
 }

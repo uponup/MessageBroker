@@ -41,19 +41,19 @@ class PersistenceProvider {
     }
     
     /**
-        设备绑定Signal的个数
+        存储Signal密钥对
      */
-    class func signalCountForDevice() -> Int {
-        return UserDefaults.standard.dictionaryRepresentation().keys.filter {
-            $0.hasPrefix("MavlSessionStoreKey")
-        }.count
+    class func storeKeyPair(with keypair: Data) {
+        let key = generatePersistenceKey(forKey: "SignalKeyPair")
+        UserDefaults.set(keypair,forKey: key)
     }
     
     /**
-        查看是否绑定了该设备
+        获取密钥对
      */
-    class func isBindDevice(forUser imAccount: String) -> Bool {
-        return UserDefaults.standard.data(forKey: "MavlSessionStoreKey_\(imAccount)") != nil
+    class func getKeyPair() -> Data? {
+        let key = generatePersistenceKey(forKey: "SignalKeyPair")
+        return UserDefaults.object(forKey: key) as? Data
     }
     
     private class func generatePersistenceKey(forKey key: String) -> String {

@@ -97,6 +97,12 @@ struct ReceivedTopicModel: TopicModelProtocol {
     var status: Int = 2
     var timestamp: TimeInterval
     
+    var isDecryptFailed: Bool {
+        return _decryptFailedFlag
+    }
+    
+    private var _decryptFailedFlag: Bool = false
+    
     init?(_ topic: String, _ mesgText: String) {
         let segments = topic.components(separatedBy: "/")
         guard segments.count >= 6, let op = Int(segments[1]) else { return nil }
@@ -109,6 +115,19 @@ struct ReceivedTopicModel: TopicModelProtocol {
         localId = segments[2]
         serverId = segments[4]
         timestamp = (TimeInterval(segments[4]) ?? 0) / 1000.0
+        
+        if isNeedSignalDecrypt {
+            do {
+                text = try SignalUtils.default.decrypt(text, from)
+            } catch let err {
+                print("解密失败:\(err)")
+                // 接收Signal消息，解密失败
+                guard let passport = MavlMessage.shared.passport, passport.uid != from else {
+                    return
+                }
+                _decryptFailedFlag = true
+            }
+        }
     }
 }
 

@@ -54,14 +54,6 @@ public struct Mesg {
             content = originText
         }
         
-        if topicModel.isNeedSignalDecrypt {
-            do {
-                content = try SignalUtils.default.decrypt(topicModel.text, fromUid)
-            } catch let err {
-                print("解密失败：｜\(err)")
-            }
-        }
-        
         let multiMedia = parseMediaMesg(content: content)
         type = multiMedia.type.rawValue
         if multiMedia.type == .location {

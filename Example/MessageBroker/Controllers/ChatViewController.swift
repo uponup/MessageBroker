@@ -447,6 +447,9 @@ extension ChatViewController: UITableViewDataSource, UITableViewDelegate {
             }else if message.status == .read {
                 cell.labelStatus.text = "Read"
                 cell.labelStatus.textColor = UIColor.gray
+            }else if message.status == .decryptFailed {
+                cell.labelStatus.text = "Decrypt Fail"
+                cell.labelStatus.textColor = UIColor.red
             } else {
                 cell.labelStatus.isHidden = true
             }

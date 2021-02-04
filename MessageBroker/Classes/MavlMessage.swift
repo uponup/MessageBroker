@@ -311,6 +311,11 @@ extension MavlMessage: MavlMessageClient {
         _send(operation: op)
         return nil
     }         
+        
+    public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
+        let op = Operation.fetchMsgs(from, type, msgId, offset)
+        _send(operation: op)
+    }
     
     // MARK: -
     func receivedMessage(msgFrom: String, msgTo: String, msgServerId: String) {
@@ -318,8 +323,8 @@ extension MavlMessage: MavlMessageClient {
         _send(operation: op)
     }
     
-    public func fetchMessages(msgId: String, from: String, type: FetchMessagesType, offset: Int = 20) {
-        let op = Operation.fetchMsgs(from, type, msgId, offset)
+    func decryptMessageFailed(msgFrom: String, msgTo: String, msgServerId: String) {
+        let op = Operation.msgReceipt(msgFrom, msgTo, msgServerId, .decryptFail)
         _send(operation: op)
     }
     
@@ -487,64 +492,18 @@ extension MavlMessage: CocoaMQTTDelegate {
             
             let recepit = MesgRemoteReceipt(state: state, from: topicModel.toPersonalUid, msgServerId: topicModel.serverId)
             delegateMsg?.mavl(mesgReceiptDidChanged: recepit)
-        }else if let topicModel = ReceivedTopicModel(topic, message.string.value) {
-            if topicModel.operation == 0 {
-                // create a group
-                guard let passport = passport else { return }
-                let isLauncher = passport.uid == topicModel.from
-                delegateGroup?.createGroupSuccess(groupId: topicModel.to, isLauncher: isLauncher)
-            }else if topicModel.operation == 201 {
-                delegateGroup?.joinedGroup(groupId: topicModel.to, someone: topicModel.from)
-            }else if topicModel.operation == 202 {
-                delegateGroup?.quitGroup(gid: topicModel.to, error: nil)
-            }else if topicModel.operation == 401 {
-                let msgs = message.string.value.components(separatedBy: "##").compactMap { element -> Mesg? in
-                    guard let received = ReceivedTopicModel(topic, element) else {
-                        // 这儿是遍历历史信息，如果解密失败的话，暂定将错误忽略，不必传给业务层
-                        return nil
-                    }
-                    return Mesg(topicModel: received)
-                }
-                delegateMsg?.mavl(didReceived: msgs, isLoadMore: true)
-            
-            }else if topicModel.operation == 501 {
-                guard let data = topicModel.text.data(using: .utf8),
-                      let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers),
-                      let dict = json as? [String: Any] else {
-                    return
-                }
-                
-                guard let action = dict["action"] as? String,
-                      let ext = dict["ext"] as? [String: Any] else {
-                    return
-                }
-                delegateMsg?.mavl(didReceivedTransparentMessageWithAction: action, fromId: topicModel.from, ext: ext)
-            
-            }else if topicModel.operation == 601 {
-                // 创建Signal加密通道
-                processBundle(bundleStr: topicModel.text, to: topicModel.to)
-            } else if topicModel.isMesg {
-                let msg = Mesg(topicModel: topicModel)
-                
-                if _sendingMessages.keys.contains(topicModel.localId) {
-                    // 是自己发出去的消息，不需要做received的回执，服务器离线消息仅针对别人发给你的消息
-                    // 表明发送成功，从发送队列中移除
-                    _sendingMessages.removeValue(forKey: topicModel.localId)
-                    // 反馈给业务层消息状态
-                    delegateMsg?.mavl(didSent: msg.localId.value, serverId: msg.serverId)
-                    delegateMsg?.mavl(mesgReceiptDidChanged: MesgServerReceipt(state: .sent, from: msg.toUid, msgLocalId: msg.localId.value))
-                }else {
-                    // 1、收到别人的消息，需要上报已接收的状态
-                    receivedMessage(msgFrom: msg.fromUid, msgTo: msg.toUid, msgServerId: msg.serverId)
-                    // 执行完1步骤后，再回调代理（先上报收到消息了，然后再处理信息逻辑）
-                    delegateMsg?.mavl(didReceived: [msg], isLoadMore: false)
-                }
-            }else {
-                TRACE("收到无效信息:\(topic), \(message.string.value)")
-            }
         }else {
-            // TODO: 非法Topic，返回错误状态
-            TRACE("收到的信息Topic不符合规范：\(topic)")
+            guard let topicModel = ReceivedTopicModel(topic, message.string.value) else {
+                // TODO: 非法Topic，返回错误状态
+                TRACE("收到的信息Topic不符合规范：\(topic)")
+                return
+            }
+            if topicModel.isDecryptFailed {
+                // 解密失败，需要发送失败回执给发送方
+                decryptMessageFailed(msgFrom: topicModel.from, msgTo: topicModel.to, msgServerId: topicModel.serverId)
+            }else {
+                responseReceiverDelegate(topicModel: topicModel, topic: topic)
+            }
         }
     }
     
@@ -554,6 +513,62 @@ extension MavlMessage: CocoaMQTTDelegate {
     
     public func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopic topic: String) {
         TRACE("topic: \(topic)")
+    }
+    
+    private func responseReceiverDelegate(topicModel: ReceivedTopicModel, topic: String) {
+        if topicModel.operation == 0 {
+            // create a group
+            guard let passport = passport else { return }
+            let isLauncher = passport.uid == topicModel.from
+            delegateGroup?.createGroupSuccess(groupId: topicModel.to, isLauncher: isLauncher)
+        }else if topicModel.operation == 201 {
+            delegateGroup?.joinedGroup(groupId: topicModel.to, someone: topicModel.from)
+        }else if topicModel.operation == 202 {
+            delegateGroup?.quitGroup(gid: topicModel.to, error: nil)
+        }else if topicModel.operation == 401 {
+            let msgs = topicModel.text.components(separatedBy: "##").compactMap { element -> Mesg? in
+                guard let received = try? ReceivedTopicModel(topic, element) else {
+                    // 这儿是遍历历史信息，如果解密失败的话，暂定将错误忽略，不必传给业务层
+                    return nil
+                }
+                return Mesg(topicModel: received)
+            }
+            delegateMsg?.mavl(didReceived: msgs, isLoadMore: true)
+        
+        }else if topicModel.operation == 501 {
+            guard let data = topicModel.text.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers),
+                  let dict = json as? [String: Any] else {
+                return
+            }
+            
+            guard let action = dict["action"] as? String,
+                  let ext = dict["ext"] as? [String: Any] else {
+                return
+            }
+            delegateMsg?.mavl(didReceivedTransparentMessageWithAction: action, fromId: topicModel.from, ext: ext)
+        
+        }else if topicModel.operation == 601 {
+            // 创建Signal加密通道
+            processBundle(bundleStr: topicModel.text, to: topicModel.to)
+        }else if topicModel.isMesg {
+            let msg = Mesg(topicModel: topicModel)
+            if _sendingMessages.keys.contains(topicModel.localId) {
+                // 是自己发出去的消息，不需要做received的回执，服务器离线消息仅针对别人发给你的消息
+                // 表明发送成功，从发送队列中移除
+                _sendingMessages.removeValue(forKey: topicModel.localId)
+                // 反馈给业务层消息状态
+                delegateMsg?.mavl(didSent: msg.localId.value, serverId: msg.serverId)
+                delegateMsg?.mavl(mesgReceiptDidChanged: MesgServerReceipt(state: .sent, from: msg.toUid, msgLocalId: msg.localId.value))
+            }else {
+                // 1、收到别人的消息，需要上报已接收的状态
+                receivedMessage(msgFrom: msg.fromUid, msgTo: msg.toUid, msgServerId: msg.serverId)
+                // 执行完1步骤后，再回调代理（先上报收到消息了，然后再处理信息逻辑）
+                delegateMsg?.mavl(didReceived: [msg], isLoadMore: false)
+            }
+        }else {
+            TRACE("收到无效信息:\(topic), \(topicModel.text)")
+        }
     }
 }
 

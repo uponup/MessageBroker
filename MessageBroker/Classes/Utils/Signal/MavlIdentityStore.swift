@@ -26,7 +26,7 @@ class MavlIdentityStore: IdentityKeyStore {
         return identityKey
     }
     
-    func identity(for address: Address) throws -> Data? {
+    func identity(for address: Address) -> Data? {
         guard let ids = PersistenceProvider.store(forKey: MavlIdentityStoreKey, dictKeyType: Address.self) else {
             return nil
         }
@@ -35,11 +35,13 @@ class MavlIdentityStore: IdentityKeyStore {
     }
     
     // 存储已经被信任的id
-    func store(identity: Data?, for address: Address) throws {
+    func store(identity: Data?, for address: Address) {
         identities[address] = identity
         PersistenceProvider.setStore(store: identities, forKey: MavlIdentityStoreKey)
     }
     
-    init() {
+    func remove(for address: Address) {
+        identities.removeValue(forKey: address)
+        PersistenceProvider.setStore(store: identities, forKey: MavlIdentityStoreKey)
     }
 }

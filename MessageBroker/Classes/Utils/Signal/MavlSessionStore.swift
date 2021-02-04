@@ -30,7 +30,7 @@ class MavlSessionStore: SessionStore {
         return sessions[address] != nil
     }
     
-    func deleteSession(for address: Address) throws {
+    func deleteSession(for address: Address) {
         sessions[address] = nil
         PersistenceProvider.setStore(store: sessions, forKey: MavlSessionStoreKey)
     }

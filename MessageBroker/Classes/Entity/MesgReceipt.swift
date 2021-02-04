@@ -11,6 +11,7 @@ public enum ReceiptState: String {
     case sent = "sent"          // 已发送
     case received = "received"  // 已送达
     case read = "read"          // 已读
+    case decryptFail = "decryptFail"    //消息解密失败
     
     public var value: Int {
         switch self {
@@ -20,6 +21,8 @@ public enum ReceiptState: String {
             return 2
         case .read:
             return 3
+        case .decryptFail:
+            return 4
         }
     }
 }
