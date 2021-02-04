@@ -38,6 +38,7 @@ struct SignalUtils {
     
     func createSignalSession(bundleStr: String, to: String) {
         let address = MavlAddress(identifier: to)
+        resetAliceStore(forAddress: address)
         
         guard let data = bundleStr.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers),

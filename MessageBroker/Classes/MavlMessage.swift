@@ -399,6 +399,13 @@ extension MavlMessage {
     }
     
     /**
+        必要的时候，需要重新获取toUid的公钥
+     */
+    private func recreateSignalCipherChannel(toUid: String) {
+        _send(operation: .fetchPublicKeyBundle(toUid))
+    }
+    
+    /**
         发送Signal加密消息
      */
     public func sendSignal(message msg: String, toFriend fid: String, localId: String) {
@@ -492,6 +499,9 @@ extension MavlMessage: CocoaMQTTDelegate {
             
             let recepit = MesgRemoteReceipt(state: state, from: topicModel.toPersonalUid, msgServerId: topicModel.serverId)
             delegateMsg?.mavl(mesgReceiptDidChanged: recepit)
+            
+            // 如果是解密失败的回执，那么需要重新获取对方的prekeybundle()
+            recreateSignalCipherChannel(toUid: topicModel.to)
         }else {
             guard let topicModel = ReceivedTopicModel(topic, message.string.value) else {
                 // TODO: 非法Topic，返回错误状态
@@ -527,7 +537,7 @@ extension MavlMessage: CocoaMQTTDelegate {
             delegateGroup?.quitGroup(gid: topicModel.to, error: nil)
         }else if topicModel.operation == 401 {
             let msgs = topicModel.text.components(separatedBy: "##").compactMap { element -> Mesg? in
-                guard let received = try? ReceivedTopicModel(topic, element) else {
+                guard let received = ReceivedTopicModel(topic, element) else {
                     // 这儿是遍历历史信息，如果解密失败的话，暂定将错误忽略，不必传给业务层
                     return nil
                 }
