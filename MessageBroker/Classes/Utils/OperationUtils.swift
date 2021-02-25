@@ -175,7 +175,7 @@ enum Operation {
             let signalText = try SignalUtils.default.encrypt(text, to)
             return signalText
         } catch let err {
-            print("加密失败：｜\(err)")
+            print("加密失败：｜\(err.localizedDescription)")
         }
         return text
     }

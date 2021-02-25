@@ -30,7 +30,7 @@ struct SignalUtils {
     
     func isExistSession(to: String) -> Bool {
         let address = MavlAddress(identifier: to)
-        guard let _ = aliceStore?.sessionStore.containsSession(for: address) else {
+        guard let isContain = aliceStore?.sessionStore.containsSession(for: address), isContain else {
             return false
         }
         return true
