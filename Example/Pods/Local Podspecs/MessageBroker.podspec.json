@@ -26,6 +26,9 @@
     ],
     "LibSignalProtocolSwift": [
       "~> 1.3"
+    ],
+    "SignalClient": [
+
     ]
   },
   "pod_target_xcconfig": {
