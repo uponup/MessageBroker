@@ -5,24 +5,35 @@
 //  Created by 龙格 on 2021/1/27.
 //
 
-import Foundation
+import SignalClient
 
-struct MavlAddress {
-    let identifier: String
-}
-
-extension MavlAddress: Equatable {
-    static func ==(lhs: MavlAddress, rhs: MavlAddress) -> Bool {
-        return lhs.identifier == rhs.identifier
+struct MavlSignalAddress {
+    let name: String
+    let deviceId: UInt32
+    
+    var protocolAddress: ProtocolAddress? {
+        return try? ProtocolAddress(name: name, deviceId: deviceId)
     }
 }
 
-extension MavlAddress: Hashable {}
-extension MavlAddress: Codable {}
-
-extension MavlAddress: CustomStringConvertible {
-    var description: String {
-        return "MavlAddress: \(identifier)"
+extension MavlSignalAddress: Codable {
+    var data: Data? {
+        return try? JSONEncoder().encode(self)
     }
 }
 
+struct MavlSenderKeyName {
+    let groupName: String
+    let senderName: String
+    let deviceId: UInt32
+    
+    var senderKeyName: SenderKeyName? {
+        return try? SenderKeyName(groupName: groupName, senderName: senderName, deviceId: deviceId)
+    }
+}
+
+extension MavlSenderKeyName: Codable {
+    var data: Data? {
+        return try? JSONEncoder().encode(self)
+    }
+}
