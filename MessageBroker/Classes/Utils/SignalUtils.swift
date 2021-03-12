@@ -10,22 +10,24 @@ import SignalClient
 
 struct SignalUtils {
     static let `default` = SignalUtils()
-    private let maxPrekeysCount = 16
-    private var aliceStore: SignalProtocolStore?
+    private let maxPrekeysCount: UInt32 = 16
+    private var aliceStore: InMemorySignalProtocolStore?
     
     init() {
         guard let passport = MavlMessage.shared.passport else {
             print("===> 初始化失败")
             return
         }
-        aliceStore = SignalProtocolStore(withIdentifier: passport.uid)
+//        aliceStore = SignalProtocolStore(withIdentifier: passport.uid)
+        aliceStore = InMemorySignalProtocolStore()
     }
     
     func isExistSession(to: String) -> Bool {
-        guard let address = try?ProtocolAddress(name: to, deviceId: 0), let isContain = aliceStore?.isExistSession(for: address), isContain else {
-            return false
-        }
-        return true
+        return false
+//        guard let address = try?ProtocolAddress(name: to, deviceId: 0), let isContain = aliceStore?.isExistSession(for: address), isContain else {
+//            return false
+//        }
+//        return true
     }
     
     func createSignalSession(bundleStr: String, to: String) throws -> Bool {
@@ -52,16 +54,14 @@ struct SignalUtils {
             throw MavlSignalError(type: .initialFailed)
         }
             
-        let bobStore = SignalProtocolStore(withIdentifier: to)
         let bobAddress = try! ProtocolAddress(name: to, deviceId: 0)
         
         do {
             let ik = try IdentityKey(bytes: decodeBundleDict["identityKey"]!)
             let prekey = try PreKeyRecord(bytes: prekeyBytes)
             let spk = try SignedPreKeyRecord(bytes: decodeBundleDict["signedPrekey"]!)
-            let spkSignature = KeyHelper.generateSignature(forSignedPrekey: decodeBundleDict["signedPrekey"]!, bobStore: bobStore)
 
-            let prekeyBundle = try PreKeyBundle(registrationId: 0, deviceId: 0, prekeyId: prekey.id, prekey: prekey.publicKey, signedPrekeyId: spk.id, signedPrekey: spk.publicKey, signedPrekeySignature: spkSignature, identity: ik)
+            let prekeyBundle = try PreKeyBundle(registrationId: 0, deviceId: 0, prekeyId: prekey.id, prekey: prekey.publicKey, signedPrekeyId: spk.id, signedPrekey: spk.publicKey, signedPrekeySignature: spk.signature, identity: ik)
             try processPreKeyBundle(prekeyBundle, for: bobAddress, sessionStore: alice, identityStore: alice, context: NullContext())
             
             return true
@@ -77,19 +77,27 @@ struct SignalUtils {
             throw MavlSignalError(type: .initialFailed)
         }
         // 小于某个阈值才上传
-        guard alice.prekeysCount() < maxPrekeysCount/2 else {
-            throw MavlSignalError(type: .prekeysExists)
-        }
+//        guard alice.prekeysCount() < maxPrekeysCount/2 else {
+//            throw MavlSignalError(type: .prekeysExists)
+//        }
         do {
             let identityKey: [UInt8] = try alice.identityKeyPair(context: NullContext()).identityKey.serialize()
-            let prekeys: [[UInt8]] = KeyHelper.generatePreKeys(forCount: maxPrekeysCount).map{$0.serialize()}
-            let signedPrekey: [UInt8] = try KeyHelper.generateSignedPrekey().serialize()
+            let prekeys: [PreKeyRecord] = KeyHelper.generatePrekeys(start: 1, count: maxPrekeysCount)
+            let spk: SignedPreKeyRecord = KeyHelper.signedPrekey(id: 2, keyStore: alice)
 
             let uploadDict: [String: Any] = [
-                "identityKey": Data(bytes: identityKey, count: identityKey.count).base64EncodedString(),
-                "prekeys": prekeys.map{ Data(bytes: $0, count: $0.count).base64EncodedString() },
-                "signedPrekey": Data(bytes: signedPrekey, count: signedPrekey.count)
+                "identityKey": identityKey.base64,
+                "prekeys": prekeys.map{ $0.serialize().base64 },
+                "signedPrekey": spk.serialize().base64
             ]
+            
+            // 存储新生成的prekeys和spk
+            for record in prekeys {
+                try!alice.storePreKey(record, id: record.id, context: NullContext())
+            }
+            try!alice.storeSignedPreKey(spk, id: spk.id, context: NullContext())
+//            alice.storePrekeys(keys: prekeys)
+//            alice.storeSignedPrekey(spk: spk)
             return uploadDict
         } catch  {
             throw MavlSignalError(type: .initialFailed)

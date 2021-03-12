@@ -17,12 +17,6 @@ class SignalProtocolStore {
     private var deviceId: UInt32
     private var identifier: String
     
-    private var publicKeys: [ProtocolAddress: IdentityKey] = [:]
-    private var prekeyMap: [UInt32: PreKeyRecord] = [:]
-    private var signedPrekeyMap: [UInt32: SignedPreKeyRecord] = [:]
-    private var sessionMap: [ProtocolAddress: SessionRecord] = [:]
-    private var senderKeyMap: [SenderKeyName: SenderKeyRecord] = [:]
-    
     // 每个用户都有对应的唯一标识符，暂且设定为用户uid
     init(withIdentifier identifier: String) {
         self.identifier = identifier
@@ -35,23 +29,75 @@ class SignalProtocolStore {
         }
     }
     
-    /**
-     删除某个id对应的store
-     */
-    func resetStore(forIdentifier identifier: String) {
-        PersistenceProvider.reset(forIdentifier: identifier)
-    }
-    
-    func isExistSession(for address: ProtocolAddress) -> Bool {
-        if let _ = sessionMap[address] {
-            return true
-        }else {
-            return false
+    // 批量存储prekey
+    func storePrekeys(keys: [PreKeyRecord]) {
+        for record in keys {
+            storePrekey(record: record)
         }
     }
     
-    func prekeysCount() -> Int {
-        return prekeyMap.count
+    // 存储spk
+    func storeSignedPrekey(spk: SignedPreKeyRecord) {
+        try! storeSignedPreKey(spk, id: spk.id, context: NullContext())
+    }
+}
+
+// 持久化
+extension SignalProtocolStore {
+    
+    // ik
+    func storeIdentityKey(pubKey: IdentityKey, forKey key: ProtocolAddress) -> Bool {
+        UserDefaults.set(pubKey.serialize(), forKey: "\(key.hashValue)")
+        return true
+    }
+    
+    func getIdentityKey(for key: ProtocolAddress) -> IdentityKey? {
+        let bytes: [UInt8] = UserDefaults.value(forKey: "\(key.hashValue)") as? [UInt8] ?? []
+        return try? IdentityKey(bytes: bytes)
+    }
+    
+    // prekey
+    func storePrekey(record: PreKeyRecord) {
+        UserDefaults.set(record.serialize(), forKey: "\(record.id)")
+    }
+    
+    func removePrekey(for id: UInt32) {
+        UserDefaults.removeObject(forKey: "\(id)")
+    }
+    
+    func getPrekey(for id: UInt32) throws -> PreKeyRecord? {
+        let bytes = UserDefaults.value(forKey: "\(id)") as? [UInt8] ?? []
+        return try PreKeyRecord(bytes: bytes)
+    }
+    
+    // spk
+    func _storeSignedPrekey(spk: SignedPreKeyRecord) {
+        UserDefaults.set(spk.serialize(), forKey: "\(spk.id)")
+    }
+    
+    func getSignedPrekey(for id: UInt32) throws -> SignedPreKeyRecord {
+        let bytes = UserDefaults.value(forKey: "\(id)") as? [UInt8] ?? []
+        return try SignedPreKeyRecord(bytes: bytes)
+    }
+    
+    // session
+    func storeSession(session: SessionRecord, for address: ProtocolAddress) {
+        UserDefaults.set(session.serialize(), forKey: "\(address.hashValue)")
+    }
+    
+    func getSession(for address: ProtocolAddress) throws -> SessionRecord {
+        let bytes = UserDefaults.value(forKey: "\(address.hashValue)") as? [UInt8] ?? []
+        return try SessionRecord(bytes: bytes)
+    }
+    
+    // senderkey
+    func storeSenderKey(record: SenderKeyRecord, for sender: SenderKeyName) {
+        UserDefaults.set(record.serialize(), forKey: "\(sender.groupId)-\(sender.senderName)-\(sender.senderDeviceId)")
+    }
+    
+    func getSenderKey(for sender: SenderKeyName) throws -> SenderKeyRecord {
+        let bytes = UserDefaults.value(forKey: "\(sender.groupId)-\(sender.senderName)-\(sender.senderDeviceId)") as? [UInt8] ?? []
+        return try SenderKeyRecord(bytes: bytes)
     }
 }
 
@@ -67,56 +113,43 @@ extension SignalProtocolStore: IdentityKeyStore, PreKeyStore, SignedPreKeyStore,
     }
     
     public func saveIdentity(_ identity: IdentityKey, for address: ProtocolAddress, context: StoreContext) throws -> Bool {
-        if publicKeys.updateValue(identity, forKey: address) == nil {
-            return false; // newly created
-        } else {
-            PersistenceProvider.storePublicKeys(publicKeys: publicKeys, forIdentifier: identifier)
-            return true
-        }
+        storeIdentityKey(pubKey: identity, forKey: address)
     }
 
     public func isTrustedIdentity(_ identity: IdentityKey, for address: ProtocolAddress, direction: Direction, context: StoreContext) throws -> Bool {
         var ret: Bool
-        if let pk = publicKeys[address] {
+        if let pk = getIdentityKey(for: address) {
             ret = pk == identity
         } else {
-            ret = true // tofu
-        }
-        
-        if ret {
-            PersistenceProvider.storePublicKeys(publicKeys: publicKeys, forIdentifier: identifier)
+            ret = false
         }
         return ret
     }
 
     public func identity(for address: ProtocolAddress, context: StoreContext) throws -> IdentityKey? {
-        return publicKeys[address]
+        return getIdentityKey(for: address)
     }
 
     // MARK: - PreKeyStore
     public func loadPreKey(id: UInt32, context: StoreContext) throws -> PreKeyRecord {
-        if let record = prekeyMap[id] {
-            return record
-        } else {
-            throw SignalError.invalidKeyIdentifier("no prekey with this identifier")
+        if let prekey = try? getPrekey(for: id) {
+            return prekey
+        }else {
+            throw SignalError.invalidKey("no such prekey")
         }
     }
 
     public func storePreKey(_ record: PreKeyRecord, id: UInt32, context: StoreContext) throws {
-        prekeyMap[id] = record
-        
-        PersistenceProvider.storePrekeyMap(prekeyMap: prekeyMap, forIdentifier: identifier)
+        storePrekey(record: record)
     }
 
     public func removePreKey(id: UInt32, context: StoreContext) throws {
-        prekeyMap.removeValue(forKey: id)
-        
-        PersistenceProvider.storePrekeyMap(prekeyMap: prekeyMap, forIdentifier: identifier)
+        removePrekey(for: id)
     }
 
     // MARK: - SignedPreKeyStore
     public func loadSignedPreKey(id: UInt32, context: StoreContext) throws -> SignedPreKeyRecord {
-        if let record = signedPrekeyMap[id] {
+        if let record = try? getSignedPrekey(for: id) {
             return record
         } else {
             throw SignalError.invalidKeyIdentifier("no signed prekey with this identifier")
@@ -124,30 +157,24 @@ extension SignalProtocolStore: IdentityKeyStore, PreKeyStore, SignedPreKeyStore,
     }
 
     public func storeSignedPreKey(_ record: SignedPreKeyRecord, id: UInt32, context: StoreContext) throws {
-        signedPrekeyMap[id] = record
-        
-        PersistenceProvider.storeSignedPreKeyMap(spkMap: signedPrekeyMap, forIdentifier: identifier)
+        _storeSignedPrekey(spk: record)
     }
 
     // MARK: - SessionStore
     public func loadSession(for address: ProtocolAddress, context: StoreContext) throws -> SessionRecord? {
-        return sessionMap[address]
+        try getSession(for: address)
     }
 
     public func storeSession(_ record: SessionRecord, for address: ProtocolAddress, context: StoreContext) throws {
-        sessionMap[address] = record
-        
-        PersistenceProvider.storeSessionMap(sessionMap: sessionMap, forIdentifier: identifier)
+        storeSession(session: record, for: address)
     }
 
     // MARK: - SenderKeyStore
     public func storeSenderKey(name: SenderKeyName, record: SenderKeyRecord, context: StoreContext) throws {
-        senderKeyMap[name] = record
-        
-        PersistenceProvider.storeSenderKeyMap(skMap: senderKeyMap, forIdentifier: identifier)
+        storeSenderKey(record: record, for: name)
     }
 
     public func loadSenderKey(name: SenderKeyName, context: StoreContext) throws -> SenderKeyRecord? {
-        return senderKeyMap[name]
+        try getSenderKey(for: name)
     }
 }

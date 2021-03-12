@@ -72,31 +72,33 @@ class PersistenceProvider {
     
     // 存储prekeymap
     class func storePrekeyMap(prekeyMap: [UInt32: PreKeyRecord], forIdentifier identifier: String) {
-        let dict: [UInt32: [UInt8]] = Dictionary(uniqueKeysWithValues: prekeyMap.map({ (id, record) -> (UInt32, [UInt8]) in
-            return (id, record.serialize())
+        let dict: [String: [UInt8]] = Dictionary(uniqueKeysWithValues: prekeyMap.map({ (id, record) -> (String, [UInt8]) in
+            return ("\(id)", record.serialize())
         }))
         UserDefaults.set(dict, forKey: prekKey(forIdentifier: identifier))
     }
     
     // 获取signedPreKeyMap
     class func signedPreKeyMap(forIdentifier identifier: String) -> [UInt32: SignedPreKeyRecord]{
-        let dict: [UInt32: [UInt8]] = UserDefaults.object(forKey: spkKey(forIdentifier: identifier)) as! [UInt32 : [UInt8]]
+        let dict: [String: [UInt8]] = UserDefaults.object(forKey: spkKey(forIdentifier: identifier)) as! [String : [UInt8]]
 
         return Dictionary(uniqueKeysWithValues: dict.map({ (data, recordBytes) -> (UInt32, SignedPreKeyRecord) in
             let record = try!SignedPreKeyRecord(bytes: recordBytes)
-            return (data, record)
+            
+            let id = UInt32(data) ?? 0
+            return (id, record)
         }))
     }
     // 存储signedPreKeyMap
     class func storeSignedPreKeyMap(spkMap: [UInt32: SignedPreKeyRecord], forIdentifier identifier: String) {
-        let dict: [UInt32: [UInt8]] = Dictionary(uniqueKeysWithValues: spkMap.map({ (id, record) -> (UInt32, [UInt8]) in
-            return (id, record.serialize())
+        let dict: [String: [UInt8]] = Dictionary(uniqueKeysWithValues: spkMap.map({ (id, record) -> (String, [UInt8]) in
+            return ("\(id)", record.serialize())
         }))
         UserDefaults.set(dict, forKey: spkKey(forIdentifier: identifier))
     }
     
     // 获取sessionMap
-    class func signedPreKeyMap(forIdentifier identifier: String) -> [ProtocolAddress: SessionRecord]{
+    class func sessionMap(forIdentifier identifier: String) -> [ProtocolAddress: SessionRecord]{
         let dict: [Data: [UInt8]] = UserDefaults.object(forKey: sessionKey(forIdentifier: identifier)) as! [Data : [UInt8]]
 
         return Dictionary(uniqueKeysWithValues: dict.map({ (data, spkBytes) -> (ProtocolAddress, SessionRecord)? in

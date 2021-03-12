@@ -9,31 +9,24 @@ import Foundation
 import SignalClient
 
 class KeyHelper {
-    static func generateIdnetityKeyPair() -> IdentityKeyPair {
-        let keyPair = IdentityKeyPair.generate()
-        return keyPair
+
+    static func generatePrekey(id: UInt32) -> PreKeyRecord {
+        let prekey = PrivateKey.generate()
+        return try! PreKeyRecord(id: id, privateKey: prekey)
     }
     
-    static func generateRegistrationId() -> Int32 {
-        return 0
-    }
-    
-    static func generatePreKeys(forCount count: Int) -> [PreKeyRecord] {
-        var records: [PreKeyRecord] = []
-        for _ in 0..<count {
-            do {
-                let prekey = try PreKeyRecord(bytes: PrivateKey.generate().publicKey.serialize())
-                records.append(prekey)
-            } catch _ {}
+    static func generatePrekeys(start: UInt32, count: UInt32) -> [PreKeyRecord] {
+        return (0..<count).enumerated().map { (_, i) -> PreKeyRecord in
+            generatePrekey(id: start + i)
         }
-        return records
     }
     
-    static func generateSignedPrekey() throws -> SignedPreKeyRecord {
-        return try SignedPreKeyRecord(bytes: PrivateKey.generate().publicKey.serialize())
-    }
-    
-    static func generateSignature(forSignedPrekey spk: [UInt8], bobStore: SignalProtocolStore) -> [UInt8] {
-        return try!bobStore.identityKeyPair(context: NullContext()).privateKey.generateSignature(message:spk)
+    static func signedPrekey(id: UInt32, keyStore: InMemorySignalProtocolStore) -> SignedPreKeyRecord {
+        let signed_key = PrivateKey.generate()
+        let signed_key_public: [UInt8] = signed_key.publicKey.serialize()
+        let signature: [UInt8] = try! keyStore.identityKeyPair(context: NullContext()).privateKey.generateSignature(message: signed_key_public)
+        let timestamp: UInt64 = UInt64(Date().timeIntervalSince1970)
+        
+        return try!SignedPreKeyRecord(id: id, timestamp: timestamp, privateKey: signed_key, signature: signature)
     }
 }

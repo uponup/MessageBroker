@@ -88,9 +88,3 @@ extension Substring {
         return String(self)
     }
 }
-
-extension Data {
-    public var bytes: Array<UInt8> {
-      Array(self)
-    }
-}
