@@ -21,7 +21,7 @@ class KeyHelper {
         }
     }
     
-    static func signedPrekey(id: UInt32, keyStore: InMemorySignalProtocolStore) -> SignedPreKeyRecord {
+    static func signedPrekey(id: UInt32, keyStore: SignalProtocolStore) -> SignedPreKeyRecord {
         let signed_key = PrivateKey.generate()
         let signed_key_public: [UInt8] = signed_key.publicKey.serialize()
         let signature: [UInt8] = try! keyStore.identityKeyPair(context: NullContext()).privateKey.generateSignature(message: signed_key_public)
