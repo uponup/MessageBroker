@@ -11,14 +11,14 @@ import SignalClient
 struct SignalUtils {
     static let `default` = SignalUtils()
     private let maxPrekeysCount: UInt32 = 16
-    private var aliceStore: SignalProtocolStore?
+    private var aliceStore: InMemorySignalProtocolStore?
     
     init() {
         guard let passport = MavlMessage.shared.passport else {
             print("===> 初始化失败")
             return
         }
-        aliceStore = SignalProtocolStore(withIdentifier: passport.uid)
+        aliceStore = InMemorySignalProtocolStore()
     }
     
     func isExistSession(to: String) -> Bool {
