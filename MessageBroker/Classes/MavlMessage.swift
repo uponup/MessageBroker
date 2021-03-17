@@ -572,7 +572,7 @@ extension MavlMessage: CocoaMQTTDelegate {
                 _sendingMessages.removeValue(forKey: topicModel.localId)
                 // 反馈给业务层消息状态
                 delegateMsg?.mavl(didSent: msg.localId.value, serverId: msg.serverId)
-                delegateMsg?.mavl(mesgReceiptDidChanged: MesgServerReceipt(state: .sent, from: msg.toUid, msgLocalId: msg.localId.value))
+                delegateMsg?.mavl(mesgReceiptDidChanged: MesgLocalReceipt(state: .sent, from: msg.toUid, msgLocalId: msg.localId.value))
             }else {
                 // 1、收到别人的消息，需要上报已接收的状态
                 receivedMessage(msgFrom: msg.fromUid, msgTo: msg.toUid, msgServerId: msg.serverId)

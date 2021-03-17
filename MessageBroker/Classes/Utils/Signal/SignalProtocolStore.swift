@@ -52,7 +52,7 @@ extension SignalProtocolStore {
     }
     
     func getIdentityKey(for key: ProtocolAddress) -> IdentityKey? {
-        let bytes: [UInt8] = UserDefaults.value(forKey: "\(key.hashValue)") as? [UInt8] ?? []
+        let bytes: [UInt8] = UserDefaults.object(forKey: "\(key.hashValue)") as? [UInt8] ?? []
         return try? IdentityKey(bytes: bytes)
     }
     
@@ -66,7 +66,7 @@ extension SignalProtocolStore {
     }
     
     func getPrekey(for id: UInt32) throws -> PreKeyRecord? {
-        let bytes = UserDefaults.value(forKey: "\(id)") as? [UInt8] ?? []
+        let bytes = UserDefaults.object(forKey: "\(id)") as? [UInt8] ?? []
         return try PreKeyRecord(bytes: bytes)
     }
     
@@ -76,7 +76,7 @@ extension SignalProtocolStore {
     }
     
     func getSignedPrekey(for id: UInt32) throws -> SignedPreKeyRecord {
-        let bytes = UserDefaults.value(forKey: "\(id)") as? [UInt8] ?? []
+        let bytes = UserDefaults.object(forKey: "\(id)") as? [UInt8] ?? []
         return try SignedPreKeyRecord(bytes: bytes)
     }
     
@@ -86,7 +86,7 @@ extension SignalProtocolStore {
     }
     
     func getSession(for address: ProtocolAddress) throws -> SessionRecord {
-        let bytes = UserDefaults.value(forKey: "\(address.hashValue)") as? [UInt8] ?? []
+        let bytes = UserDefaults.object(forKey: "\(address.hashValue)") as? [UInt8] ?? []
         return try SessionRecord(bytes: bytes)
     }
     
@@ -96,7 +96,7 @@ extension SignalProtocolStore {
     }
     
     func getSenderKey(for sender: SenderKeyName) throws -> SenderKeyRecord {
-        let bytes = UserDefaults.value(forKey: "\(sender.groupId)-\(sender.senderName)-\(sender.senderDeviceId)") as? [UInt8] ?? []
+        let bytes = UserDefaults.object(forKey: "\(sender.groupId)-\(sender.senderName)-\(sender.senderDeviceId)") as? [UInt8] ?? []
         return try SenderKeyRecord(bytes: bytes)
     }
 }
@@ -121,7 +121,7 @@ extension SignalProtocolStore: IdentityKeyStore, PreKeyStore, SignedPreKeyStore,
         if let pk = getIdentityKey(for: address) {
             ret = pk == identity
         } else {
-            ret = false
+            ret = true
         }
         return ret
     }

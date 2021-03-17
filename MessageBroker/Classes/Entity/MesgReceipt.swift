@@ -32,7 +32,7 @@ public protocol MesgReceipt {
     var from: String { get set }        // 来自谁的回执(topic中的toPerson)
 }
 
-public struct MesgServerReceipt: MesgReceipt {
+public struct MesgLocalReceipt: MesgReceipt {
     public var state: ReceiptState
     public var from: String
     public var msgLocalId: String       // 消息localid

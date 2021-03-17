@@ -162,11 +162,11 @@ extension ViewController: MavlMessageStatusDelegate {
         print("消息\(receipt.from)的状态是\(receipt.state.rawValue)")
 
         if let remoteReceipt = receipt as? MesgRemoteReceipt {
-            MessageDao.updateMessage(msgServerId: remoteReceipt.msgServerId, status: receipt.state.value)
+            MessageDao.updateMessage(id: remoteReceipt.msgServerId, status: receipt.state.value, isRemote: true)
         }
 
-        if let serverReceipt = receipt as? MesgServerReceipt {
-            MessageDao.updateMessage(msgServerId: serverReceipt.msgLocalId, status: receipt.state.value)
+        if let localReceipt = receipt as? MesgLocalReceipt {
+            MessageDao.updateMessage(id: localReceipt.msgLocalId, status: receipt.state.value, isRemote: false)
         }
 
         NotificationCenter.default.post(name: .mesgStateDidChanged, object: nil)

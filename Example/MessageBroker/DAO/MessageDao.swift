@@ -87,11 +87,14 @@ extension MessageDao {
         }
     }
     
-    static func updateMessage(msgServerId: String, status: Int) {
+    static func updateMessage(id: String, status: Int, isRemote: Bool) {
         guard db.open() else { return }
         
-        let sql = "UPDATE t_msgs SET status = ? WHERE serverId = ?"
-        let res = db.executeUpdate(sql, withArgumentsIn: [status, msgServerId])
+        var sql = "UPDATE t_msgs SET status = ? WHERE localId = ?"
+        if isRemote {
+            sql = "UPDATE t_msgs SET status = ? WHERE serverId = ?"
+        }
+        let res = db.executeUpdate(sql, withArgumentsIn: [status, id])
         if res {
             print("更新成功")
         }else {

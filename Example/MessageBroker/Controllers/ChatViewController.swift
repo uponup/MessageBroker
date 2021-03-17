@@ -389,7 +389,7 @@ class ChatViewController: UIViewController {
     private func changeMesgStateToRead() {
         let allUnreadMesgs = MessageDao.fetchUnreadMesgs(fromGroup: chatToId)
         for message in allUnreadMesgs {
-            MessageDao.updateMessage(msgServerId: message.serverId, status: SendingStatus.read.rawValue)
+            MessageDao.updateMessage(id: message.serverId, status: SendingStatus.read.rawValue, isRemote: true)
             MavlMessage.shared.readMessage(msgFrom: message.remoteAccount, msgTo: message.localAccount, msgServerId: message.serverId)
         }
         
