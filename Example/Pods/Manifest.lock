@@ -7,7 +7,7 @@ PODS:
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
   - MarqueeLabel (4.0.2)
-  - MessageBroker (0.1.5-beta-2):
+  - MessageBroker (0.1.6):
     - CocoaMQTT (~> 1.2.5)
   - NotificationBannerSwift (3.0.2):
     - MarqueeLabel (~> 4.0.0)
@@ -41,10 +41,10 @@ SPEC CHECKSUMS:
   ESPullToRefresh: 0d68daa602b343c81753a1b95e09fd0bfcddfd40
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   MarqueeLabel: f762aa681ae201f66c1d511858b171f75d83013a
-  MessageBroker: 196b4b0d4824fb102a1b22ccae9d3509f752c0f2
+  MessageBroker: 4f2259a7fa74512261c13f4c08885ca8b24f5337
   NotificationBannerSwift: 713e20f21b6105f4a36a00e5d9fa414a930d3d8e
   SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
 
 PODFILE CHECKSUM: 8a513696db78edda29d9eab4832647f966b39f06
 
-COCOAPODS: 1.10.0
+COCOAPODS: 1.10.1

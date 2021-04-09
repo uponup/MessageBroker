@@ -1,8 +1,8 @@
 {
   "name": "MessageBroker",
-  "version": "0.1.5-beta-2",
-  "summary": "A short description of MessageBroker.",
-  "description": "TODO: Add long description of the pod here.",
+  "version": "0.1.6",
+  "summary": "MessageBroker implemented for OC",
+  "description": "针对OC动态特性，我们对这般SDK的Public访问权限的类和方法做了优化，以便基于Objective-C的客户端可以使用MessageBroker。",
   "homepage": "https://github.com/uponup/MessageBroker",
   "license": {
     "type": "MIT",
@@ -13,7 +13,7 @@
   },
   "source": {
     "git": "https://github.com/uponup/MessageBroker.git",
-    "tag": "0.1.5-beta-2"
+    "tag": "0.1.6"
   },
   "platforms": {
     "ios": "9.0"
