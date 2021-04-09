@@ -7,9 +7,9 @@
 
 import Foundation
 
-public enum FetchMessagesType {
-    case one
-    case more
+public enum FetchMessagesType: Int {
+    case one = 1
+    case more = 2
     
     var value: Int {
         switch self {

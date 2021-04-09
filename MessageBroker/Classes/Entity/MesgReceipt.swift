@@ -29,14 +29,26 @@ public protocol MesgReceipt {
     var from: String { get set }        // 来自谁的回执(topic中的toPerson)
 }
 
-public struct MesgServerReceipt: MesgReceipt {
+@objcMembers public class MesgServerReceipt: NSObject, MesgReceipt {
     public var state: ReceiptState
     public var from: String
     public var msgLocalId: String       // 消息localid
+    
+    init(state: ReceiptState, from: String, msgLocalId: String) {
+        self.state = .received
+        self.from = ""
+        self.msgLocalId = ""
+    }
 }
 
-public struct MesgRemoteReceipt: MesgReceipt {
+@objcMembers public class MesgRemoteReceipt: NSObject, MesgReceipt {
     public var state: ReceiptState
     public var from: String
     public var msgServerId: String     // 消息serverid
+    
+    init(state: ReceiptState, from: String, msgServerId: String) {
+        self.state = .received
+        self.from = ""
+        self.msgServerId = ""
+    }
 }

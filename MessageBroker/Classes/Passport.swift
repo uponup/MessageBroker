@@ -8,7 +8,7 @@
 import Foundation
 
 // MARK: - IM登录信息
-public struct Passport {
+@objcMembers public class Passport: NSObject {
     public var uid: String
     public var pwd: String
     
@@ -42,7 +42,7 @@ enum MBDomainConfig {
 
 // MARK: - SDK初始化配置
 
-public enum Environment: CustomStringConvertible {
+@objc public enum Environment: Int {
     case sandbox
     case product
     
@@ -56,9 +56,9 @@ public enum Environment: CustomStringConvertible {
     }
 }
  
-public enum Platform: CustomStringConvertible {
-    case ios
-    case android
+@objc public enum Platform: Int, CustomStringConvertible {
+    case ios = 0
+    case android = 1
     
     public var description: String {
         switch self {
@@ -70,7 +70,7 @@ public enum Platform: CustomStringConvertible {
     }
 }
 
-public struct MavlMessageConfiguration {
+@objcMembers public class MavlMessageConfiguration: NSObject {
     var appId: String
     var appKey: String
     var msgKey: String

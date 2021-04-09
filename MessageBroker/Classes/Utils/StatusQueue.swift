@@ -19,7 +19,7 @@ public protocol StatusQueueDelegate: class {
 }
 
 // MARK: - StatusQueue
-public class StatusQueue {
+@objcMembers public class StatusQueue: NSObject {
     public static var shared = StatusQueue()
     public weak var delegate: StatusQueueDelegate?
     
@@ -27,7 +27,9 @@ public class StatusQueue {
     private var maxInterval: TimeInterval = 150
     private var timer: Timer?
     
-    init() {
+    override init() {
+        super.init()
+        
         timer = Timer(timeInterval: 1, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
         guard let t = timer else {  return }
 

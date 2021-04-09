@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum ConversationType: Int {
+@objc public enum ConversationType: Int {
     case single = 0
     case group
     case vmuc
@@ -17,7 +17,7 @@ public enum ConversationType: Int {
 /**
     接收到的信息数据模型
  */
-public struct Mesg {
+@objcMembers public class Mesg: NSObject {
     public var fromUid: String
     public var toUid: String
     public var conversationType: ConversationType

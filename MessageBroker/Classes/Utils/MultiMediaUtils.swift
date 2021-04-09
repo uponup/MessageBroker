@@ -14,7 +14,7 @@ func parseMediaMesg(content: String) -> MultiMedia {
         let url = URL(string: urlEncodeStr),
         let scheme = url.scheme,
         let mediaType = MediaType(rawValue: scheme) else {
-        return NormalMedia(type: .invalid, mesg: content)
+        return NormalMedia(type: .invalid, mesg: content) as! MultiMedia
     }
     
     if mediaType == .location {

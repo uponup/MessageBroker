@@ -83,7 +83,7 @@ public extension MavlMessageStatusDelegate {
 /**
  MessageBroker主类
  */
-public class MavlMessage {
+@objcMembers public class MavlMessage: NSObject {
     public static let shared = MavlMessage()
     public var passport: Passport? {
         return _passport

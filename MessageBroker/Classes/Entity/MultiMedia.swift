@@ -7,19 +7,57 @@
 
 import Foundation
 
-public enum MediaType: String {
-    case text = "text"
-    case image = "image"
-    case video = "video"
-    case audio = "audio"
-    case file = "file"
-    case richtext = "richtext"
-    case location = "location"
-    case invalid = "invalid"
+@objc public enum MediaType: Int, RawRepresentable {
+    case text = 0
+    case image = 1
+    case video = 2
+    case audio = 3
+    case file = 4
+    case richtext = 5
+    case location = 6
+    case invalid = 7
     
     var scheme: String {
         return "\(self.rawValue)://"
     }
+    
+    public typealias RawValue = String
+
+    public init?(rawValue: RawValue) {
+        switch rawValue {
+            case "text": self = .text
+            case "image": self = .image
+            case "video": self = .video
+            case "audio": self = .audio
+            case "file": self = .file
+            case "richtext": self = .richtext
+            case "location": self = .location
+            case "invalid": self = .invalid
+            default: self = .text
+        }
+    }
+    
+    public var rawValue: String {
+        switch self {
+        case .text:
+            return "text"
+        case .image:
+            return "image"
+        case .video:
+            return "video"
+        case .audio:
+            return "audio"
+        case .file:
+            return "file"
+        case .richtext:
+            return "richtext"
+        case .location:
+            return "location"
+        case .invalid:
+            return "invalid"
+        }
+    }
+    
 }
 
 public protocol MultiMedia {
@@ -27,7 +65,7 @@ public protocol MultiMedia {
     var content: String { get }
 }
 
-public struct NormalMedia: MultiMedia {
+@objcMembers public class NormalMedia: NSObject, MultiMedia {
     public var type: MediaType
     public var mesg: String
     public var content: String {
@@ -40,7 +78,7 @@ public struct NormalMedia: MultiMedia {
     }
 }
 
-public struct LocationMedia: MultiMedia {
+@objcMembers public class LocationMedia: NSObject, MultiMedia {
     public var type: MediaType
     public var latitude: Double
     public var longitude: Double
